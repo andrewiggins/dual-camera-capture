@@ -41,11 +41,17 @@ This is a single-file web application that captures photos from both front and b
 
 **Running Locally**: Open `index.html` directly in a browser or serve via any HTTP server (e.g., `python -m http.server`). HTTPS is required for camera access on non-localhost domains.
 
-**Testing**: Must be tested on a device with multiple cameras (smartphones, tablets). Desktop browsers typically have only one webcam.
+**Deployment**: GitHub Actions workflow (`.github/workflows/deploy.yml`) automatically deploys to GitHub Pages on push to main branch. No build step required - deploys the static files directly.
+
+**Testing**: Must be tested on a device with multiple cameras (smartphones, tablets). Desktop browsers typically have only one webcam. Test both portrait and landscape orientations on mobile.
 
 **Code Style**: Uses tabs for indentation (2-space visual width).
 
 ## Key Implementation Details
+
+**Mobile Viewport Handling**: Uses dynamic viewport height (`100dvh`) to handle Android/iOS browser chrome that slides in/out. Safe area insets (`env(safe-area-inset-bottom)`) ensure buttons stay visible above system UI (home indicators, navigation bars). The `viewport-fit=cover` meta tag enables safe area support.
+
+**Front Camera Orientation**: Front-facing camera feed is horizontally flipped (`scaleX(-1)`) to create a mirror effect, preventing upside-down appearance in landscape mode. The `updateCameraOrientation()` function tracks which camera is active and applies the `.front-camera` CSS class. Canvas capture also applies the flip transformation when drawing front camera feeds.
 
 **Rounded Corners on Canvas**: The overlay in captured photos uses quadraticCurveTo to draw rounded rectangles, not CSS border-radius (which only affects DOM rendering).
 
