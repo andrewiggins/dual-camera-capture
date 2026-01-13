@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dual Camera Capture</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background-color: #000;
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        #container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #mainVideo {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        #overlayVideo {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            width: 150px;
+            height: 200px;
+            object-fit: cover;
+            border: 3px solid #fff;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+            cursor: pointer;
+        }
+
+        #controls {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 15px;
+            z-index: 10;
+        }
+
+        button {
+            padding: 15px 30px;
+            font-size: 16px;
+            font-weight: 600;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        #captureBtn {
+            background-color: #fff;
+            color: #000;
+        }
+
+        #captureBtn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+        }
+
+        #captureBtn:active {
+            transform: scale(0.95);
+        }
+
+        #switchBtn {
+            background-color: rgba(255, 255, 255, 0.3);
+            color: #fff;
+            backdrop-filter: blur(10px);
+        }
+
+        #switchBtn:hover {
+            background-color: rgba(255, 255, 255, 0.4);
+        }
+
+        #status {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background-color: rgba(0, 0, 0, 0.7);
+            color: #fff;
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-size: 14px;
+            display: none;
+        }
+
+        #status.show {
+            display: block;
+        }
+
+        canvas {
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            #overlayVideo {
+                width: 120px;
+                height: 160px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <video id="mainVideo" autoplay playsinline></video>
+        <video id="overlayVideo" autoplay playsinline></video>
+
+        <div id="controls">
+            <button id="switchBtn" onclick="switchCameras()">Switch Cameras</button>
+            <button id="captureBtn" onclick="capturePhoto()">Capture Photo</button>
+        </div>
+
+        <div id="status"></div>
+    </div>
+
+    <canvas id="canvas"></canvas>
+
+    <script>
+        let mainStream = null;
+        let overlayStream = null;
+        let mainVideoElement = document.getElementById('mainVideo');
+        let overlayVideoElement = document.getElementById('overlayVideo');
+        let isMainFront = false; // false = back camera is main, true = front camera is main
+
+        async function initCameras() {
+            try {
+                showStatus('Initializing cameras...');
+
+                // Request back camera (environment-facing)
+                const backStream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: { exact: 'environment' } },
+                    audio: false
+                });
+
+                // Request front camera (user-facing)
+                const frontStream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: 'user' },
+                    audio: false
+                });
+
+                // Set initial configuration: back camera as main, front as overlay
+                if (isMainFront) {
+                    mainStream = frontStream;
+                    overlayStream = backStream;
+                } else {
+                    mainStream = backStream;
+                    overlayStream = frontStream;
+                }
+
+                mainVideoElement.srcObject = mainStream;
+                overlayVideoElement.srcObject = overlayStream;
+
+                showStatus('Cameras ready!', 2000);
+            } catch (error) {
+                console.error('Error accessing cameras:', error);
+
+                // Fallback: try to get any available cameras
+                try {
+                    showStatus('Trying alternative camera setup...');
+                    const devices = await navigator.mediaDevices.enumerateDevices();
+                    const videoDevices = devices.filter(device => device.kind === 'videoinput');
+
+                    if (videoDevices.length >= 2) {
+                        const stream1 = await navigator.mediaDevices.getUserMedia({
+                            video: { deviceId: videoDevices[0].deviceId }
+                        });
+                        const stream2 = await navigator.mediaDevices.getUserMedia({
+                            video: { deviceId: videoDevices[1].deviceId }
+                        });
+
+                        mainStream = stream1;
+                        overlayStream = stream2;
+                        mainVideoElement.srcObject = mainStream;
+                        overlayVideoElement.srcObject = overlayStream;
+
+                        showStatus('Cameras ready!', 2000);
+                    } else {
+                        showStatus('Error: Need at least 2 cameras');
+                    }
+                } catch (fallbackError) {
+                    showStatus('Error: ' + fallbackError.message);
+                }
+            }
+        }
+
+        function switchCameras() {
+            // Swap the streams
+            const tempStream = mainStream;
+            mainStream = overlayStream;
+            overlayStream = tempStream;
+
+            mainVideoElement.srcObject = mainStream;
+            overlayVideoElement.srcObject = overlayStream;
+
+            isMainFront = !isMainFront;
+            showStatus('Cameras switched!', 1500);
+        }
+
+        function capturePhoto() {
+            const canvas = document.getElementById('canvas');
+            const ctx = canvas.getContext('2d');
+
+            // Set canvas size to match main video
+            canvas.width = mainVideoElement.videoWidth;
+            canvas.height = mainVideoElement.videoHeight;
+
+            // Draw main video feed
+            ctx.drawImage(mainVideoElement, 0, 0, canvas.width, canvas.height);
+
+            // Calculate overlay position and size (top-left corner, maintaining aspect ratio)
+            const overlayWidth = canvas.width * 0.25; // 25% of main width
+            const overlayHeight = (overlayVideoElement.videoHeight / overlayVideoElement.videoWidth) * overlayWidth;
+            const overlayX = 20;
+            const overlayY = 20;
+            const borderRadius = 12;
+
+            // Draw rounded rectangle for overlay background/border
+            ctx.save();
+            ctx.beginPath();
+            ctx.moveTo(overlayX + borderRadius, overlayY);
+            ctx.lineTo(overlayX + overlayWidth - borderRadius, overlayY);
+            ctx.quadraticCurveTo(overlayX + overlayWidth, overlayY, overlayX + overlayWidth, overlayY + borderRadius);
+            ctx.lineTo(overlayX + overlayWidth, overlayY + overlayHeight - borderRadius);
+            ctx.quadraticCurveTo(overlayX + overlayWidth, overlayY + overlayHeight, overlayX + overlayWidth - borderRadius, overlayY + overlayHeight);
+            ctx.lineTo(overlayX + borderRadius, overlayY + overlayHeight);
+            ctx.quadraticCurveTo(overlayX, overlayY + overlayHeight, overlayX, overlayY + overlayHeight - borderRadius);
+            ctx.lineTo(overlayX, overlayY + borderRadius);
+            ctx.quadraticCurveTo(overlayX, overlayY, overlayX + borderRadius, overlayY);
+            ctx.closePath();
+
+            // Draw white border
+            ctx.strokeStyle = '#fff';
+            ctx.lineWidth = 6;
+            ctx.stroke();
+
+            // Clip to rounded rectangle and draw overlay video
+            ctx.clip();
+            ctx.drawImage(overlayVideoElement, overlayX, overlayY, overlayWidth, overlayHeight);
+            ctx.restore();
+
+            // Convert to blob and download
+            canvas.toBlob(blob => {
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `dual-camera-${Date.now()}.png`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+
+                showStatus('Photo captured!', 2000);
+            }, 'image/png');
+        }
+
+        function showStatus(message, duration = null) {
+            const statusElement = document.getElementById('status');
+            statusElement.textContent = message;
+            statusElement.classList.add('show');
+
+            if (duration) {
+                setTimeout(() => {
+                    statusElement.classList.remove('show');
+                }, duration);
+            }
+        }
+
+        // Click on overlay to switch cameras
+        document.getElementById('overlayVideo').addEventListener('click', switchCameras);
+
+        // Initialize cameras when page loads
+        initCameras();
+    </script>
+</body>
+</html>
