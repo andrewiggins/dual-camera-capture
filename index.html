@@ -17,15 +17,18 @@
 				background-color: #000;
 				overflow: hidden;
 				height: 100vh;
+				height: 100dvh;
 			}
 
 			#container {
 				position: relative;
 				width: 100vw;
 				height: 100vh;
+				height: 100dvh;
 				display: flex;
 				align-items: center;
 				justify-content: center;
+				padding-bottom: 120px;
 			}
 
 			#mainVideo {
@@ -149,6 +152,10 @@
 			}
 
 			@media (max-width: 768px) {
+				#container {
+					padding-bottom: 140px;
+				}
+
 				#overlayVideo,
 				#overlayError {
 					width: 120px;
@@ -156,7 +163,7 @@
 				}
 
 				#controls {
-					bottom: max(20px, calc(env(safe-area-inset-bottom) + 10px));
+					bottom: max(40px, calc(env(safe-area-inset-bottom) + 20px));
 					gap: 10px;
 				}
 
