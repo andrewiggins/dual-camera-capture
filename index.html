@@ -36,6 +36,10 @@
 				object-fit: cover;
 			}
 
+			#mainVideo.front-camera {
+				transform: scaleX(-1);
+			}
+
 			#overlayVideo {
 				position: absolute;
 				top: 20px;
@@ -47,6 +51,10 @@
 				border-radius: 12px;
 				box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
 				cursor: pointer;
+			}
+
+			#overlayVideo.front-camera {
+				transform: scaleX(-1);
 			}
 
 			#overlayError {
@@ -231,11 +239,14 @@
 						overlayStream = frontStream;
 						mainVideoElement.srcObject = mainStream;
 						overlayVideoElement.srcObject = overlayStream;
+						updateCameraOrientation();
 						showStatus("Cameras ready!", 2000);
 					} else if (backStream || frontStream) {
 						// Only one camera available
 						mainStream = backStream || frontStream;
+						isMainFront = !!frontStream; // true if front camera is the only one
 						mainVideoElement.srcObject = mainStream;
+						updateCameraOrientation();
 						document.getElementById("overlayError").classList.add("show");
 						document.getElementById("switchBtn").disabled = true;
 						document.getElementById("switchBtn").style.opacity = "0.5";
@@ -283,6 +294,24 @@
 				}
 			}
 
+			function updateCameraOrientation() {
+				// Update CSS classes based on which camera is showing where
+				if (isMainFront) {
+					mainVideoElement.classList.add("front-camera");
+				} else {
+					mainVideoElement.classList.remove("front-camera");
+				}
+
+				// Overlay video shows the opposite camera of main
+				if (overlayStream) {
+					if (isMainFront) {
+						overlayVideoElement.classList.remove("front-camera");
+					} else {
+						overlayVideoElement.classList.add("front-camera");
+					}
+				}
+			}
+
 			function switchCameras() {
 				// Swap the streams
 				const tempStream = mainStream;
@@ -293,6 +322,7 @@
 				overlayVideoElement.srcObject = overlayStream;
 
 				isMainFront = !isMainFront;
+				updateCameraOrientation();
 				showStatus("Cameras switched!", 1500);
 			}
 
@@ -304,8 +334,14 @@
 				canvas.width = mainVideoElement.videoWidth;
 				canvas.height = mainVideoElement.videoHeight;
 
-				// Draw main video feed
+				// Draw main video feed with flip if front camera
+				ctx.save();
+				if (isMainFront) {
+					ctx.translate(canvas.width, 0);
+					ctx.scale(-1, 1);
+				}
 				ctx.drawImage(mainVideoElement, 0, 0, canvas.width, canvas.height);
+				ctx.restore();
 
 				// Calculate overlay position and size (top-left corner, maintaining aspect ratio)
 				const overlayWidth = canvas.width * 0.25; // 25% of main width
@@ -363,6 +399,14 @@
 
 					// Clip to rounded rectangle and draw overlay video
 					ctx.clip();
+
+					// Apply flip if overlay is showing front camera
+					if (!isMainFront) {
+						ctx.translate(overlayX + overlayWidth, overlayY);
+						ctx.scale(-1, 1);
+						ctx.translate(-overlayX, -overlayY);
+					}
+
 					ctx.drawImage(
 						overlayVideoElement,
 						overlayX,
