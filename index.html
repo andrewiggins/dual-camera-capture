@@ -46,6 +46,41 @@
             cursor: pointer;
         }
 
+        #overlayError {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            width: 150px;
+            height: 200px;
+            background-color: rgba(40, 40, 40, 0.95);
+            border: 3px solid #ff6b6b;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 15px;
+            text-align: center;
+        }
+
+        #overlayError.show {
+            display: flex;
+        }
+
+        #overlayError .error-content {
+            color: #fff;
+        }
+
+        #overlayError .error-icon {
+            font-size: 32px;
+            margin-bottom: 8px;
+        }
+
+        #overlayError .error-message {
+            font-size: 12px;
+            line-height: 1.4;
+        }
+
         #controls {
             position: absolute;
             bottom: 30px;
@@ -112,7 +147,8 @@
         }
 
         @media (max-width: 768px) {
-            #overlayVideo {
+            #overlayVideo,
+            #overlayError {
                 width: 120px;
                 height: 160px;
             }
@@ -123,6 +159,12 @@
     <div id="container">
         <video id="mainVideo" autoplay playsinline></video>
         <video id="overlayVideo" autoplay playsinline></video>
+        <div id="overlayError">
+            <div class="error-content">
+                <div class="error-icon">⚠️</div>
+                <div class="error-message">Second camera not available</div>
+            </div>
+        </div>
 
         <div id="controls">
             <button id="switchBtn" onclick="switchCameras()">Switch Cameras</button>
@@ -142,40 +184,51 @@
         let isMainFront = false; // false = back camera is main, true = front camera is main
 
         async function initCameras() {
+            let backStream = null;
+            let frontStream = null;
+
             try {
                 showStatus('Initializing cameras...');
 
-                // Request back camera (environment-facing)
-                const backStream = await navigator.mediaDevices.getUserMedia({
-                    video: { facingMode: { exact: 'environment' } },
-                    audio: false
-                });
-
-                // Request front camera (user-facing)
-                const frontStream = await navigator.mediaDevices.getUserMedia({
-                    video: { facingMode: 'user' },
-                    audio: false
-                });
-
-                // Set initial configuration: back camera as main, front as overlay
-                if (isMainFront) {
-                    mainStream = frontStream;
-                    overlayStream = backStream;
-                } else {
-                    mainStream = backStream;
-                    overlayStream = frontStream;
+                // Try to get back camera
+                try {
+                    backStream = await navigator.mediaDevices.getUserMedia({
+                        video: { facingMode: { exact: 'environment' } },
+                        audio: false
+                    });
+                } catch (e) {
+                    console.log('Back camera not available:', e);
                 }
 
-                mainVideoElement.srcObject = mainStream;
-                overlayVideoElement.srcObject = overlayStream;
-
-                showStatus('Cameras ready!', 2000);
-            } catch (error) {
-                console.error('Error accessing cameras:', error);
-
-                // Fallback: try to get any available cameras
+                // Try to get front camera
                 try {
-                    showStatus('Trying alternative camera setup...');
+                    frontStream = await navigator.mediaDevices.getUserMedia({
+                        video: { facingMode: 'user' },
+                        audio: false
+                    });
+                } catch (e) {
+                    console.log('Front camera not available:', e);
+                }
+
+                // Check what we got
+                if (backStream && frontStream) {
+                    // Both cameras available
+                    mainStream = backStream;
+                    overlayStream = frontStream;
+                    mainVideoElement.srcObject = mainStream;
+                    overlayVideoElement.srcObject = overlayStream;
+                    showStatus('Cameras ready!', 2000);
+                } else if (backStream || frontStream) {
+                    // Only one camera available
+                    mainStream = backStream || frontStream;
+                    mainVideoElement.srcObject = mainStream;
+                    document.getElementById('overlayError').classList.add('show');
+                    document.getElementById('switchBtn').disabled = true;
+                    document.getElementById('switchBtn').style.opacity = '0.5';
+                    document.getElementById('switchBtn').style.cursor = 'not-allowed';
+                    showStatus('Single camera mode', 2000);
+                } else {
+                    // No cameras via facingMode, try device enumeration
                     const devices = await navigator.mediaDevices.enumerateDevices();
                     const videoDevices = devices.filter(device => device.kind === 'videoinput');
 
@@ -191,14 +244,26 @@
                         overlayStream = stream2;
                         mainVideoElement.srcObject = mainStream;
                         overlayVideoElement.srcObject = overlayStream;
-
                         showStatus('Cameras ready!', 2000);
+                    } else if (videoDevices.length === 1) {
+                        const stream = await navigator.mediaDevices.getUserMedia({
+                            video: { deviceId: videoDevices[0].deviceId }
+                        });
+
+                        mainStream = stream;
+                        mainVideoElement.srcObject = mainStream;
+                        document.getElementById('overlayError').classList.add('show');
+                        document.getElementById('switchBtn').disabled = true;
+                        document.getElementById('switchBtn').style.opacity = '0.5';
+                        document.getElementById('switchBtn').style.cursor = 'not-allowed';
+                        showStatus('Single camera mode', 2000);
                     } else {
-                        showStatus('Error: Need at least 2 cameras');
+                        showStatus('Error: No cameras found');
                     }
-                } catch (fallbackError) {
-                    showStatus('Error: ' + fallbackError.message);
                 }
+            } catch (error) {
+                console.error('Error accessing cameras:', error);
+                showStatus('Error: ' + error.message);
             }
         }
 
@@ -228,34 +293,77 @@
 
             // Calculate overlay position and size (top-left corner, maintaining aspect ratio)
             const overlayWidth = canvas.width * 0.25; // 25% of main width
-            const overlayHeight = (overlayVideoElement.videoHeight / overlayVideoElement.videoWidth) * overlayWidth;
             const overlayX = 20;
             const overlayY = 20;
             const borderRadius = 12;
 
-            // Draw rounded rectangle for overlay background/border
-            ctx.save();
-            ctx.beginPath();
-            ctx.moveTo(overlayX + borderRadius, overlayY);
-            ctx.lineTo(overlayX + overlayWidth - borderRadius, overlayY);
-            ctx.quadraticCurveTo(overlayX + overlayWidth, overlayY, overlayX + overlayWidth, overlayY + borderRadius);
-            ctx.lineTo(overlayX + overlayWidth, overlayY + overlayHeight - borderRadius);
-            ctx.quadraticCurveTo(overlayX + overlayWidth, overlayY + overlayHeight, overlayX + overlayWidth - borderRadius, overlayY + overlayHeight);
-            ctx.lineTo(overlayX + borderRadius, overlayY + overlayHeight);
-            ctx.quadraticCurveTo(overlayX, overlayY + overlayHeight, overlayX, overlayY + overlayHeight - borderRadius);
-            ctx.lineTo(overlayX, overlayY + borderRadius);
-            ctx.quadraticCurveTo(overlayX, overlayY, overlayX + borderRadius, overlayY);
-            ctx.closePath();
+            if (overlayStream) {
+                // Draw second camera overlay
+                const overlayHeight = (overlayVideoElement.videoHeight / overlayVideoElement.videoWidth) * overlayWidth;
 
-            // Draw white border
-            ctx.strokeStyle = '#fff';
-            ctx.lineWidth = 6;
-            ctx.stroke();
+                // Draw rounded rectangle for overlay background/border
+                ctx.save();
+                ctx.beginPath();
+                ctx.moveTo(overlayX + borderRadius, overlayY);
+                ctx.lineTo(overlayX + overlayWidth - borderRadius, overlayY);
+                ctx.quadraticCurveTo(overlayX + overlayWidth, overlayY, overlayX + overlayWidth, overlayY + borderRadius);
+                ctx.lineTo(overlayX + overlayWidth, overlayY + overlayHeight - borderRadius);
+                ctx.quadraticCurveTo(overlayX + overlayWidth, overlayY + overlayHeight, overlayX + overlayWidth - borderRadius, overlayY + overlayHeight);
+                ctx.lineTo(overlayX + borderRadius, overlayY + overlayHeight);
+                ctx.quadraticCurveTo(overlayX, overlayY + overlayHeight, overlayX, overlayY + overlayHeight - borderRadius);
+                ctx.lineTo(overlayX, overlayY + borderRadius);
+                ctx.quadraticCurveTo(overlayX, overlayY, overlayX + borderRadius, overlayY);
+                ctx.closePath();
 
-            // Clip to rounded rectangle and draw overlay video
-            ctx.clip();
-            ctx.drawImage(overlayVideoElement, overlayX, overlayY, overlayWidth, overlayHeight);
-            ctx.restore();
+                // Draw white border
+                ctx.strokeStyle = '#fff';
+                ctx.lineWidth = 6;
+                ctx.stroke();
+
+                // Clip to rounded rectangle and draw overlay video
+                ctx.clip();
+                ctx.drawImage(overlayVideoElement, overlayX, overlayY, overlayWidth, overlayHeight);
+                ctx.restore();
+            } else {
+                // Draw error overlay instead
+                const overlayHeight = overlayWidth * (4/3); // 4:3 aspect ratio for error box
+
+                // Draw rounded rectangle with error styling
+                ctx.save();
+
+                // Background
+                ctx.beginPath();
+                ctx.moveTo(overlayX + borderRadius, overlayY);
+                ctx.lineTo(overlayX + overlayWidth - borderRadius, overlayY);
+                ctx.quadraticCurveTo(overlayX + overlayWidth, overlayY, overlayX + overlayWidth, overlayY + borderRadius);
+                ctx.lineTo(overlayX + overlayWidth, overlayY + overlayHeight - borderRadius);
+                ctx.quadraticCurveTo(overlayX + overlayWidth, overlayY + overlayHeight, overlayX + overlayWidth - borderRadius, overlayY + overlayHeight);
+                ctx.lineTo(overlayX + borderRadius, overlayY + overlayHeight);
+                ctx.quadraticCurveTo(overlayX, overlayY + overlayHeight, overlayX, overlayY + overlayHeight - borderRadius);
+                ctx.lineTo(overlayX, overlayY + borderRadius);
+                ctx.quadraticCurveTo(overlayX, overlayY, overlayX + borderRadius, overlayY);
+                ctx.closePath();
+
+                ctx.fillStyle = 'rgba(40, 40, 40, 0.95)';
+                ctx.fill();
+
+                // Red border
+                ctx.strokeStyle = '#ff6b6b';
+                ctx.lineWidth = 6;
+                ctx.stroke();
+
+                // Draw error text
+                ctx.fillStyle = '#fff';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.font = 'bold 40px Arial';
+                ctx.fillText('⚠️', overlayX + overlayWidth / 2, overlayY + overlayHeight / 2 - 20);
+                ctx.font = '14px Arial';
+                ctx.fillText('Second camera', overlayX + overlayWidth / 2, overlayY + overlayHeight / 2 + 20);
+                ctx.fillText('not available', overlayX + overlayWidth / 2, overlayY + overlayHeight / 2 + 38);
+
+                ctx.restore();
+            }
 
             // Convert to blob and download
             canvas.toBlob(blob => {
