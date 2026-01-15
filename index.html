@@ -381,8 +381,12 @@
 			}
 
 			// Debug button event listeners
-			document.getElementById("debugToggle").addEventListener("click", toggleDebugPanel);
-			document.getElementById("debugClear").addEventListener("click", clearDebugLogs);
+			document
+				.getElementById("debugToggle")
+				.addEventListener("click", toggleDebugPanel);
+			document
+				.getElementById("debugClear")
+				.addEventListener("click", clearDebugLogs);
 
 			if (DEBUG) {
 				// Show debug toggle button
@@ -406,6 +410,12 @@
 			let mainVideoElement = document.getElementById("mainVideo");
 			let overlayVideoElement = document.getElementById("overlayVideo");
 			let isMainFront = false; // false = back camera is main, true = front camera is main
+
+			// High resolution video constraints for better image quality
+			const videoConstraints = {
+				width: { ideal: 4096 },
+				height: { ideal: 2160 },
+			};
 
 			async function initCameras() {
 				debugLog("initCameras() called");
@@ -444,7 +454,10 @@
 					);
 					try {
 						backStream = await navigator.mediaDevices.getUserMedia({
-							video: { facingMode: { exact: "environment" } },
+							video: {
+								...videoConstraints,
+								facingMode: { exact: "environment" },
+							},
 							audio: false,
 						});
 						debugLog("Back camera obtained successfully", {
@@ -468,7 +481,7 @@
 					debugLog("Attempting to get front camera (facingMode: user)...");
 					try {
 						frontStream = await navigator.mediaDevices.getUserMedia({
-							video: { facingMode: "user" },
+							video: { ...videoConstraints, facingMode: "user" },
 							audio: false,
 						});
 						debugLog("Front camera obtained successfully", {
@@ -532,13 +545,19 @@
 						if (videoDevices.length >= 2) {
 							debugLog("Attempting to open two cameras by deviceId");
 							const stream1 = await navigator.mediaDevices.getUserMedia({
-								video: { deviceId: videoDevices[0].deviceId },
+								video: {
+									...videoConstraints,
+									deviceId: videoDevices[0].deviceId,
+								},
 							});
 							debugLog("First camera opened", {
 								deviceId: videoDevices[0].deviceId.slice(0, 8),
 							});
 							const stream2 = await navigator.mediaDevices.getUserMedia({
-								video: { deviceId: videoDevices[1].deviceId },
+								video: {
+									...videoConstraints,
+									deviceId: videoDevices[1].deviceId,
+								},
 							});
 							debugLog("Second camera opened", {
 								deviceId: videoDevices[1].deviceId.slice(0, 8),
@@ -554,7 +573,10 @@
 								"Only one device found via enumeration - single camera mode"
 							);
 							const stream = await navigator.mediaDevices.getUserMedia({
-								video: { deviceId: videoDevices[0].deviceId },
+								video: {
+									...videoConstraints,
+									deviceId: videoDevices[0].deviceId,
+								},
 							});
 
 							mainStream = stream;
