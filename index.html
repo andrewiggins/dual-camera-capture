@@ -2,7 +2,10 @@
 <html lang="en">
 	<head>
 		<meta charset="UTF-8" />
-		<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+		<meta
+			name="viewport"
+			content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+		/>
 		<title>Dual Camera Capture</title>
 		<style>
 			* {
@@ -176,6 +179,107 @@
 				}
 			}
 		</style>
+		<style>
+			/* Debug panel styles */
+			#debugToggle {
+				display: none;
+				position: absolute;
+				top: 20px;
+				right: 20px;
+				padding: 8px 12px;
+				font-size: 12px;
+				background-color: rgba(255, 165, 0, 0.9);
+				color: #000;
+				border: none;
+				border-radius: 6px;
+				cursor: pointer;
+				z-index: 100;
+				font-weight: 600;
+			}
+
+			#debugToggle.show {
+				display: block;
+			}
+
+			#debugPanel {
+				display: none;
+				position: absolute;
+				top: 60px;
+				right: 10px;
+				left: 10px;
+				max-height: 50vh;
+				background-color: rgba(0, 0, 0, 0.9);
+				border: 2px solid orange;
+				border-radius: 8px;
+				z-index: 99;
+				overflow: hidden;
+				flex-direction: column;
+			}
+
+			#debugPanel.show {
+				display: flex;
+			}
+
+			#debugHeader {
+				display: flex;
+				justify-content: space-between;
+				align-items: center;
+				padding: 8px 12px;
+				background-color: rgba(255, 165, 0, 0.2);
+				border-bottom: 1px solid orange;
+			}
+
+			#debugHeader span {
+				color: orange;
+				font-weight: 600;
+				font-size: 12px;
+			}
+
+			#debugClear {
+				padding: 4px 8px;
+				font-size: 11px;
+				background-color: rgba(255, 100, 100, 0.8);
+				color: #fff;
+				border: none;
+				border-radius: 4px;
+				cursor: pointer;
+			}
+
+			#debugLogs {
+				flex: 1;
+				overflow-y: auto;
+				padding: 8px;
+				font-family: monospace;
+				font-size: 11px;
+				line-height: 1.4;
+				color: #0f0;
+			}
+
+			.debug-entry {
+				margin-bottom: 4px;
+				padding-bottom: 4px;
+				border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+				word-break: break-word;
+			}
+
+			.debug-entry .timestamp {
+				color: #888;
+			}
+
+			.debug-entry .message {
+				color: #0f0;
+			}
+
+			.debug-entry .data {
+				color: #0ff;
+				margin-left: 10px;
+				display: block;
+			}
+
+			.debug-entry.error .message {
+				color: #f66;
+			}
+		</style>
 	</head>
 	<body>
 		<div id="container">
@@ -194,11 +298,107 @@
 			</div>
 
 			<div id="status"></div>
+
+			<!-- Debug UI (only visible in debug mode) -->
+			<button id="debugToggle" onclick="toggleDebugPanel()">Show Logs</button>
+			<div id="debugPanel">
+				<div id="debugHeader">
+					<span>Debug Logs</span>
+					<button id="debugClear" onclick="clearDebugLogs()">Clear</button>
+				</div>
+				<div id="debugLogs"></div>
+			</div>
 		</div>
 
 		<canvas id="canvas"></canvas>
 
-		<script>
+		<script type="module">
+			// Check for debug mode via URL parameter
+			const urlParams = new URLSearchParams(window.location.search);
+			const DEBUG = urlParams.has("debug");
+			let debugPanelVisible = false;
+
+			function debugLog(message, data = null, isError = false) {
+				if (!DEBUG) return;
+				const timestamp = new Date().toISOString().split("T")[1].slice(0, 12);
+
+				// Console logging
+				if (data !== null) {
+					console.log(`[DEBUG ${timestamp}] ${message}`, data);
+				} else {
+					console.log(`[DEBUG ${timestamp}] ${message}`);
+				}
+
+				// On-screen logging
+				const logsContainer = document.getElementById("debugLogs");
+				if (logsContainer) {
+					const entry = document.createElement("div");
+					entry.className = "debug-entry" + (isError ? " error" : "");
+
+					const escapedMsg = escapeHtml(message);
+					let html = `<span class="timestamp">[${timestamp}]</span> <span class="message">${escapedMsg}</span>`;
+					if (data !== null) {
+						let dataStr;
+						try {
+							dataStr = JSON.stringify(data, null, 2);
+						} catch (e) {
+							dataStr = String(data);
+						}
+						html += `<span class="data">${escapeHtml(dataStr)}</span>`;
+					}
+
+					entry.innerHTML = html;
+					logsContainer.appendChild(entry);
+					logsContainer.scrollTop = logsContainer.scrollHeight;
+				}
+			}
+
+			function escapeHtml(text) {
+				const div = document.createElement("div");
+				div.textContent = text;
+				return div.innerHTML;
+			}
+
+			function toggleDebugPanel() {
+				debugPanelVisible = !debugPanelVisible;
+				const panel = document.getElementById("debugPanel");
+				const toggle = document.getElementById("debugToggle");
+				if (debugPanelVisible) {
+					panel.classList.add("show");
+					toggle.textContent = "Hide Logs";
+				} else {
+					panel.classList.remove("show");
+					toggle.textContent = "Show Logs";
+				}
+			}
+
+			function clearDebugLogs() {
+				const logsContainer = document.getElementById("debugLogs");
+				if (logsContainer) {
+					logsContainer.innerHTML = "";
+				}
+				debugLog("Logs cleared");
+			}
+
+			if (DEBUG) {
+				// Show debug toggle button
+				document.getElementById("debugToggle").classList.add("show");
+
+				console.log("=== DEBUG MODE ENABLED ===");
+				console.log("User Agent:", navigator.userAgent);
+				console.log("URL:", window.location.href);
+
+				debugLog("DEBUG MODE ENABLED");
+				debugLog("User Agent: " + navigator.userAgent);
+				debugLog("URL: " + window.location.href);
+			}
+
+			globalThis.DEBUG = DEBUG;
+			globalThis.debugLog = debugLog;
+			globalThis.toggleDebugPanel = toggleDebugPanel;
+			globalThis.clearDebugLogs = clearDebugLogs;
+		</script>
+		<script type="module">
 			let mainStream = null;
 			let overlayStream = null;
 			let mainVideoElement = document.getElementById("mainVideo");
@@ -206,35 +406,95 @@
 			let isMainFront = false; // false = back camera is main, true = front camera is main
 
 			async function initCameras() {
+				debugLog("initCameras() called");
+
+				/** @type {MediaStream | null} */
 				let backStream = null;
+				/** @type {MediaStream | null} */
 				let frontStream = null;
 
 				try {
 					showStatus("Initializing cameras...");
 
+					// Log available devices first
+					if (DEBUG) {
+						try {
+							const devices = await navigator.mediaDevices.enumerateDevices();
+							const videoDevices = devices.filter(
+								(d) => d.kind === "videoinput"
+							);
+							debugLog(`Found ${videoDevices.length} video input device(s):`);
+							videoDevices.forEach((d, i) => {
+								debugLog(
+									`  Device ${i}: ${
+										d.label || "(no label)"
+									} [${d.deviceId.slice(0, 8)}...]`
+								);
+							});
+						} catch (e) {
+							debugLog("Failed to enumerate devices", e, true);
+						}
+					}
+
 					// Try to get back camera
+					debugLog(
+						"Attempting to get back camera (facingMode: environment)..."
+					);
 					try {
 						backStream = await navigator.mediaDevices.getUserMedia({
 							video: { facingMode: { exact: "environment" } },
 							audio: false,
 						});
+						debugLog("Back camera obtained successfully", {
+							tracks: backStream.getVideoTracks().map((t) => ({
+								label: t.label,
+								enabled: t.enabled,
+								readyState: t.readyState,
+								settings: t.getSettings(),
+							})),
+						});
 					} catch (e) {
+						debugLog(
+							"Back camera not available",
+							{ name: e.name, message: e.message },
+							true
+						);
 						console.log("Back camera not available:", e);
 					}
 
 					// Try to get front camera
+					debugLog("Attempting to get front camera (facingMode: user)...");
 					try {
 						frontStream = await navigator.mediaDevices.getUserMedia({
 							video: { facingMode: "user" },
 							audio: false,
 						});
+						debugLog("Front camera obtained successfully", {
+							tracks: frontStream.getVideoTracks().map((t) => ({
+								label: t.label,
+								enabled: t.enabled,
+								readyState: t.readyState,
+								settings: t.getSettings(),
+							})),
+						});
 					} catch (e) {
+						debugLog(
+							"Front camera not available",
+							{ name: e.name, message: e.message },
+							true
+						);
 						console.log("Front camera not available:", e);
 					}
 
 					// Check what we got
+					debugLog("Stream results", {
+						hasBack: !!backStream,
+						hasFront: !!frontStream,
+					});
+
 					if (backStream && frontStream) {
 						// Both cameras available
+						debugLog("Both cameras available - dual camera mode");
 						mainStream = backStream;
 						overlayStream = frontStream;
 						mainVideoElement.srcObject = mainStream;
@@ -243,6 +503,10 @@
 						showStatus("Cameras ready!", 2000);
 					} else if (backStream || frontStream) {
 						// Only one camera available
+						debugLog("Only one camera available - single camera mode", {
+							usingBack: !!backStream,
+							usingFront: !!frontStream,
+						});
 						mainStream = backStream || frontStream;
 						isMainFront = !!frontStream; // true if front camera is the only one
 						mainVideoElement.srcObject = mainStream;
@@ -254,17 +518,28 @@
 						showStatus("Single camera mode", 2000);
 					} else {
 						// No cameras via facingMode, try device enumeration
+						debugLog("FacingMode failed, falling back to device enumeration");
 						const devices = await navigator.mediaDevices.enumerateDevices();
 						const videoDevices = devices.filter(
 							(device) => device.kind === "videoinput"
 						);
+						debugLog(
+							`Device enumeration found ${videoDevices.length} video device(s)`
+						);
 
 						if (videoDevices.length >= 2) {
+							debugLog("Attempting to open two cameras by deviceId");
 							const stream1 = await navigator.mediaDevices.getUserMedia({
 								video: { deviceId: videoDevices[0].deviceId },
 							});
+							debugLog("First camera opened", {
+								deviceId: videoDevices[0].deviceId.slice(0, 8),
+							});
 							const stream2 = await navigator.mediaDevices.getUserMedia({
 								video: { deviceId: videoDevices[1].deviceId },
+							});
+							debugLog("Second camera opened", {
+								deviceId: videoDevices[1].deviceId.slice(0, 8),
 							});
 
 							mainStream = stream1;
@@ -273,6 +548,9 @@
 							overlayVideoElement.srcObject = overlayStream;
 							showStatus("Cameras ready!", 2000);
 						} else if (videoDevices.length === 1) {
+							debugLog(
+								"Only one device found via enumeration - single camera mode"
+							);
 							const stream = await navigator.mediaDevices.getUserMedia({
 								video: { deviceId: videoDevices[0].deviceId },
 							});
@@ -285,16 +563,27 @@
 							document.getElementById("switchBtn").style.cursor = "not-allowed";
 							showStatus("Single camera mode", 2000);
 						} else {
+							debugLog("No video devices found at all", null, true);
 							showStatus("Error: No cameras found");
 						}
 					}
 				} catch (error) {
+					debugLog(
+						"FATAL ERROR in initCameras",
+						{
+							name: error.name,
+							message: error.message,
+							stack: error.stack,
+						},
+						true
+					);
 					console.error("Error accessing cameras:", error);
 					showStatus("Error: " + error.message);
 				}
 			}
 
 			function updateCameraOrientation() {
+				debugLog("updateCameraOrientation()", { isMainFront: isMainFront });
 				// Update CSS classes based on which camera is showing where
 				if (isMainFront) {
 					mainVideoElement.classList.add("front-camera");
@@ -313,6 +602,12 @@
 			}
 
 			function switchCameras() {
+				debugLog("switchCameras() called", {
+					mainStreamActive: mainStream?.active,
+					overlayStreamActive: overlayStream?.active,
+					isMainFront: isMainFront,
+				});
+
 				// Swap the streams
 				const tempStream = mainStream;
 				mainStream = overlayStream;
@@ -323,16 +618,33 @@
 
 				isMainFront = !isMainFront;
 				updateCameraOrientation();
+				debugLog("Cameras switched", { isMainFront: isMainFront });
 				showStatus("Cameras switched!", 1500);
 			}
 
 			function capturePhoto() {
+				debugLog("capturePhoto() called", {
+					mainVideoWidth: mainVideoElement.videoWidth,
+					mainVideoHeight: mainVideoElement.videoHeight,
+					mainStreamActive: mainStream?.active,
+					overlayStreamActive: overlayStream?.active,
+					hasOverlay: !!overlayStream,
+				});
+
 				const canvas = document.getElementById("canvas");
 				const ctx = canvas.getContext("2d");
 
 				// Set canvas size to match main video
 				canvas.width = mainVideoElement.videoWidth;
 				canvas.height = mainVideoElement.videoHeight;
+
+				if (canvas.width === 0 || canvas.height === 0) {
+					debugLog(
+						"WARNING: Canvas size is 0, video may not be ready",
+						null,
+						true
+					);
+				}
 
 				// Draw main video feed with flip if front camera
 				ctx.save();
@@ -492,16 +804,26 @@
 				}
 
 				// Convert to blob and download
+				debugLog("Converting canvas to blob...");
 				canvas.toBlob((blob) => {
+					if (!blob) {
+						debugLog("ERROR: Failed to create blob from canvas", null, true);
+						showStatus("Error: Failed to capture photo");
+						return;
+					}
+
+					debugLog("Blob created", { size: blob.size, type: blob.type });
 					const url = URL.createObjectURL(blob);
 					const a = document.createElement("a");
 					a.href = url;
 					a.download = `dual-camera-${Date.now()}.png`;
+					debugLog("Initiating download", { filename: a.download });
 					document.body.appendChild(a);
 					a.click();
 					document.body.removeChild(a);
 					URL.revokeObjectURL(url);
 
+					debugLog("Photo capture complete");
 					showStatus("Photo captured!", 2000);
 				}, "image/png");
 			}
@@ -519,11 +841,21 @@
 			}
 
 			// Click on overlay to switch cameras
-			document
-				.getElementById("overlayVideo")
-				.addEventListener("click", switchCameras);
+			document.getElementById("overlayVideo").addEventListener("click", () => {
+				debugLog("Overlay video clicked");
+				switchCameras();
+			});
+
+			// Add click logging for buttons
+			document.getElementById("switchBtn").addEventListener("click", () => {
+				debugLog("Switch button clicked");
+			});
+			document.getElementById("captureBtn").addEventListener("click", () => {
+				debugLog("Capture button clicked");
+			});
 
 			// Initialize cameras when page loads
+			debugLog("Page loaded, starting camera initialization");
 			initCameras();
 		</script>
 	</body>
