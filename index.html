@@ -293,18 +293,18 @@
 			</div>
 
 			<div id="controls">
-				<button id="switchBtn" onclick="switchCameras()">Switch Cameras</button>
-				<button id="captureBtn" onclick="capturePhoto()">Capture Photo</button>
+				<button id="switchBtn">Switch Cameras</button>
+				<button id="captureBtn">Capture Photo</button>
 			</div>
 
 			<div id="status"></div>
 
 			<!-- Debug UI (only visible in debug mode) -->
-			<button id="debugToggle" onclick="toggleDebugPanel()">Show Logs</button>
+			<button id="debugToggle">Show Logs</button>
 			<div id="debugPanel">
 				<div id="debugHeader">
 					<span>Debug Logs</span>
-					<button id="debugClear" onclick="clearDebugLogs()">Clear</button>
+					<button id="debugClear">Clear</button>
 				</div>
 				<div id="debugLogs"></div>
 			</div>
@@ -380,6 +380,10 @@
 				debugLog("Logs cleared");
 			}
 
+			// Debug button event listeners
+			document.getElementById("debugToggle").addEventListener("click", toggleDebugPanel);
+			document.getElementById("debugClear").addEventListener("click", clearDebugLogs);
+
 			if (DEBUG) {
 				// Show debug toggle button
 				document.getElementById("debugToggle").classList.add("show");
@@ -395,8 +399,6 @@
 
 			globalThis.DEBUG = DEBUG;
 			globalThis.debugLog = debugLog;
-			globalThis.toggleDebugPanel = toggleDebugPanel;
-			globalThis.clearDebugLogs = clearDebugLogs;
 		</script>
 		<script type="module" id="main">
 			let mainStream = null;
@@ -846,20 +848,19 @@
 				switchCameras();
 			});
 
-			// Add click logging for buttons
+			// Button click handlers
 			document.getElementById("switchBtn").addEventListener("click", () => {
 				debugLog("Switch button clicked");
+				switchCameras();
 			});
 			document.getElementById("captureBtn").addEventListener("click", () => {
 				debugLog("Capture button clicked");
+				capturePhoto();
 			});
 
 			// Initialize cameras when page loads
 			debugLog("Page loaded, starting camera initialization");
 			initCameras();
-
-			globalThis.switchCameras = switchCameras;
-			globalThis.capturePhoto = capturePhoto;
 		</script>
 	</body>
 </html>
