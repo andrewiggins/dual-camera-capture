@@ -312,7 +312,7 @@
 
 		<canvas id="canvas"></canvas>
 
-		<script type="module">
+		<script type="module" id="debug">
 			// Check for debug mode via URL parameter
 			const urlParams = new URLSearchParams(window.location.search);
 			const DEBUG = urlParams.has("debug");
@@ -398,7 +398,7 @@
 			globalThis.toggleDebugPanel = toggleDebugPanel;
 			globalThis.clearDebugLogs = clearDebugLogs;
 		</script>
-		<script type="module">
+		<script type="module" id="main">
 			let mainStream = null;
 			let overlayStream = null;
 			let mainVideoElement = document.getElementById("mainVideo");
@@ -857,6 +857,9 @@
 			// Initialize cameras when page loads
 			debugLog("Page loaded, starting camera initialization");
 			initCameras();
+
+			globalThis.switchCameras = switchCameras;
+			globalThis.capturePhoto = capturePhoto;
 		</script>
 	</body>
 </html>
