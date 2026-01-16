@@ -13,8 +13,15 @@ This is a web application that captures photos from both front and back cameras 
 - `index.html` - HTML markup only
 - `src/index.css` - Main application styles
 - `src/debug.css` - Debug panel styles
-- `src/index.js` - Main application logic (ES module, imports from debug.js)
-- `src/debug.js` - Debug utilities (ES module, exports `DEBUG`, `debugLog`, `initDebug`)
+- `src/index.js` - Entry point (initializes debug and starts app)
+- `src/app.js` - `DualCameraApp` controller class (manages modes and event listeners)
+- `src/elements.js` - DOM element references
+- `src/device-info.js` - `DeviceInfo` singleton (iOS detection, camera enumeration)
+- `src/capture-utils.js` - `CaptureUtils` (canvas drawing, camera access, download)
+- `src/ui-utils.js` - `UIUtils` (status messages, orientation updates)
+- `src/live-capture-mode.js` - `LiveCaptureMode` class (simultaneous dual camera)
+- `src/sequential-capture-mode.js` - `SequentialCaptureMode` class (one camera at a time)
+- `src/debug.js` - Debug utilities (exports `DEBUG`, `debugLog`, `initDebug`)
 
 **No Build Process**: Uses native ES modules (`type="module"`) supported by modern browsers. No bundling or external dependencies.
 
@@ -24,6 +31,13 @@ This is a web application that captures photos from both front and back cameras 
 - Primary approach: Uses `facingMode` constraint ("environment" for back, "user" for front)
 - Fallback: If facingMode fails, enumerates all video devices by deviceId
 - Graceful degradation: If only one camera is available, enters single-camera mode with error overlay
+
+**Class Architecture**:
+
+- `DualCameraApp`: Main controller that manages capture modes and event listeners
+- `LiveCaptureMode`: Handles simultaneous dual camera streams (non-iOS)
+- `SequentialCaptureMode`: Handles one-camera-at-a-time capture (iOS or optional)
+- Both mode classes implement the same interface: `init()`, `capture()`, `switchCameras()`, `cleanup()`
 
 **Stream Architecture**:
 
