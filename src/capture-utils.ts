@@ -1,4 +1,5 @@
-import { debugLog } from "./debug.js";
+import { debugLog } from "./debug.ts";
+import type { FacingMode } from "./types.ts";
 
 /**
  * Video constraints for high resolution capture
@@ -10,13 +11,13 @@ export const VIDEO_CONSTRAINTS = {
 
 /**
  * Draw a video frame to a canvas, optionally flipping horizontally
- * @param {HTMLVideoElement} video
- * @param {HTMLCanvasElement} canvas
- * @param {boolean} flipHorizontal
- * @returns {CanvasRenderingContext2D}
  */
-export function drawVideoToCanvas(video, canvas, flipHorizontal = false) {
-	const ctx = canvas.getContext("2d");
+export function drawVideoToCanvas(
+	video: HTMLVideoElement,
+	canvas: HTMLCanvasElement,
+	flipHorizontal = false,
+): CanvasRenderingContext2D {
+	const ctx = canvas.getContext("2d")!;
 	canvas.width = video.videoWidth;
 	canvas.height = video.videoHeight;
 
@@ -33,14 +34,15 @@ export function drawVideoToCanvas(video, canvas, flipHorizontal = false) {
 
 /**
  * Draw a rounded rectangle path (helper for overlay drawing)
- * @param {CanvasRenderingContext2D} ctx
- * @param {number} x
- * @param {number} y
- * @param {number} width
- * @param {number} height
- * @param {number} radius
  */
-export function roundedRectPath(ctx, x, y, width, height, radius) {
+export function roundedRectPath(
+	ctx: CanvasRenderingContext2D,
+	x: number,
+	y: number,
+	width: number,
+	height: number,
+	radius: number,
+): void {
 	ctx.beginPath();
 	ctx.moveTo(x + radius, y);
 	ctx.lineTo(x + width - radius, y);
@@ -56,23 +58,16 @@ export function roundedRectPath(ctx, x, y, width, height, radius) {
 
 /**
  * Draw an overlay image with rounded corners and border
- * @param {CanvasRenderingContext2D} ctx
- * @param {CanvasImageSource} image
- * @param {number} x
- * @param {number} y
- * @param {number} width
- * @param {number} height
- * @param {number} borderRadius
  */
 export function drawRoundedOverlay(
-	ctx,
-	image,
-	x,
-	y,
-	width,
-	height,
-	borderRadius,
-) {
+	ctx: CanvasRenderingContext2D,
+	image: CanvasImageSource,
+	x: number,
+	y: number,
+	width: number,
+	height: number,
+	borderRadius: number,
+): void {
 	ctx.save();
 	roundedRectPath(ctx, x, y, width, height, borderRadius);
 
@@ -89,13 +84,14 @@ export function drawRoundedOverlay(
 
 /**
  * Draw an error overlay when second camera is unavailable
- * @param {CanvasRenderingContext2D} ctx
- * @param {number} x
- * @param {number} y
- * @param {number} width
- * @param {number} borderRadius
  */
-export function drawErrorOverlay(ctx, x, y, width, borderRadius) {
+export function drawErrorOverlay(
+	ctx: CanvasRenderingContext2D,
+	x: number,
+	y: number,
+	width: number,
+	borderRadius: number,
+): void {
 	const height = width * (4 / 3);
 
 	ctx.save();
@@ -112,7 +108,7 @@ export function drawErrorOverlay(ctx, x, y, width, borderRadius) {
 	ctx.textAlign = "center";
 	ctx.textBaseline = "middle";
 	ctx.font = "bold 40px Arial";
-	ctx.fillText("⚠️", x + width / 2, y + height / 2 - 20);
+	ctx.fillText("\u26a0\ufe0f", x + width / 2, y + height / 2 - 20);
 	ctx.font = "14px Arial";
 	ctx.fillText("Second camera", x + width / 2, y + height / 2 + 20);
 	ctx.fillText("not available", x + width / 2, y + height / 2 + 38);
@@ -121,10 +117,8 @@ export function drawErrorOverlay(ctx, x, y, width, borderRadius) {
 
 /**
  * Download a canvas as a PNG image
- * @param {HTMLCanvasElement} canvas
- * @returns {Promise<void>}
  */
-export function downloadCanvas(canvas) {
+export function downloadCanvas(canvas: HTMLCanvasElement): Promise<void> {
 	return new Promise((resolve, reject) => {
 		canvas.toBlob((blob) => {
 			if (!blob) {
@@ -149,10 +143,8 @@ export function downloadCanvas(canvas) {
 
 /**
  * Get a camera stream with the specified facing mode
- * @param {"environment" | "user"} facingMode
- * @returns {Promise<MediaStream>}
  */
-export async function getCamera(facingMode) {
+export async function getCamera(facingMode: FacingMode): Promise<MediaStream> {
 	const constraints = {
 		video: {
 			...VIDEO_CONSTRAINTS,
@@ -166,9 +158,8 @@ export async function getCamera(facingMode) {
 
 /**
  * Stop all tracks in a media stream
- * @param {MediaStream | null} stream
  */
-export function stopStream(stream) {
+export function stopStream(stream: MediaStream | null): void {
 	if (stream) {
 		stream.getTracks().forEach((track) => track.stop());
 	}

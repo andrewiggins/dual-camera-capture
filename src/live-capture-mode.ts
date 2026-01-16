@@ -1,28 +1,24 @@
-import { debugLog } from "./debug.js";
-import * as elements from "./elements.js";
-import * as CaptureUtils from "./capture-utils.js";
-import * as UIUtils from "./ui-utils.js";
-
-/** @import {CaptureMode} from "./app.js" */
+import { debugLog } from "./debug.ts";
+import * as elements from "./elements.ts";
+import * as CaptureUtils from "./capture-utils.ts";
+import * as UIUtils from "./ui-utils.ts";
+import type { CaptureMode } from "./types.ts";
 
 /**
  * Live Capture Mode - Simultaneous dual camera streams
  * Used on non-iOS devices that support multiple concurrent camera streams
- * @implements {CaptureMode}
  */
-export class LiveCaptureMode {
-	constructor() {
-		this.mainStream = null;
-		this.overlayStream = null;
-		this.isMainFront = false;
-	}
+export class LiveCaptureMode implements CaptureMode {
+	private mainStream: MediaStream | null = null;
+	private overlayStream: MediaStream | null = null;
+	private isMainFront = false;
 
-	async init() {
+	async init(): Promise<void> {
 		debugLog("LiveCaptureMode.init()");
 		UIUtils.showStatus("Initializing cameras...");
 
-		let backStream = null;
-		let frontStream = null;
+		let backStream: MediaStream | null = null;
+		let frontStream: MediaStream | null = null;
 
 		// Try to get back camera
 		try {
@@ -36,7 +32,7 @@ export class LiveCaptureMode {
 		} catch (e) {
 			debugLog(
 				"Back camera not available",
-				{ name: e.name, message: e.message },
+				{ name: (e as Error).name, message: (e as Error).message },
 				true,
 			);
 		}
@@ -53,7 +49,7 @@ export class LiveCaptureMode {
 		} catch (e) {
 			debugLog(
 				"Front camera not available",
-				{ name: e.name, message: e.message },
+				{ name: (e as Error).name, message: (e as Error).message },
 				true,
 			);
 		}
@@ -92,7 +88,7 @@ export class LiveCaptureMode {
 		}
 	}
 
-	async capture() {
+	async capture(): Promise<void> {
 		debugLog("LiveCaptureMode.capture()", {
 			mainVideoWidth: elements.mainVideo.videoWidth,
 			mainVideoHeight: elements.mainVideo.videoHeight,
@@ -106,7 +102,7 @@ export class LiveCaptureMode {
 			this.isMainFront,
 		);
 
-		const ctx = canvas.getContext("2d");
+		const ctx = canvas.getContext("2d")!;
 		const overlayWidth = canvas.width * 0.25;
 		const overlayX = 20;
 		const overlayY = 20;
@@ -154,7 +150,7 @@ export class LiveCaptureMode {
 		}
 	}
 
-	switchCameras() {
+	switchCameras(): void {
 		if (!this.overlayStream) return;
 
 		debugLog("LiveCaptureMode.switchCameras()", {
@@ -175,7 +171,7 @@ export class LiveCaptureMode {
 		UIUtils.showStatus("Cameras switched!", 1500);
 	}
 
-	cleanup() {
+	cleanup(): void {
 		debugLog("LiveCaptureMode.cleanup()");
 		CaptureUtils.stopStream(this.mainStream);
 		CaptureUtils.stopStream(this.overlayStream);

@@ -1,5 +1,6 @@
-import { debugLog, initDebug } from "./debug.js";
-import { DualCameraApp } from "./app.js";
+import { debugLog, initDebug } from "./debug.ts";
+import { DualCameraApp } from "./app.ts";
+import "./index.css";
 
 // Initialize debug module
 initDebug();

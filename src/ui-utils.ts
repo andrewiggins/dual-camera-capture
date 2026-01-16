@@ -1,11 +1,10 @@
-import * as elements from "./elements.js";
+import * as elements from "./elements.ts";
 
 /**
  * Show a status message
- * @param {string} message
- * @param {number | null} duration - Auto-hide after duration (ms), null for permanent
+ * @param duration - Auto-hide after duration (ms), null for permanent
  */
-export function showStatus(message, duration = null) {
+export function showStatus(message: string, duration: number | null = null): void {
 	elements.status.textContent = message;
 	elements.status.classList.add("show");
 
@@ -18,10 +17,11 @@ export function showStatus(message, duration = null) {
 
 /**
  * Update CSS classes for camera orientation (front camera mirroring)
- * @param {boolean} isMainFront
- * @param {boolean} hasOverlay
  */
-export function updateCameraOrientation(isMainFront, hasOverlay) {
+export function updateCameraOrientation(
+	isMainFront: boolean,
+	hasOverlay: boolean,
+): void {
 	if (isMainFront) {
 		elements.mainVideo.classList.add("front-camera");
 	} else {
@@ -40,7 +40,7 @@ export function updateCameraOrientation(isMainFront, hasOverlay) {
 /**
  * Disable the switch button (for single camera mode)
  */
-export function disableSwitchButton() {
+export function disableSwitchButton(): void {
 	elements.switchBtn.disabled = true;
 	elements.switchBtn.style.opacity = "0.5";
 	elements.switchBtn.style.cursor = "not-allowed";

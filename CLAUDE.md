@@ -13,17 +13,18 @@ This is a web application that captures photos from both front and back cameras 
 - `index.html` - HTML markup only
 - `src/index.css` - Main application styles
 - `src/debug.css` - Debug panel styles
-- `src/index.js` - Entry point (initializes debug and starts app)
-- `src/app.js` - `DualCameraApp` controller class (manages modes and event listeners)
-- `src/elements.js` - DOM element references
-- `src/device-info.js` - `DeviceInfo` singleton (iOS detection, camera enumeration)
-- `src/capture-utils.js` - `CaptureUtils` (canvas drawing, camera access, download)
-- `src/ui-utils.js` - `UIUtils` (status messages, orientation updates)
-- `src/live-capture-mode.js` - `LiveCaptureMode` class (simultaneous dual camera)
-- `src/sequential-capture-mode.js` - `SequentialCaptureMode` class (one camera at a time)
-- `src/debug.js` - Debug utilities (exports `DEBUG`, `debugLog`, `initDebug`)
+- `src/index.ts` - Entry point (initializes debug and starts app)
+- `src/app.ts` - `DualCameraApp` controller class (manages modes and event listeners)
+- `src/elements.ts` - DOM element references
+- `src/device-info.ts` - `DeviceInfo` singleton (iOS detection, camera enumeration)
+- `src/capture-utils.ts` - `CaptureUtils` (canvas drawing, camera access, download)
+- `src/ui-utils.ts` - `UIUtils` (status messages, orientation updates)
+- `src/live-capture-mode.ts` - `LiveCaptureMode` class (simultaneous dual camera)
+- `src/sequential-capture-mode.ts` - `SequentialCaptureMode` class (one camera at a time)
+- `src/debug.ts` - Debug utilities (exports `DEBUG`, `debugLog`, `initDebug`)
+- `src/types.ts` - TypeScript interfaces (`CaptureMode`, `FacingMode`)
 
-**No Build Process**: Uses native ES modules (`type="module"`) supported by modern browsers. No bundling or external dependencies.
+**Build Process**: Uses Vite for development server and production builds. TypeScript is used for type safety with `tsc` for type checking only (Vite handles compilation).
 
 **Camera Management**:
 
@@ -61,9 +62,15 @@ This is a web application that captures photos from both front and back cameras 
 
 ## Development
 
-**Running Locally**: Open `index.html` directly in a browser or serve via any HTTP server (e.g., `python -m http.server`). HTTPS is required for camera access on non-localhost domains.
+**Running Locally**: Run `npm run dev` to start the Vite development server. HTTPS is required for camera access on non-localhost domains.
 
-**Deployment**: GitHub Actions workflow (`.github/workflows/deploy.yml`) automatically deploys to GitHub Pages on push to main branch. No build step required - deploys the static files directly.
+**Commands**:
+- `npm run dev` - Start development server
+- `npm run build` - Build for production (outputs to `dist/`)
+- `npm run preview` - Preview production build locally
+- `npm run typecheck` - Run TypeScript type checker
+
+**Deployment**: GitHub Actions workflow (`.github/workflows/deploy.yml`) automatically builds and deploys to GitHub Pages on push to main branch.
 
 **Testing**: Must be tested on a device with multiple cameras (smartphones, tablets). Desktop browsers typically have only one webcam. Test both portrait and landscape orientations on mobile.
 

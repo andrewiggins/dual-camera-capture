@@ -4,7 +4,13 @@
   "description": "Capture photos from both cameras at the same time",
   "main": "index.js",
   "scripts": {
-    "tsc": "tsc --target esnext --checkJS --noEmit ./src/index.js"
+    "build": "vite build",
+    "preview": "vite preview",
+    "dev": "vite",
+    "start": "vite",
+    "typecheck": "tsc",
+    "check-format": "prettier --ignore-unknown --check .",
+    "format": "prettier --ignore-unknown --write ."
   },
   "repository": {
     "type": "git",
@@ -13,12 +19,14 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "commonjs",
+  "type": "module",
   "bugs": {
     "url": "https://github.com/andrewiggins/dual-camera-capture/issues"
   },
   "homepage": "https://github.com/andrewiggins/dual-camera-capture#readme",
   "devDependencies": {
-    "typescript": "^5.9.3"
+    "prettier": "^3.0.0",
+    "typescript": "^5.9.3",
+    "vite": "^7.3.1"
   }
 }

@@ -1,16 +1,22 @@
+import "./debug.css";
+
 // Check for debug mode via URL parameter
 const urlParams = new URLSearchParams(window.location.search);
 export const DEBUG = urlParams.has("debug");
 
 let debugPanelVisible = false;
 
-function escapeHtml(text) {
+function escapeHtml(text: string): string {
 	const div = document.createElement("div");
 	div.textContent = text;
 	return div.innerHTML;
 }
 
-export function debugLog(message, data = null, isError = false) {
+export function debugLog(
+	message: string,
+	data: unknown = null,
+	isError = false,
+): void {
 	if (!DEBUG) return;
 	const timestamp = new Date().toISOString().split("T")[1].slice(0, 12);
 
@@ -30,10 +36,10 @@ export function debugLog(message, data = null, isError = false) {
 		const escapedMsg = escapeHtml(message);
 		let html = `<span class="timestamp">[${timestamp}]</span> <span class="message">${escapedMsg}</span>`;
 		if (data !== null) {
-			let dataStr;
+			let dataStr: string;
 			try {
 				dataStr = JSON.stringify(data, null, 2);
-			} catch (e) {
+			} catch {
 				dataStr = String(data);
 			}
 			html += `<span class="data">${escapeHtml(dataStr)}</span>`;
@@ -45,20 +51,20 @@ export function debugLog(message, data = null, isError = false) {
 	}
 }
 
-function toggleDebugPanel() {
+function toggleDebugPanel(): void {
 	debugPanelVisible = !debugPanelVisible;
 	const panel = document.getElementById("debugPanel");
 	const toggle = document.getElementById("debugToggle");
 	if (debugPanelVisible) {
-		panel.classList.add("show");
-		toggle.textContent = "Hide Logs";
+		panel?.classList.add("show");
+		if (toggle) toggle.textContent = "Hide Logs";
 	} else {
-		panel.classList.remove("show");
-		toggle.textContent = "Show Logs";
+		panel?.classList.remove("show");
+		if (toggle) toggle.textContent = "Show Logs";
 	}
 }
 
-function clearDebugLogs() {
+function clearDebugLogs(): void {
 	const logsContainer = document.getElementById("debugLogs");
 	if (logsContainer) {
 		logsContainer.innerHTML = "";
@@ -66,18 +72,18 @@ function clearDebugLogs() {
 	debugLog("Logs cleared");
 }
 
-export function initDebug() {
+export function initDebug(): void {
 	// Debug button event listeners
 	document
 		.getElementById("debugToggle")
-		.addEventListener("click", toggleDebugPanel);
+		?.addEventListener("click", toggleDebugPanel);
 	document
 		.getElementById("debugClear")
-		.addEventListener("click", clearDebugLogs);
+		?.addEventListener("click", clearDebugLogs);
 
 	if (DEBUG) {
 		// Show debug toggle button
-		document.getElementById("debugToggle").classList.add("show");
+		document.getElementById("debugToggle")?.classList.add("show");
 
 		console.log("=== DEBUG MODE ENABLED ===");
 		console.log("User Agent:", navigator.userAgent);

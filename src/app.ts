@@ -1,30 +1,20 @@
-import { debugLog } from "./debug.js";
-import * as elements from "./elements.js";
-import * as DeviceInfo from "./device-info.js";
-import * as UIUtils from "./ui-utils.js";
-import { LiveCaptureMode } from "./live-capture-mode.js";
-import { SequentialCaptureMode } from "./sequential-capture-mode.js";
-
-/**
- * @typedef CaptureMode
- * @property {() => Promise<void>} init
- * @property {() => void} switchCameras
- * @property {() => Promise<void>} capture
- * @property {() => void} cleanup
- */
+import { debugLog } from "./debug.ts";
+import * as elements from "./elements.ts";
+import * as DeviceInfo from "./device-info.ts";
+import * as UIUtils from "./ui-utils.ts";
+import { LiveCaptureMode } from "./live-capture-mode.ts";
+import { SequentialCaptureMode } from "./sequential-capture-mode.ts";
+import type { CaptureMode } from "./types.ts";
 
 /**
  * Main application controller
  * Manages capture modes and handles user interactions
  */
 export class DualCameraApp {
-	constructor() {
-		/** @type {CaptureMode | null} */
-		this.currentMode = null;
-		this.isSequentialMode = false;
-	}
+	private currentMode: CaptureMode | null = null;
+	private isSequentialMode = false;
 
-	async init() {
+	async init(): Promise<void> {
 		debugLog("DualCameraApp.init()", { isIOS: DeviceInfo.isIOS });
 
 		// Detect available cameras
@@ -50,20 +40,20 @@ export class DualCameraApp {
 		this.setupEventListeners();
 	}
 
-	setupEventListeners() {
+	private setupEventListeners(): void {
 		elements.overlayVideo.addEventListener("click", () => {
 			debugLog("Overlay video clicked");
-			this.currentMode.switchCameras();
+			this.currentMode?.switchCameras();
 		});
 
 		elements.switchBtn.addEventListener("click", () => {
 			debugLog("Switch button clicked");
-			this.currentMode.switchCameras();
+			this.currentMode?.switchCameras();
 		});
 
 		elements.captureBtn.addEventListener("click", () => {
 			debugLog("Capture button clicked");
-			this.currentMode.capture();
+			this.currentMode?.capture();
 		});
 
 		elements.modeToggle.addEventListener("click", () => {
@@ -72,7 +62,7 @@ export class DualCameraApp {
 		});
 	}
 
-	async toggleMode() {
+	private async toggleMode(): Promise<void> {
 		if (DeviceInfo.isIOS) return; // Can't toggle on iOS
 
 		debugLog("toggleMode()", {
@@ -80,7 +70,7 @@ export class DualCameraApp {
 		});
 
 		// Cleanup current mode
-		this.currentMode.cleanup();
+		this.currentMode?.cleanup();
 
 		if (this.isSequentialMode) {
 			// Switch to live mode

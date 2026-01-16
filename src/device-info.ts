@@ -1,4 +1,4 @@
-import { debugLog } from "./debug.js";
+import { debugLog } from "./debug.ts";
 
 /**
  * Device detection singleton
@@ -8,24 +8,20 @@ export const isIOS =
 	/iPad|iPhone|iPod/.test(navigator.userAgent) ||
 	(navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
 
-export const hasMultipleCameras = false;
+export let hasMultipleCameras = false;
 
 /**
  * Detect available video input devices
- * @returns {Promise<MediaDeviceInfo[]>}
  */
-export async function detectCameras() {
+export async function detectCameras(): Promise<MediaDeviceInfo[]> {
 	try {
 		const devices = await navigator.mediaDevices.enumerateDevices();
 		const videoDevices = devices.filter((d) => d.kind === "videoinput");
-		this.hasMultipleCameras = videoDevices.length >= 2;
+		hasMultipleCameras = videoDevices.length >= 2;
 		debugLog(`Found ${videoDevices.length} video input device(s):`);
 		videoDevices.forEach((d, i) => {
 			debugLog(
-				`  Device ${i}: ${d.label || "(no label)"} [${d.deviceId.slice(
-					0,
-					8
-				)}...]`
+				`  Device ${i}: ${d.label || "(no label)"} [${d.deviceId.slice(0, 8)}...]`,
 			);
 		});
 		return videoDevices;
