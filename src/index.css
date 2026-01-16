@@ -151,8 +151,8 @@ canvas {
 	display: none;
 }
 
-/* iOS sequential capture mode styles */
-#iosOverlayPreview {
+/* Sequential capture mode styles */
+#sequentialOverlayPreview {
 	position: absolute;
 	top: 20px;
 	left: 20px;
@@ -166,17 +166,17 @@ canvas {
 	background-color: rgba(40, 40, 40, 0.95);
 }
 
-#iosOverlayPreview.show {
+#sequentialOverlayPreview.show {
 	display: block;
 }
 
-#iosOverlayCanvas {
+#sequentialOverlayCanvas {
 	width: 100%;
 	height: 100%;
 	object-fit: cover;
 }
 
-#iosOverlayPlaceholder {
+#sequentialOverlayPlaceholder {
 	position: absolute;
 	top: 0;
 	left: 0;
@@ -192,7 +192,7 @@ canvas {
 	pointer-events: none;
 }
 
-#iosInstructions {
+#sequentialInstructions {
 	position: absolute;
 	top: 20px;
 	left: 50%;
@@ -208,19 +208,35 @@ canvas {
 	display: none;
 }
 
-#iosInstructions.show {
+#sequentialInstructions.show {
 	display: block;
+}
+
+/* Mode toggle button */
+#modeToggle {
+	display: none;
+	background-color: rgba(100, 100, 255, 0.4);
+	color: #fff;
+	backdrop-filter: blur(10px);
+}
+
+#modeToggle.show {
+	display: block;
+}
+
+#modeToggle:hover {
+	background-color: rgba(100, 100, 255, 0.5);
 }
 
 @media (max-width: 768px) {
 	#overlayVideo,
 	#overlayError,
-	#iosOverlayPreview {
+	#sequentialOverlayPreview {
 		width: 120px;
 		height: 160px;
 	}
 
-	#iosInstructions {
+	#sequentialInstructions {
 		top: auto;
 		bottom: max(120px, calc(env(safe-area-inset-bottom) + 100px));
 		font-size: 12px;

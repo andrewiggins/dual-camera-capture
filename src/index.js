@@ -10,11 +10,12 @@ let mainVideoElement = document.getElementById("mainVideo");
 let overlayVideoElement = document.getElementById("overlayVideo");
 let isMainFront = false; // false = back camera is main, true = front camera is main
 
-// iOS sequential capture state
-let iosMode = false;
-let iosCapturedOverlay = null; // ImageData of the first captured photo
-let iosOverlayIsFront = false; // Was the overlay captured from front camera?
-let iosStep = 0; // 0 = not started, 1 = capturing overlay, 2 = capturing main
+// Sequential capture state (required on iOS, optional on other devices)
+let sequentialMode = false;
+let sequentialCapturedOverlay = null; // ImageData of the first captured photo
+let sequentialOverlayIsFront = false; // Was the overlay captured from front camera?
+let sequentialStep = 0; // 0 = not started, 1 = capturing overlay, 2 = capturing main
+let hasMultipleCameras = false; // Track if device has multiple cameras
 
 // High resolution video constraints for better image quality
 const videoConstraints = {
@@ -26,7 +27,6 @@ async function initCameras() {
 	debugLog("initCameras() called", { isIOS });
 
 	// Check if we have multiple cameras available
-	let hasMultipleCameras = false;
 	try {
 		const devices = await navigator.mediaDevices.enumerateDevices();
 		const videoDevices = devices.filter((d) => d.kind === "videoinput");
@@ -41,12 +41,17 @@ async function initCameras() {
 		debugLog("Failed to enumerate devices", e, true);
 	}
 
-	// On iOS with multiple cameras, use sequential capture mode
+	// On iOS with multiple cameras, force sequential capture mode
 	if (isIOS && hasMultipleCameras) {
-		debugLog("iOS detected with multiple cameras - using sequential capture mode");
-		iosMode = true;
-		await initIOSMode();
+		debugLog("iOS detected with multiple cameras - forcing sequential capture mode");
+		sequentialMode = true;
+		await initSequentialMode();
 		return;
+	}
+
+	// Show mode toggle for non-iOS devices with multiple cameras
+	if (!isIOS && hasMultipleCameras) {
+		document.getElementById("modeToggle").classList.add("show");
 	}
 
 	/** @type {MediaStream | null} */
@@ -215,27 +220,35 @@ async function initCameras() {
 	}
 }
 
-// iOS Mode: Sequential capture since iOS can't run two cameras simultaneously
-async function initIOSMode() {
-	debugLog("initIOSMode() called");
+// Sequential capture mode (required on iOS, optional elsewhere)
+async function initSequentialMode() {
+	debugLog("initSequentialMode() called");
 
 	// Hide overlay video (we'll use a canvas instead for the captured image)
 	overlayVideoElement.style.display = "none";
 
-	// Show iOS-specific UI
-	document.getElementById("iosInstructions").classList.add("show");
-	document.getElementById("iosOverlayPreview").classList.add("show");
+	// Show sequential capture UI
+	document.getElementById("sequentialInstructions").classList.add("show");
+	document.getElementById("sequentialOverlayPreview").classList.add("show");
 
-	// Update button text for iOS mode
+	// Hide mode toggle on iOS (can't switch out of sequential mode)
+	if (isIOS) {
+		document.getElementById("modeToggle").classList.remove("show");
+	} else {
+		// Update toggle button text
+		document.getElementById("modeToggle").textContent = "Live Mode";
+	}
+
+	// Update button text for sequential mode
 	document.getElementById("captureBtn").textContent = "Capture Overlay";
 	document.getElementById("switchBtn").textContent = "Switch Camera";
 
 	// Start with back camera (for overlay capture)
-	iosStep = 1;
+	sequentialStep = 1;
 	isMainFront = false;
 	await switchToCamera("environment");
 
-	updateIOSInstructions();
+	updateSequentialInstructions();
 }
 
 async function switchToCamera(facingMode) {
@@ -277,21 +290,21 @@ async function switchToCamera(facingMode) {
 	}
 }
 
-function updateIOSInstructions() {
-	const instructionsEl = document.getElementById("iosInstructions");
+function updateSequentialInstructions() {
+	const instructionsEl = document.getElementById("sequentialInstructions");
 	const captureBtn = document.getElementById("captureBtn");
 
-	if (iosStep === 1) {
+	if (sequentialStep === 1) {
 		instructionsEl.textContent = `Step 1: Capture the overlay photo (${isMainFront ? "front" : "back"} camera)`;
 		captureBtn.textContent = "Capture Overlay";
-	} else if (iosStep === 2) {
+	} else if (sequentialStep === 2) {
 		instructionsEl.textContent = `Step 2: Capture the main photo (${isMainFront ? "front" : "back"} camera)`;
 		captureBtn.textContent = "Capture & Download";
 	}
 }
 
-function iosCaptureOverlay() {
-	debugLog("iosCaptureOverlay() called");
+function sequentialCaptureOverlay() {
+	debugLog("sequentialCaptureOverlay() called");
 
 	const canvas = document.getElementById("canvas");
 	const ctx = canvas.getContext("2d");
@@ -310,36 +323,36 @@ function iosCaptureOverlay() {
 	ctx.restore();
 
 	// Store the captured image
-	iosCapturedOverlay = ctx.getImageData(0, 0, canvas.width, canvas.height);
-	iosOverlayIsFront = isMainFront;
+	sequentialCapturedOverlay = ctx.getImageData(0, 0, canvas.width, canvas.height);
+	sequentialOverlayIsFront = isMainFront;
 
 	// Show preview of captured overlay
-	const previewCanvas = document.getElementById("iosOverlayCanvas");
+	const previewCanvas = document.getElementById("sequentialOverlayCanvas");
 	previewCanvas.width = canvas.width;
 	previewCanvas.height = canvas.height;
 	const previewCtx = previewCanvas.getContext("2d");
-	previewCtx.putImageData(iosCapturedOverlay, 0, 0);
+	previewCtx.putImageData(sequentialCapturedOverlay, 0, 0);
 
 	// Hide placeholder text
-	document.getElementById("iosOverlayPlaceholder").style.display = "none";
+	document.getElementById("sequentialOverlayPlaceholder").style.display = "none";
 
 	debugLog("Overlay captured", {
-		width: iosCapturedOverlay.width,
-		height: iosCapturedOverlay.height,
-		wasFront: iosOverlayIsFront,
+		width: sequentialCapturedOverlay.width,
+		height: sequentialCapturedOverlay.height,
+		wasFront: sequentialOverlayIsFront,
 	});
 
 	// Move to step 2 and switch to opposite camera
-	iosStep = 2;
+	sequentialStep = 2;
 	const nextFacing = isMainFront ? "environment" : "user";
 	switchToCamera(nextFacing);
-	updateIOSInstructions();
+	updateSequentialInstructions();
 
 	showStatus("Overlay captured! Now capture main photo.", 2000);
 }
 
-function iosCaptureMain() {
-	debugLog("iosCaptureMain() called");
+function sequentialCaptureMain() {
+	debugLog("sequentialCaptureMain() called");
 
 	const canvas = document.getElementById("canvas");
 	const ctx = canvas.getContext("2d");
@@ -358,19 +371,19 @@ function iosCaptureMain() {
 	ctx.restore();
 
 	// Draw the previously captured overlay
-	if (iosCapturedOverlay) {
+	if (sequentialCapturedOverlay) {
 		const overlayWidth = canvas.width * 0.25;
-		const overlayHeight = (iosCapturedOverlay.height / iosCapturedOverlay.width) * overlayWidth;
+		const overlayHeight = (sequentialCapturedOverlay.height / sequentialCapturedOverlay.width) * overlayWidth;
 		const overlayX = 20;
 		const overlayY = 20;
 		const borderRadius = 12;
 
 		// Create temporary canvas for overlay image
 		const tempCanvas = document.createElement("canvas");
-		tempCanvas.width = iosCapturedOverlay.width;
-		tempCanvas.height = iosCapturedOverlay.height;
+		tempCanvas.width = sequentialCapturedOverlay.width;
+		tempCanvas.height = sequentialCapturedOverlay.height;
 		const tempCtx = tempCanvas.getContext("2d");
-		tempCtx.putImageData(iosCapturedOverlay, 0, 0);
+		tempCtx.putImageData(sequentialCapturedOverlay, 0, 0);
 
 		// Draw rounded rectangle for overlay
 		ctx.save();
@@ -436,25 +449,25 @@ function iosCaptureMain() {
 		showStatus("Photo captured!", 2000);
 
 		// Reset for next capture
-		iosResetCapture();
+		sequentialResetCapture();
 	}, "image/png");
 }
 
-function iosResetCapture() {
-	debugLog("iosResetCapture() called");
+function sequentialResetCapture() {
+	debugLog("sequentialResetCapture() called");
 
-	iosCapturedOverlay = null;
-	iosStep = 1;
+	sequentialCapturedOverlay = null;
+	sequentialStep = 1;
 
 	// Clear preview and show placeholder
-	const previewCanvas = document.getElementById("iosOverlayCanvas");
+	const previewCanvas = document.getElementById("sequentialOverlayCanvas");
 	const previewCtx = previewCanvas.getContext("2d");
 	previewCtx.clearRect(0, 0, previewCanvas.width, previewCanvas.height);
-	document.getElementById("iosOverlayPlaceholder").style.display = "flex";
+	document.getElementById("sequentialOverlayPlaceholder").style.display = "flex";
 
 	// Switch back to back camera for next overlay capture
 	switchToCamera("environment");
-	updateIOSInstructions();
+	updateSequentialInstructions();
 }
 
 function updateCameraOrientation() {
@@ -478,22 +491,22 @@ function updateCameraOrientation() {
 
 function switchCameras() {
 	debugLog("switchCameras() called", {
-		iosMode,
+		sequentialMode,
 		mainStreamActive: mainStream?.active,
 		overlayStreamActive: overlayStream?.active,
 		isMainFront: isMainFront,
 	});
 
-	if (iosMode) {
-		// In iOS mode, actually switch to the other camera
+	if (sequentialMode) {
+		// In sequential mode, actually switch to the other camera
 		const nextFacing = isMainFront ? "environment" : "user";
 		switchToCamera(nextFacing);
-		updateIOSInstructions();
+		updateSequentialInstructions();
 		showStatus("Camera switched!", 1500);
 		return;
 	}
 
-	// Non-iOS: Swap the streams
+	// Live mode: Swap the streams
 	const tempStream = mainStream;
 	mainStream = overlayStream;
 	overlayStream = tempStream;
@@ -509,8 +522,8 @@ function switchCameras() {
 
 function capturePhoto() {
 	debugLog("capturePhoto() called", {
-		iosMode,
-		iosStep,
+		sequentialMode,
+		sequentialStep,
 		mainVideoWidth: mainVideoElement.videoWidth,
 		mainVideoHeight: mainVideoElement.videoHeight,
 		mainStreamActive: mainStream?.active,
@@ -518,12 +531,12 @@ function capturePhoto() {
 		hasOverlay: !!overlayStream,
 	});
 
-	// iOS mode: sequential capture
-	if (iosMode) {
-		if (iosStep === 1) {
-			iosCaptureOverlay();
-		} else if (iosStep === 2) {
-			iosCaptureMain();
+	// Sequential mode capture
+	if (sequentialMode) {
+		if (sequentialStep === 1) {
+			sequentialCaptureOverlay();
+		} else if (sequentialStep === 2) {
+			sequentialCaptureMain();
 		}
 		return;
 	}
@@ -737,6 +750,51 @@ function showStatus(message, duration = null) {
 	}
 }
 
+// Toggle between live and sequential capture modes (non-iOS only)
+async function toggleCaptureMode() {
+	if (isIOS) return; // iOS is always forced to sequential mode
+
+	debugLog("toggleCaptureMode() called", { currentMode: sequentialMode ? "sequential" : "live" });
+
+	if (sequentialMode) {
+		// Switch to live mode
+		sequentialMode = false;
+		sequentialCapturedOverlay = null;
+		sequentialStep = 0;
+
+		// Hide sequential UI
+		document.getElementById("sequentialInstructions").classList.remove("show");
+		document.getElementById("sequentialOverlayPreview").classList.remove("show");
+
+		// Show overlay video
+		overlayVideoElement.style.display = "";
+
+		// Update toggle button
+		document.getElementById("modeToggle").textContent = "Sequential Mode";
+
+		// Reset button text
+		document.getElementById("captureBtn").textContent = "Capture Photo";
+		document.getElementById("switchBtn").textContent = "Switch Cameras";
+
+		// Reinitialize cameras in live mode
+		showStatus("Switching to live mode...");
+		await initCameras();
+	} else {
+		// Switch to sequential mode
+		sequentialMode = true;
+
+		// Stop overlay stream if running
+		if (overlayStream) {
+			overlayStream.getTracks().forEach((track) => track.stop());
+			overlayStream = null;
+			overlayVideoElement.srcObject = null;
+		}
+
+		await initSequentialMode();
+		showStatus("Sequential capture mode", 2000);
+	}
+}
+
 // Initialize debug module
 initDebug();
 
@@ -754,6 +812,10 @@ document.getElementById("switchBtn").addEventListener("click", () => {
 document.getElementById("captureBtn").addEventListener("click", () => {
 	debugLog("Capture button clicked");
 	capturePhoto();
+});
+document.getElementById("modeToggle").addEventListener("click", () => {
+	debugLog("Mode toggle clicked");
+	toggleCaptureMode();
 });
 
 // Initialize cameras when page loads
