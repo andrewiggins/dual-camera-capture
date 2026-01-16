@@ -4,11 +4,19 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is a single-file web application that captures photos from both front and back cameras simultaneously. The entire application is contained in `index.html` with inline CSS and JavaScript.
+This is a web application that captures photos from both front and back cameras simultaneously.
 
 ## Architecture
 
-**Single-File Application**: All code (HTML, CSS, JavaScript) is in `index.html`. There is no build process, bundling, or external dependencies.
+**File Structure**:
+
+- `index.html` - HTML markup only
+- `src/index.css` - Main application styles
+- `src/debug.css` - Debug panel styles
+- `src/index.js` - Main application logic (ES module, imports from debug.js)
+- `src/debug.js` - Debug utilities (ES module, exports `DEBUG`, `debugLog`, `initDebug`)
+
+**No Build Process**: Uses native ES modules (`type="module"`) supported by modern browsers. No bundling or external dependencies.
 
 **Camera Management**:
 
@@ -27,7 +35,7 @@ This is a single-file web application that captures photos from both front and b
 
 - Uses HTML5 Canvas to composite both video streams
 - Main feed rendered at full canvas size
-- Overlay feed rendered in top-left corner with rounded corners and white border
+- Overlay feed rendered in top-left corner with rounded corners and black border
 - If second camera unavailable, error overlay drawn on canvas instead
 - Image downloaded as PNG with timestamp filename
 
