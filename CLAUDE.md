@@ -66,3 +66,11 @@ This is a web application that captures photos from both front and back cameras 
 **Error Handling**: Camera initialization errors are logged but app continues in degraded mode. No camera = error message shown.
 
 **Browser Compatibility**: Relies on modern browser APIs (getUserMedia, Canvas, Blob). Mobile browsers must support "environment" facingMode constraint for best results.
+
+**iOS Sequential Capture Mode**: iOS Safari cannot run two camera streams simultaneously (WebKit limitation). When iOS is detected with multiple cameras, the app enters a sequential capture mode:
+1. User captures the first photo (becomes the overlay)
+2. App automatically switches to the other camera
+3. User captures the second photo (becomes the main image)
+4. Photos are composited and downloaded
+
+iOS detection uses user agent string and `maxTouchPoints` for iPad detection. The `iosMode` flag controls which UI and capture flow is active.
