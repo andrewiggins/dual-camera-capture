@@ -1,7 +1,7 @@
 import { debugLog } from "./debug.js";
-import { elements } from "./elements.js";
-import { CaptureUtils } from "./capture-utils.js";
-import { UIUtils } from "./ui-utils.js";
+import * as elements from "./elements.js";
+import * as CaptureUtils from "./capture-utils.js";
+import * as UIUtils from "./ui-utils.js";
 
 /**
  * Live Capture Mode - Simultaneous dual camera streams
@@ -34,7 +34,7 @@ export class LiveCaptureMode {
 			debugLog(
 				"Back camera not available",
 				{ name: e.name, message: e.message },
-				true
+				true,
 			);
 		}
 
@@ -51,7 +51,7 @@ export class LiveCaptureMode {
 			debugLog(
 				"Front camera not available",
 				{ name: e.name, message: e.message },
-				true
+				true,
 			);
 		}
 
@@ -100,7 +100,7 @@ export class LiveCaptureMode {
 		CaptureUtils.drawVideoToCanvas(
 			elements.mainVideo,
 			canvas,
-			this.isMainFront
+			this.isMainFront,
 		);
 
 		const ctx = canvas.getContext("2d");
@@ -111,8 +111,7 @@ export class LiveCaptureMode {
 
 		if (this.overlayStream) {
 			const overlayHeight =
-				(elements.overlayVideo.videoHeight /
-					elements.overlayVideo.videoWidth) *
+				(elements.overlayVideo.videoHeight / elements.overlayVideo.videoWidth) *
 				overlayWidth;
 
 			// Create temp canvas with flipped overlay (front camera needs flip)
@@ -120,7 +119,7 @@ export class LiveCaptureMode {
 			CaptureUtils.drawVideoToCanvas(
 				elements.overlayVideo,
 				tempCanvas,
-				!this.isMainFront
+				!this.isMainFront,
 			);
 
 			CaptureUtils.drawRoundedOverlay(
@@ -130,7 +129,7 @@ export class LiveCaptureMode {
 				overlayY,
 				overlayWidth,
 				overlayHeight,
-				borderRadius
+				borderRadius,
 			);
 		} else {
 			CaptureUtils.drawErrorOverlay(
@@ -138,7 +137,7 @@ export class LiveCaptureMode {
 				overlayX,
 				overlayY,
 				overlayWidth,
-				borderRadius
+				borderRadius,
 			);
 		}
 

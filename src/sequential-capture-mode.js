@@ -1,7 +1,7 @@
 import { debugLog } from "./debug.js";
-import { elements } from "./elements.js";
-import { CaptureUtils } from "./capture-utils.js";
-import { UIUtils } from "./ui-utils.js";
+import * as elements from "./elements.js";
+import * as CaptureUtils from "./capture-utils.js";
+import * as UIUtils from "./ui-utils.js";
 
 /**
  * Sequential Capture Mode - One camera at a time
@@ -58,7 +58,7 @@ export class SequentialCaptureMode {
 			debugLog(
 				"Failed to switch camera",
 				{ name: e.name, message: e.message },
-				true
+				true,
 			);
 			UIUtils.showStatus("Error switching camera: " + e.message);
 		}
@@ -100,7 +100,7 @@ export class SequentialCaptureMode {
 		CaptureUtils.drawVideoToCanvas(
 			elements.mainVideo,
 			canvas,
-			this.isMainFront
+			this.isMainFront,
 		);
 
 		// Store captured image
@@ -137,7 +137,7 @@ export class SequentialCaptureMode {
 		CaptureUtils.drawVideoToCanvas(
 			elements.mainVideo,
 			canvas,
-			this.isMainFront
+			this.isMainFront,
 		);
 
 		if (this.capturedOverlay) {
@@ -160,7 +160,7 @@ export class SequentialCaptureMode {
 				20,
 				overlayWidth,
 				overlayHeight,
-				12
+				12,
 			);
 		}
 

@@ -1,7 +1,7 @@
 import { debugLog } from "./debug.js";
-import { elements } from "./elements.js";
-import { DeviceInfo } from "./device-info.js";
-import { UIUtils } from "./ui-utils.js";
+import * as elements from "./elements.js";
+import * as DeviceInfo from "./device-info.js";
+import * as UIUtils from "./ui-utils.js";
 import { LiveCaptureMode } from "./live-capture-mode.js";
 import { SequentialCaptureMode } from "./sequential-capture-mode.js";
 
@@ -25,7 +25,7 @@ export class DualCameraApp {
 		// Force sequential mode on iOS with multiple cameras
 		if (DeviceInfo.isIOS && DeviceInfo.hasMultipleCameras) {
 			debugLog(
-				"iOS detected with multiple cameras - forcing sequential capture mode"
+				"iOS detected with multiple cameras - forcing sequential capture mode",
 			);
 			this.isSequentialMode = true;
 			this.currentMode = new SequentialCaptureMode();

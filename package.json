@@ -1,0 +1,24 @@
+{
+  "name": "dual-camera-capture",
+  "version": "1.0.0",
+  "description": "Capture photos from both cameras at the same time",
+  "main": "index.js",
+  "scripts": {
+    "tsc": "tsc --target esnext --checkJS --noEmit ./src/index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/andrewiggins/dual-camera-capture.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/andrewiggins/dual-camera-capture/issues"
+  },
+  "homepage": "https://github.com/andrewiggins/dual-camera-capture#readme",
+  "devDependencies": {
+    "typescript": "^5.9.3"
+  }
+}

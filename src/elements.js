@@ -1,19 +1,37 @@
-/**
- * DOM element references used throughout the application
- */
-export const elements = {
-	mainVideo: document.getElementById("mainVideo"),
-	overlayVideo: document.getElementById("overlayVideo"),
-	canvas: document.getElementById("canvas"),
-	captureBtn: document.getElementById("captureBtn"),
-	switchBtn: document.getElementById("switchBtn"),
-	modeToggle: document.getElementById("modeToggle"),
-	status: document.getElementById("status"),
-	overlayError: document.getElementById("overlayError"),
-	sequentialInstructions: document.getElementById("sequentialInstructions"),
-	sequentialOverlayPreview: document.getElementById("sequentialOverlayPreview"),
-	sequentialOverlayCanvas: document.getElementById("sequentialOverlayCanvas"),
-	sequentialOverlayPlaceholder: document.getElementById(
-		"sequentialOverlayPlaceholder"
-	),
-};
+export const mainVideo = /** @type {HTMLVideoElement} */ (
+	document.getElementById("mainVideo")
+);
+/** @type {HTMLVideoElement} */
+export const overlayVideo = /** @type {HTMLVideoElement} */ (
+	document.getElementById("overlayVideo")
+);
+/** @type {HTMLCanvasElement} */
+export const canvas = /** @type {HTMLCanvasElement} */ (
+	document.getElementById("canvas")
+);
+/** @type {HTMLButtonElement} */
+export const captureBtn = /** @type {HTMLButtonElement} */ (
+	document.getElementById("captureBtn")
+);
+/** @type {HTMLButtonElement} */
+export const switchBtn = /** @type {HTMLButtonElement} */ (
+	document.getElementById("switchBtn")
+);
+/** @type {HTMLInputElement} */
+export const modeToggle = /** @type {HTMLInputElement} */ (
+	document.getElementById("modeToggle")
+);
+export const status = document.getElementById("status");
+export const overlayError = document.getElementById("overlayError");
+export const sequentialInstructions = document.getElementById(
+	"sequentialInstructions",
+);
+export const sequentialOverlayPreview = document.getElementById(
+	"sequentialOverlayPreview",
+);
+export const sequentialOverlayCanvas = /** @type {HTMLCanvasElement} */ (
+	document.getElementById("sequentialOverlayCanvas")
+);
+export const sequentialOverlayPlaceholder = document.getElementById(
+	"sequentialOverlayPlaceholder",
+);
