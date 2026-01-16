@@ -3,9 +3,12 @@ import * as elements from "./elements.js";
 import * as CaptureUtils from "./capture-utils.js";
 import * as UIUtils from "./ui-utils.js";
 
+/** @import {CaptureMode} from "./app.js" */
+
 /**
  * Sequential Capture Mode - One camera at a time
  * Required for iOS Safari which cannot run two camera streams simultaneously
+ * @implements {CaptureMode}
  */
 export class SequentialCaptureMode {
 	constructor() {
@@ -83,7 +86,7 @@ export class SequentialCaptureMode {
 		}
 	}
 
-	capture() {
+	async capture() {
 		debugLog("SequentialCaptureMode.capture()", { step: this.step });
 
 		if (this.step === 1) {
@@ -130,7 +133,7 @@ export class SequentialCaptureMode {
 		UIUtils.showStatus("Overlay captured! Now capture main photo.", 2000);
 	}
 
-	captureMain() {
+	async captureMain() {
 		debugLog("SequentialCaptureMode.captureMain()");
 
 		const canvas = elements.canvas;
@@ -164,16 +167,15 @@ export class SequentialCaptureMode {
 			);
 		}
 
-		CaptureUtils.downloadCanvas(canvas)
-			.then(() => {
-				debugLog("Photo capture complete");
-				UIUtils.showStatus("Photo captured!", 2000);
-				this.reset();
-			})
-			.catch((e) => {
-				debugLog("Failed to capture photo", e, true);
-				UIUtils.showStatus("Error: Failed to capture photo");
-			});
+		try {
+			await CaptureUtils.downloadCanvas(canvas);
+			debugLog("Photo capture complete");
+			UIUtils.showStatus("Photo captured!", 2000);
+			this.reset();
+		} catch (e) {
+			debugLog("Failed to capture photo", e, true);
+			UIUtils.showStatus("Error: Failed to capture photo");
+		}
 	}
 
 	reset() {

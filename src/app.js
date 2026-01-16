@@ -6,12 +6,20 @@ import { LiveCaptureMode } from "./live-capture-mode.js";
 import { SequentialCaptureMode } from "./sequential-capture-mode.js";
 
 /**
+ * @typedef CaptureMode
+ * @property {() => Promise<void>} init
+ * @property {() => void} switchCameras
+ * @property {() => Promise<void>} capture
+ * @property {() => void} cleanup
+ */
+
+/**
  * Main application controller
  * Manages capture modes and handles user interactions
  */
 export class DualCameraApp {
 	constructor() {
-		/** @type {LiveCaptureMode | SequentialCaptureMode | null} */
+		/** @type {CaptureMode | null} */
 		this.currentMode = null;
 		this.isSequentialMode = false;
 	}

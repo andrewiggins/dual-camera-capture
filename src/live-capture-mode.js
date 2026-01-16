@@ -3,9 +3,12 @@ import * as elements from "./elements.js";
 import * as CaptureUtils from "./capture-utils.js";
 import * as UIUtils from "./ui-utils.js";
 
+/** @import {CaptureMode} from "./app.js" */
+
 /**
  * Live Capture Mode - Simultaneous dual camera streams
  * Used on non-iOS devices that support multiple concurrent camera streams
+ * @implements {CaptureMode}
  */
 export class LiveCaptureMode {
 	constructor() {
@@ -89,7 +92,7 @@ export class LiveCaptureMode {
 		}
 	}
 
-	capture() {
+	async capture() {
 		debugLog("LiveCaptureMode.capture()", {
 			mainVideoWidth: elements.mainVideo.videoWidth,
 			mainVideoHeight: elements.mainVideo.videoHeight,
@@ -141,15 +144,14 @@ export class LiveCaptureMode {
 			);
 		}
 
-		CaptureUtils.downloadCanvas(canvas)
-			.then(() => {
-				debugLog("Photo capture complete");
-				UIUtils.showStatus("Photo captured!", 2000);
-			})
-			.catch((e) => {
-				debugLog("Failed to capture photo", e, true);
-				UIUtils.showStatus("Error: Failed to capture photo");
-			});
+		try {
+			await CaptureUtils.downloadCanvas(canvas);
+			debugLog("Photo capture complete");
+			UIUtils.showStatus("Photo captured!", 2000);
+		} catch (e) {
+			debugLog("Failed to capture photo", e, true);
+			UIUtils.showStatus("Error: Failed to capture photo");
+		}
 	}
 
 	switchCameras() {
