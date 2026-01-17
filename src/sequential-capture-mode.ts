@@ -2,8 +2,8 @@ import { debugLog } from "./debug.ts";
 import * as elements from "./elements.ts";
 import * as CaptureUtils from "./canvas.ts";
 import * as UIUtils from "./ui-utils.ts";
-import type { Camera, FacingMode } from "./camera.ts";
 import type { CaptureMode } from "./app.ts";
+import type { VideoStreamManager } from "./video-stream-manager.ts";
 
 /**
  * Sequential Capture Mode - One camera at a time
@@ -11,25 +11,20 @@ import type { CaptureMode } from "./app.ts";
  */
 export class SequentialCaptureMode implements CaptureMode {
 	type: string;
-	private cameras: Camera[];
-	private mainCamera: Camera | null = null;
+	private streamManager: VideoStreamManager;
 	private capturedOverlay: ImageData | null = null;
 	private step = 0; // 0 = not started, 1 = capturing overlay, 2 = capturing main
 
-	constructor(cameras: Camera[]) {
+	constructor(streamManager: VideoStreamManager) {
 		this.type = "SequentialCaptureMode";
-		this.cameras = cameras;
-	}
-
-	private isMainFront() {
-		return this.mainCamera?.facingMode === "user";
+		this.streamManager = streamManager;
 	}
 
 	async init(): Promise<void> {
 		debugLog("SequentialCaptureMode.init()");
 
 		// Hide overlay video, show sequential UI
-		elements.overlayVideo.style.display = "none";
+		this.streamManager.hideOverlay();
 		elements.sequentialInstructions.classList.add("show");
 		elements.sequentialOverlayPreview.classList.add("show");
 
@@ -37,58 +32,17 @@ export class SequentialCaptureMode implements CaptureMode {
 		elements.captureBtn.textContent = "Capture Overlay";
 		elements.switchBtn.textContent = "Switch Camera";
 
-		// Start with back camera for overlay capture
+		// Use whatever camera is currently set as main
 		this.step = 1;
-		await this.switchToCamera("environment");
 		this.updateInstructions();
 	}
 
-	private async switchToCamera(facingMode: FacingMode): Promise<void> {
-		debugLog("SequentialCaptureMode.switchToCamera()", { facingMode });
-
-		this.mainCamera?.stop();
-
-		const result: Camera | null =
-			this.cameras.find((c) => c.facingMode === facingMode) ??
-			this.cameras.find((c) => c.deviceId !== this.mainCamera?.deviceId) ??
-			null;
-
-		if (result) {
-			this.mainCamera = result;
-			const mainStream = await this.mainCamera.getStream();
-			elements.mainVideo.srcObject = mainStream;
-			this.updateOrientation();
-
-			debugLog("Camera switched successfully", {
-				facingMode,
-				deviceId: result.deviceId,
-				isMainFront: this.isMainFront(),
-				tracks: mainStream.getVideoTracks().map((t) => ({
-					label: t.label,
-					settings: t.getSettings(),
-				})),
-			});
-		} else {
-			debugLog("Failed to switch camera - no camera available", null, true);
-			UIUtils.showStatus("Error: No camera available");
-		}
-	}
-
-	private updateOrientation(): void {
-		if (this.isMainFront()) {
-			elements.mainVideo.classList.add("front-camera");
-		} else {
-			elements.mainVideo.classList.remove("front-camera");
-		}
-	}
-
 	private updateInstructions(): void {
-		const camera = this.isMainFront() ? "front" : "back";
 		if (this.step === 1) {
-			elements.sequentialInstructions.textContent = `Step 1: Capture the overlay photo (${camera} camera)`;
+			elements.sequentialInstructions.textContent = `Step 1: Capture the overlay photo`;
 			elements.captureBtn.textContent = "Capture Overlay";
 		} else if (this.step === 2) {
-			elements.sequentialInstructions.textContent = `Step 2: Capture the main photo (${camera} camera)`;
+			elements.sequentialInstructions.textContent = `Step 2: Capture the main photo`;
 			elements.captureBtn.textContent = "Capture & Download";
 		}
 	}
@@ -97,20 +51,20 @@ export class SequentialCaptureMode implements CaptureMode {
 		debugLog("SequentialCaptureMode.capture()", { step: this.step });
 
 		if (this.step === 1) {
-			this.captureOverlay();
+			await this.captureOverlay();
 		} else if (this.step === 2) {
 			await this.captureMain();
 		}
 	}
 
-	private captureOverlay(): void {
+	private async captureOverlay(): Promise<void> {
 		debugLog("SequentialCaptureMode.captureOverlay()");
 
 		const canvas = elements.canvas;
 		CaptureUtils.drawVideoToCanvas(
 			elements.mainVideo,
 			canvas,
-			this.isMainFront(),
+			this.streamManager.isMainFront(),
 		);
 
 		// Store captured image
@@ -127,13 +81,11 @@ export class SequentialCaptureMode implements CaptureMode {
 		debugLog("Overlay captured", {
 			width: this.capturedOverlay.width,
 			height: this.capturedOverlay.height,
-			wasFront: this.isMainFront(),
 		});
 
-		// Move to step 2 and switch to opposite camera
+		// Move to step 2 and switch to the other camera
 		this.step = 2;
-		const nextFacing: FacingMode = this.isMainFront() ? "environment" : "user";
-		this.switchToCamera(nextFacing);
+		await this.streamManager.swapCameras();
 		this.updateInstructions();
 
 		UIUtils.showStatus("Overlay captured! Now capture main photo.", 2000);
@@ -146,7 +98,7 @@ export class SequentialCaptureMode implements CaptureMode {
 		CaptureUtils.drawVideoToCanvas(
 			elements.mainVideo,
 			canvas,
-			this.isMainFront(),
+			this.streamManager.isMainFront(),
 		);
 
 		if (this.capturedOverlay) {
@@ -177,14 +129,14 @@ export class SequentialCaptureMode implements CaptureMode {
 			await CaptureUtils.downloadCanvas(canvas);
 			debugLog("Photo capture complete");
 			UIUtils.showStatus("Photo captured!", 2000);
-			this.reset();
+			await this.reset();
 		} catch (e) {
 			debugLog("Failed to capture photo", e, true);
 			UIUtils.showStatus("Error: Failed to capture photo");
 		}
 	}
 
-	private reset(): void {
+	private async reset(): Promise<void> {
 		debugLog("SequentialCaptureMode.reset()");
 
 		this.capturedOverlay = null;
@@ -197,37 +149,29 @@ export class SequentialCaptureMode implements CaptureMode {
 			.clearRect(0, 0, previewCanvas.width, previewCanvas.height);
 		elements.sequentialOverlayPlaceholder.style.display = "flex";
 
-		// Switch back to back camera
-		this.switchToCamera("environment");
+		// Swap back to the original camera
+		await this.streamManager.swapCameras();
 		this.updateInstructions();
 	}
 
 	async switchCameras(): Promise<void> {
 		debugLog("SequentialCaptureMode.switchCameras()");
-		const nextFacing: FacingMode = this.isMainFront() ? "environment" : "user";
-		this.switchToCamera(nextFacing);
+		await this.streamManager.swapCameras();
 		this.updateInstructions();
 		UIUtils.showStatus("Camera switched!", 1500);
 	}
 
 	async pause(): Promise<void> {
 		debugLog("SequentialCaptureMode.pause()");
-		this.cameras.forEach((c) => c.stop());
-		elements.mainVideo.srcObject = null;
+		await this.streamManager.pauseAll();
 	}
 
 	async resume(): Promise<void> {
-		debugLog("SequentialCaptureMode.resume()", {
-			isMainFront: this.isMainFront(),
-			step: this.step,
-			currentDeviceId: this.mainCamera?.deviceId,
-		});
+		debugLog("SequentialCaptureMode.resume()", { step: this.step });
 		UIUtils.showStatus("Resuming camera...");
 
 		try {
-			const mainStream = await this.mainCamera!.getStream();
-			elements.mainVideo.srcObject = mainStream;
-			this.updateOrientation();
+			await this.streamManager.resumeAll();
 			debugLog("Camera resumed successfully");
 			UIUtils.showStatus("Camera resumed!", 2000);
 		} catch (e) {
@@ -240,16 +184,15 @@ export class SequentialCaptureMode implements CaptureMode {
 		}
 	}
 
-	async cleanup(): Promise<void> {
+	cleanup(): void {
 		debugLog("SequentialCaptureMode.cleanup()");
-		this.cameras.forEach((c) => c.stop());
 		this.capturedOverlay = null;
 		this.step = 0;
 
 		// Hide sequential UI
 		elements.sequentialInstructions.classList.remove("show");
 		elements.sequentialOverlayPreview.classList.remove("show");
-		elements.overlayVideo.style.display = "";
+		this.streamManager.showOverlay();
 		elements.sequentialOverlayPlaceholder.style.display = "flex";
 	}
 }

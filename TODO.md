@@ -2,7 +2,6 @@
 - [ ] Fix overlay preview sizing in sequential mode
 - [ ] Refactor canvas functions to share more functionality
 - [ ] Consolidate UI functions into UI module
-- [ ] Make mode swapping more efficient by not changing the mainCamera between modes
 - [ ] Consdier better download UI (i.e. pop a dialog with a preview and buttons to download, or share)
 - [ ] Add basic PWA functionality so it can be pinned to the homescreen and used offline
 - [ ] Consider adding a way to turn on debug without modifying URL since that won't be possible in PWA

@@ -1,9 +1,10 @@
 import { debugLog } from "./debug.ts";
 import * as elements from "./elements.ts";
-import { Camera, getCameras } from "./camera.ts";
+import { getCameras } from "./camera.ts";
 import * as UIUtils from "./ui-utils.ts";
 import { LiveCaptureMode } from "./live-capture-mode.ts";
 import { SequentialCaptureMode } from "./sequential-capture-mode.ts";
+import { VideoStreamManager } from "./video-stream-manager.ts";
 
 /**
  * Interface for capture mode implementations
@@ -14,7 +15,7 @@ export interface CaptureMode {
 	init(): Promise<void>;
 	switchCameras(): Promise<void>;
 	capture(): Promise<void>;
-	cleanup(): Promise<void>;
+	cleanup(): void;
 	pause(): Promise<void>;
 	resume(): Promise<void>;
 }
@@ -33,26 +34,27 @@ const isIOS =
  */
 export class DualCameraApp {
 	private currentMode: CaptureMode | null = null;
-	private cameras: Camera[] = [];
+	private streamManager!: VideoStreamManager;
 
 	async init(): Promise<void> {
 		debugLog("DualCameraApp.init()", { isIOS });
 
 		// Detect available cameras
 		UIUtils.showStatus("Initializing cameras...");
-		this.cameras = await getCameras();
+		const cameras = await getCameras();
+		this.streamManager = new VideoStreamManager(cameras, isIOS);
 
 		// Force sequential mode on iOS with multiple cameras
-		if (isIOS && this.cameras.length >= 2) {
+		if (isIOS && cameras.length >= 2) {
 			debugLog(
 				"iOS detected with multiple cameras - forcing sequential capture mode",
 			);
-			this.currentMode = new SequentialCaptureMode(this.cameras);
+			this.currentMode = new SequentialCaptureMode(this.streamManager);
 		} else {
-			this.currentMode = new LiveCaptureMode(this.cameras);
+			this.currentMode = new LiveCaptureMode(this.streamManager);
 
 			// Show mode toggle for non-iOS with multiple cameras
-			if (this.cameras.length >= 2) {
+			if (cameras.length >= 2) {
 				elements.modeToggle.classList.add("show");
 			}
 		}
@@ -104,20 +106,20 @@ export class DualCameraApp {
 			currentMode: this.currentMode?.type,
 		});
 
-		// Cleanup current mode
-		await this.currentMode?.cleanup();
+		// Cleanup current mode (UI-only, no stream work)
+		this.currentMode?.cleanup();
 
 		let isSequentialMode = this.currentMode?.type === "SequentialCaptureMode";
 		if (isSequentialMode) {
 			// Switch to live mode
-			this.currentMode = new LiveCaptureMode(this.cameras);
+			this.currentMode = new LiveCaptureMode(this.streamManager);
 			elements.modeToggle.textContent = "Sequential Mode";
 			elements.captureBtn.textContent = "Capture Photo";
 			elements.switchBtn.textContent = "Switch Cameras";
 			UIUtils.showStatus("Switching to live mode...");
 		} else {
 			// Switch to sequential mode
-			this.currentMode = new SequentialCaptureMode(this.cameras);
+			this.currentMode = new SequentialCaptureMode(this.streamManager);
 			elements.modeToggle.textContent = "Live Mode";
 			UIUtils.showStatus("Sequential capture mode", 2000);
 		}
