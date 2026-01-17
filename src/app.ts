@@ -41,7 +41,7 @@ export class DualCameraApp {
 
 		// Detect available cameras
 		UIUtils.showStatus("Initializing cameras...");
-		const cameras = await getCameras();
+		const cameras = await getCameras(isIOS);
 		this.streamManager = new VideoStreamManager(cameras, isIOS);
 
 		// Force sequential mode on iOS with multiple cameras
@@ -54,7 +54,7 @@ export class DualCameraApp {
 			this.currentMode = new LiveCaptureMode(this.streamManager);
 
 			// Show mode toggle for non-iOS with multiple cameras
-			if (cameras.length >= 2) {
+			if (!isIOS && cameras.length >= 2) {
 				elements.modeToggle.classList.add("show");
 			}
 		}

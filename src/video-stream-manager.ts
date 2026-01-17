@@ -13,14 +13,34 @@ export class VideoStreamManager {
 	private overlayVisible = true;
 
 	constructor(cameras: Camera[], isIOS: boolean) {
-		if (cameras.length >= 2) {
-			this.setMainCamera(cameras[0]);
-			this.setOverlayCamera(cameras[1]);
-		} else if (cameras.length === 1) {
-			this.setMainCamera(cameras[0]);
+		this.isIOS = isIOS;
+
+		if (cameras.length > 0) {
+			this.mainCamera = cameras[0];
+			debugLog("VideoStreamManager.setMainCamera()", {
+				deviceId: this.mainCamera.deviceId,
+				facingMode: this.mainCamera.facingMode,
+			});
+
+			this.mainCamera.getStream().then((stream) => {
+				elements.mainVideo.srcObject = stream;
+			});
 		}
 
-		this.isIOS = isIOS;
+		if (cameras.length > 1) {
+			this.overlayCamera = cameras[1];
+			debugLog("VideoStreamManager.setOverlayCamera()", {
+				deviceId: this.overlayCamera.deviceId,
+				facingMode: this.overlayCamera.facingMode,
+			});
+
+			if (!this.isIOS) {
+				// iOS can only have one active stream at a time
+				this.overlayCamera.getStream().then((stream) => {
+					elements.overlayVideo.srcObject = stream;
+				});
+			}
+		}
 	}
 
 	private updateOrientation(): void {
@@ -39,29 +59,6 @@ export class VideoStreamManager {
 				elements.overlayVideo.classList.add("front-camera");
 			}
 		}
-	}
-
-	private async setMainCamera(camera: Camera): Promise<void> {
-		debugLog("VideoStreamManager.setMainCamera()", {
-			deviceId: camera.deviceId,
-			facingMode: camera.facingMode,
-		});
-
-		if (this.isIOS && this.mainCamera && this.mainCamera !== camera) {
-			this.mainCamera.stop(); // iOS: must stop before switching
-		}
-		this.mainCamera = camera;
-		elements.mainVideo.srcObject = await camera.getStream();
-	}
-
-	private async setOverlayCamera(camera: Camera | null): Promise<void> {
-		debugLog("VideoStreamManager.setOverlayCamera()", {
-			deviceId: camera?.deviceId ?? null,
-			facingMode: camera?.facingMode ?? null,
-		});
-
-		this.overlayCamera = camera;
-		elements.overlayVideo.srcObject = camera ? await camera.getStream() : null;
 	}
 
 	async swapCameras(): Promise<void> {

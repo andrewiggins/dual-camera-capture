@@ -82,13 +82,14 @@ async function getVideoStream({
 	});
 }
 
-export async function getCameras(): Promise<Camera[]> {
+export async function getCameras(isIOS: boolean): Promise<Camera[]> {
 	const cameras = [];
 
 	// Step 1: Try to get both cameras by facingMode first
+	let envCamera: Camera | null = null;
 	try {
 		const result = await getVideoStream({ facingMode: "environment" });
-		cameras.push(new Camera(result, "environment"));
+		envCamera = new Camera(result, "environment");
 		debugLog("Got environment camera with facingMode environment");
 	} catch (e) {
 		debugLog("Environment camera facingMode failed", {
@@ -97,15 +98,27 @@ export async function getCameras(): Promise<Camera[]> {
 		});
 	}
 
+	if (envCamera) {
+		// Stop camera so on iOS only one is active at a time
+		if (isIOS) envCamera.stop();
+		cameras.push(envCamera);
+	}
+
+	let userCamera: Camera | null = null;
 	try {
 		const result = await getVideoStream({ facingMode: "user" });
-		cameras.push(new Camera(result, "user"));
+		userCamera = new Camera(result, "user");
 		debugLog("Got front camera with facingMode user");
 	} catch (e) {
 		debugLog("Front camera facingMode failed", {
 			name: (e as Error).name,
 			message: (e as Error).message,
 		});
+	}
+
+	if (userCamera) {
+		if (isIOS) userCamera.stop();
+		cameras.push(userCamera);
 	}
 
 	// Step 2: For any that failed, try fallback by deviceId
@@ -120,7 +133,10 @@ export async function getCameras(): Promise<Camera[]> {
 
 			try {
 				const result = await getVideoStream({ deviceId: device.deviceId });
-				cameras.push(new Camera(result));
+				const camera = new Camera(result);
+				if (isIOS) camera.stop();
+				cameras.push(camera);
+
 				debugLog("Got camera by deviceId fallback", {
 					deviceId: device.deviceId,
 				});
