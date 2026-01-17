@@ -7,6 +7,8 @@ export interface CaptureMode {
 	switchCameras(): void;
 	capture(): Promise<void>;
 	cleanup(): void;
+	pause(): void;
+	resume(): Promise<void>;
 }
 
 /**

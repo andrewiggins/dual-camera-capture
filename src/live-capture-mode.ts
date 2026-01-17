@@ -12,6 +12,7 @@ export class LiveCaptureMode implements CaptureMode {
 	private mainStream: MediaStream | null = null;
 	private overlayStream: MediaStream | null = null;
 	private isMainFront = false;
+	private hasDualCameras = false;
 
 	async init(): Promise<void> {
 		debugLog("LiveCaptureMode.init()");
@@ -65,6 +66,7 @@ export class LiveCaptureMode implements CaptureMode {
 			this.mainStream = backStream;
 			this.overlayStream = frontStream;
 			this.isMainFront = false;
+			this.hasDualCameras = true;
 			elements.mainVideo.srcObject = this.mainStream;
 			elements.overlayVideo.srcObject = this.overlayStream;
 			UIUtils.updateCameraOrientation(this.isMainFront, true);
@@ -169,6 +171,64 @@ export class LiveCaptureMode implements CaptureMode {
 		UIUtils.updateCameraOrientation(this.isMainFront, true);
 		debugLog("Cameras switched", { isMainFront: this.isMainFront });
 		UIUtils.showStatus("Cameras switched!", 1500);
+	}
+
+	pause(): void {
+		debugLog("LiveCaptureMode.pause()");
+		CaptureUtils.stopStream(this.mainStream);
+		CaptureUtils.stopStream(this.overlayStream);
+		this.mainStream = null;
+		this.overlayStream = null;
+		elements.mainVideo.srcObject = null;
+		elements.overlayVideo.srcObject = null;
+	}
+
+	async resume(): Promise<void> {
+		debugLog("LiveCaptureMode.resume()", {
+			isMainFront: this.isMainFront,
+			hasDualCameras: this.hasDualCameras,
+		});
+		UIUtils.showStatus("Resuming cameras...");
+
+		if (this.hasDualCameras) {
+			// Restore dual camera setup with correct orientation
+			const mainFacing = this.isMainFront ? "user" : "environment";
+			const overlayFacing = this.isMainFront ? "environment" : "user";
+
+			try {
+				this.mainStream = await CaptureUtils.getCamera(mainFacing);
+				this.overlayStream = await CaptureUtils.getCamera(overlayFacing);
+				elements.mainVideo.srcObject = this.mainStream;
+				elements.overlayVideo.srcObject = this.overlayStream;
+				UIUtils.updateCameraOrientation(this.isMainFront, true);
+				debugLog("Dual cameras resumed successfully");
+				UIUtils.showStatus("Cameras resumed!", 2000);
+			} catch (e) {
+				debugLog(
+					"Failed to resume cameras",
+					{ name: (e as Error).name, message: (e as Error).message },
+					true,
+				);
+				UIUtils.showStatus("Error resuming cameras");
+			}
+		} else {
+			// Restore single camera setup
+			const facing = this.isMainFront ? "user" : "environment";
+			try {
+				this.mainStream = await CaptureUtils.getCamera(facing);
+				elements.mainVideo.srcObject = this.mainStream;
+				UIUtils.updateCameraOrientation(this.isMainFront, false);
+				debugLog("Single camera resumed successfully");
+				UIUtils.showStatus("Camera resumed!", 2000);
+			} catch (e) {
+				debugLog(
+					"Failed to resume camera",
+					{ name: (e as Error).name, message: (e as Error).message },
+					true,
+				);
+				UIUtils.showStatus("Error resuming camera");
+			}
+		}
 	}
 
 	cleanup(): void {

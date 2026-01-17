@@ -200,6 +200,37 @@ export class SequentialCaptureMode implements CaptureMode {
 		UIUtils.showStatus("Camera switched!", 1500);
 	}
 
+	pause(): void {
+		debugLog("SequentialCaptureMode.pause()");
+		CaptureUtils.stopStream(this.mainStream);
+		this.mainStream = null;
+		elements.mainVideo.srcObject = null;
+	}
+
+	async resume(): Promise<void> {
+		debugLog("SequentialCaptureMode.resume()", {
+			isMainFront: this.isMainFront,
+			step: this.step,
+		});
+		UIUtils.showStatus("Resuming camera...");
+
+		const facing: FacingMode = this.isMainFront ? "user" : "environment";
+		try {
+			this.mainStream = await CaptureUtils.getCamera(facing);
+			elements.mainVideo.srcObject = this.mainStream;
+			this.updateOrientation();
+			debugLog("Camera resumed successfully");
+			UIUtils.showStatus("Camera resumed!", 2000);
+		} catch (e) {
+			debugLog(
+				"Failed to resume camera",
+				{ name: (e as Error).name, message: (e as Error).message },
+				true,
+			);
+			UIUtils.showStatus("Error resuming camera");
+		}
+	}
+
 	cleanup(): void {
 		debugLog("SequentialCaptureMode.cleanup()");
 		CaptureUtils.stopStream(this.mainStream);

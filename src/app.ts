@@ -60,6 +60,20 @@ export class DualCameraApp {
 			debugLog("Mode toggle clicked");
 			this.toggleMode();
 		});
+
+		document.addEventListener("visibilitychange", () => {
+			this.handleVisibilityChange();
+		});
+	}
+
+	private handleVisibilityChange(): void {
+		debugLog("Visibility changed", { hidden: document.hidden });
+
+		if (document.hidden) {
+			this.currentMode?.pause();
+		} else {
+			this.currentMode?.resume();
+		}
 	}
 
 	private async toggleMode(): Promise<void> {
