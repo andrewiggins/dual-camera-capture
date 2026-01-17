@@ -1,10 +1,31 @@
 import { debugLog } from "./debug.ts";
 import * as elements from "./elements.ts";
-import * as DeviceInfo from "./device-info.ts";
+import { Camera, getCameras } from "./camera.ts";
 import * as UIUtils from "./ui-utils.ts";
 import { LiveCaptureMode } from "./live-capture-mode.ts";
 import { SequentialCaptureMode } from "./sequential-capture-mode.ts";
-import type { CaptureMode } from "./types.ts";
+
+/**
+ * Interface for capture mode implementations
+ * Both LiveCaptureMode and SequentialCaptureMode implement this interface
+ */
+export interface CaptureMode {
+	type: string;
+	init(): Promise<void>;
+	switchCameras(): Promise<void>;
+	capture(): Promise<void>;
+	cleanup(): Promise<void>;
+	pause(): Promise<void>;
+	resume(): Promise<void>;
+}
+
+/**
+ * Device detection singleton
+ * Detects iOS devices and available cameras
+ */
+const isIOS =
+	/iPad|iPhone|iPod/.test(navigator.userAgent) ||
+	(navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
 
 /**
  * Main application controller
@@ -12,26 +33,26 @@ import type { CaptureMode } from "./types.ts";
  */
 export class DualCameraApp {
 	private currentMode: CaptureMode | null = null;
-	private isSequentialMode = false;
+	private cameras: Camera[] = [];
 
 	async init(): Promise<void> {
-		debugLog("DualCameraApp.init()", { isIOS: DeviceInfo.isIOS });
+		debugLog("DualCameraApp.init()", { isIOS });
 
 		// Detect available cameras
-		const cameras = await DeviceInfo.detectCameras();
+		UIUtils.showStatus("Initializing cameras...");
+		this.cameras = await getCameras();
 
 		// Force sequential mode on iOS with multiple cameras
-		if (DeviceInfo.isIOS && cameras.length >= 2) {
+		if (isIOS && this.cameras.length >= 2) {
 			debugLog(
 				"iOS detected with multiple cameras - forcing sequential capture mode",
 			);
-			this.isSequentialMode = true;
-			this.currentMode = new SequentialCaptureMode();
+			this.currentMode = new SequentialCaptureMode(this.cameras);
 		} else {
-			this.currentMode = new LiveCaptureMode();
+			this.currentMode = new LiveCaptureMode(this.cameras);
 
 			// Show mode toggle for non-iOS with multiple cameras
-			if (cameras.length >= 2) {
+			if (this.cameras.length >= 2) {
 				elements.modeToggle.classList.add("show");
 			}
 		}
@@ -41,63 +62,62 @@ export class DualCameraApp {
 	}
 
 	private setupEventListeners(): void {
-		elements.overlayVideo.addEventListener("click", () => {
+		elements.overlayVideo.addEventListener("click", async () => {
 			debugLog("Overlay video clicked");
-			this.currentMode?.switchCameras();
+			await this.currentMode?.switchCameras();
 		});
 
-		elements.switchBtn.addEventListener("click", () => {
+		elements.switchBtn.addEventListener("click", async () => {
 			debugLog("Switch button clicked");
-			this.currentMode?.switchCameras();
+			await this.currentMode?.switchCameras();
 		});
 
-		elements.captureBtn.addEventListener("click", () => {
+		elements.captureBtn.addEventListener("click", async () => {
 			debugLog("Capture button clicked");
-			this.currentMode?.capture();
+			await this.currentMode?.capture();
 		});
 
-		elements.modeToggle.addEventListener("click", () => {
+		elements.modeToggle.addEventListener("click", async () => {
 			debugLog("Mode toggle clicked");
-			this.toggleMode();
+			await this.toggleMode();
 		});
 
-		document.addEventListener("visibilitychange", () => {
-			this.handleVisibilityChange();
+		document.addEventListener("visibilitychange", async () => {
+			await this.handleVisibilityChange();
 		});
 	}
 
-	private handleVisibilityChange(): void {
+	private async handleVisibilityChange(): Promise<void> {
 		debugLog("Visibility changed", { hidden: document.hidden });
 
 		if (document.hidden) {
-			this.currentMode?.pause();
+			await this.currentMode?.pause();
 		} else {
-			this.currentMode?.resume();
+			await this.currentMode?.resume();
 		}
 	}
 
 	private async toggleMode(): Promise<void> {
-		if (DeviceInfo.isIOS) return; // Can't toggle on iOS
+		if (isIOS) return; // Can't toggle on iOS
 
 		debugLog("toggleMode()", {
-			currentMode: this.isSequentialMode ? "sequential" : "live",
+			currentMode: this.currentMode?.type,
 		});
 
 		// Cleanup current mode
-		this.currentMode?.cleanup();
+		await this.currentMode?.cleanup();
 
-		if (this.isSequentialMode) {
+		let isSequentialMode = this.currentMode?.type === "SequentialCaptureMode";
+		if (isSequentialMode) {
 			// Switch to live mode
-			this.isSequentialMode = false;
-			this.currentMode = new LiveCaptureMode();
+			this.currentMode = new LiveCaptureMode(this.cameras);
 			elements.modeToggle.textContent = "Sequential Mode";
 			elements.captureBtn.textContent = "Capture Photo";
 			elements.switchBtn.textContent = "Switch Cameras";
 			UIUtils.showStatus("Switching to live mode...");
 		} else {
 			// Switch to sequential mode
-			this.isSequentialMode = true;
-			this.currentMode = new SequentialCaptureMode();
+			this.currentMode = new SequentialCaptureMode(this.cameras);
 			elements.modeToggle.textContent = "Live Mode";
 			UIUtils.showStatus("Sequential capture mode", 2000);
 		}
