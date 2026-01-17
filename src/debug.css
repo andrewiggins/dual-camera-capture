@@ -2,7 +2,7 @@
 #debugToggle {
 	display: none;
 	position: absolute;
-	top: 20px;
+	bottom: 20px;
 	right: 20px;
 	padding: 8px 12px;
 	font-size: 12px;
