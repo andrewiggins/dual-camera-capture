@@ -144,7 +144,7 @@ export function downloadCanvas(canvas: HTMLCanvasElement): Promise<void> {
 /**
  * Get a camera stream with the specified facing mode
  */
-export async function getCamera(facingMode: FacingMode): Promise<MediaStream> {
+async function getCamera(facingMode: FacingMode): Promise<MediaStream> {
 	const constraints = {
 		video: {
 			...VIDEO_CONSTRAINTS,
@@ -154,6 +154,160 @@ export async function getCamera(facingMode: FacingMode): Promise<MediaStream> {
 		audio: false,
 	};
 	return navigator.mediaDevices.getUserMedia(constraints);
+}
+
+/**
+ * Get a camera stream by device ID
+ */
+export async function getCameraByDeviceId(
+	deviceId: string,
+): Promise<MediaStream> {
+	const constraints = {
+		video: {
+			...VIDEO_CONSTRAINTS,
+			deviceId: { exact: deviceId },
+		},
+		audio: false,
+	};
+	return navigator.mediaDevices.getUserMedia(constraints);
+}
+
+export interface CameraResult {
+	stream: MediaStream;
+	deviceId: string;
+	usedFallback: boolean;
+}
+
+/**
+ * Get a camera stream with fallback to any available camera by deviceId.
+ * If facingMode fails, tries to get any other camera not in excludeDeviceIds.
+ * Returns { stream, deviceId, usedFallback } or null if no camera available.
+ */
+export async function getCameraWithFallback(
+	facingMode: FacingMode,
+	excludeDeviceIds: string[] = [],
+): Promise<CameraResult | null> {
+	// Try the requested facingMode first
+	try {
+		const stream = await getCamera(facingMode);
+		const deviceId = stream.getVideoTracks()[0]?.getSettings().deviceId ?? "";
+		debugLog(`Got camera with facingMode ${facingMode}`, { deviceId });
+		return { stream, deviceId, usedFallback: false };
+	} catch (e) {
+		debugLog(`facingMode ${facingMode} failed, trying fallback`, {
+			name: (e as Error).name,
+			message: (e as Error).message,
+		});
+	}
+
+	// Fallback: enumerate devices and try any available camera not already in use
+	return getFallbackCamera(excludeDeviceIds);
+}
+
+/**
+ * Try to get any available camera by deviceId, excluding specified deviceIds.
+ */
+async function getFallbackCamera(
+	excludeDeviceIds: string[],
+): Promise<CameraResult | null> {
+	try {
+		const devices = await navigator.mediaDevices.enumerateDevices();
+		const videoDevices = devices.filter((d) => d.kind === "videoinput");
+
+		for (const device of videoDevices) {
+			if (excludeDeviceIds.includes(device.deviceId)) {
+				debugLog(
+					`Skipping device ${device.deviceId.slice(0, 8)}... (already in use)`,
+				);
+				continue;
+			}
+
+			try {
+				const stream = await getCameraByDeviceId(device.deviceId);
+				debugLog(
+					`Fallback succeeded with deviceId ${device.deviceId.slice(0, 8)}...`,
+				);
+				return { stream, deviceId: device.deviceId, usedFallback: true };
+			} catch (e) {
+				debugLog(`Fallback device ${device.deviceId.slice(0, 8)}... failed`, {
+					name: (e as Error).name,
+					message: (e as Error).message,
+				});
+			}
+		}
+	} catch (e) {
+		debugLog("Failed to enumerate devices for fallback", e, true);
+	}
+
+	return null;
+}
+
+export interface DualCameraResult {
+	back: CameraResult | null;
+	front: CameraResult | null;
+}
+
+/**
+ * Get both cameras, trying facingMode for each first, then falling back to
+ * any available cameras by deviceId.
+ *
+ * This ensures we don't accidentally grab a camera via fallback that would
+ * have worked for the other facingMode.
+ */
+export async function getDualCameras(): Promise<DualCameraResult> {
+	let back: CameraResult | null = null;
+	let front: CameraResult | null = null;
+	const usedDeviceIds: string[] = [];
+
+	// Step 1: Try to get both cameras by facingMode first
+	try {
+		const stream = await getCamera("environment");
+		const deviceId = stream.getVideoTracks()[0]?.getSettings().deviceId ?? "";
+		back = { stream, deviceId, usedFallback: false };
+		usedDeviceIds.push(deviceId);
+		debugLog("Got back camera with facingMode", { deviceId });
+	} catch (e) {
+		debugLog("Back camera facingMode failed", {
+			name: (e as Error).name,
+			message: (e as Error).message,
+		});
+	}
+
+	try {
+		const stream = await getCamera("user");
+		const deviceId = stream.getVideoTracks()[0]?.getSettings().deviceId ?? "";
+		front = { stream, deviceId, usedFallback: false };
+		usedDeviceIds.push(deviceId);
+		debugLog("Got front camera with facingMode", { deviceId });
+	} catch (e) {
+		debugLog("Front camera facingMode failed", {
+			name: (e as Error).name,
+			message: (e as Error).message,
+		});
+	}
+
+	// Step 2: For any that failed, try fallback by deviceId
+	if (!back) {
+		debugLog("Trying fallback for back camera");
+		back = await getFallbackCamera(usedDeviceIds);
+		if (back) {
+			usedDeviceIds.push(back.deviceId);
+		}
+	}
+
+	if (!front) {
+		debugLog("Trying fallback for front camera");
+		front = await getFallbackCamera(usedDeviceIds);
+	}
+
+	debugLog("getDualCameras result", {
+		hasBack: !!back,
+		hasFront: !!front,
+		backUsedFallback: back?.usedFallback,
+		frontUsedFallback: front?.usedFallback,
+	});
+
+	return { back, front };
 }
 
 /**

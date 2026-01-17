@@ -13,72 +13,61 @@ export class LiveCaptureMode implements CaptureMode {
 	private overlayStream: MediaStream | null = null;
 	private isMainFront = false;
 	private hasDualCameras = false;
+	private mainDeviceId = "";
+	private overlayDeviceId = "";
 
 	async init(): Promise<void> {
 		debugLog("LiveCaptureMode.init()");
 		UIUtils.showStatus("Initializing cameras...");
 
-		let backStream: MediaStream | null = null;
-		let frontStream: MediaStream | null = null;
+		// Get both cameras, trying facingMode first then falling back to deviceId
+		const { back, front } = await CaptureUtils.getDualCameras();
 
-		// Try to get back camera
-		try {
-			backStream = await CaptureUtils.getCamera("environment");
-			debugLog("Back camera obtained successfully", {
-				tracks: backStream.getVideoTracks().map((t) => ({
+		if (back) {
+			debugLog("Back camera obtained", {
+				deviceId: back.deviceId,
+				usedFallback: back.usedFallback,
+				tracks: back.stream.getVideoTracks().map((t) => ({
 					label: t.label,
 					settings: t.getSettings(),
 				})),
 			});
-		} catch (e) {
-			debugLog(
-				"Back camera not available",
-				{ name: (e as Error).name, message: (e as Error).message },
-				true,
-			);
 		}
 
-		// Try to get front camera
-		try {
-			frontStream = await CaptureUtils.getCamera("user");
-			debugLog("Front camera obtained successfully", {
-				tracks: frontStream.getVideoTracks().map((t) => ({
+		if (front) {
+			debugLog("Front camera obtained", {
+				deviceId: front.deviceId,
+				usedFallback: front.usedFallback,
+				tracks: front.stream.getVideoTracks().map((t) => ({
 					label: t.label,
 					settings: t.getSettings(),
 				})),
 			});
-		} catch (e) {
-			debugLog(
-				"Front camera not available",
-				{ name: (e as Error).name, message: (e as Error).message },
-				true,
-			);
 		}
 
-		debugLog("Stream results", {
-			hasBack: !!backStream,
-			hasFront: !!frontStream,
-		});
-
-		if (backStream && frontStream) {
+		if (back && front) {
 			// Both cameras available - dual camera mode
 			debugLog("Both cameras available - dual camera mode");
-			this.mainStream = backStream;
-			this.overlayStream = frontStream;
+			this.mainStream = back.stream;
+			this.overlayStream = front.stream;
+			this.mainDeviceId = back.deviceId;
+			this.overlayDeviceId = front.deviceId;
 			this.isMainFront = false;
 			this.hasDualCameras = true;
 			elements.mainVideo.srcObject = this.mainStream;
 			elements.overlayVideo.srcObject = this.overlayStream;
 			UIUtils.updateCameraOrientation(this.isMainFront, true);
 			UIUtils.showStatus("Cameras ready!", 2000);
-		} else if (backStream || frontStream) {
+		} else if (back || front) {
 			// Single camera mode
+			const result = back || front!;
 			debugLog("Only one camera available - single camera mode", {
-				usingBack: !!backStream,
-				usingFront: !!frontStream,
+				usingBack: !!back,
+				usingFront: !!front,
 			});
-			this.mainStream = backStream || frontStream;
-			this.isMainFront = !!frontStream;
+			this.mainStream = result.stream;
+			this.mainDeviceId = result.deviceId;
+			this.isMainFront = !!front;
 			elements.mainVideo.srcObject = this.mainStream;
 			UIUtils.updateCameraOrientation(this.isMainFront, false);
 			elements.overlayError.classList.add("show");
@@ -160,9 +149,14 @@ export class LiveCaptureMode implements CaptureMode {
 		});
 
 		// Swap streams
-		const temp = this.mainStream;
+		const tempStream = this.mainStream;
 		this.mainStream = this.overlayStream;
-		this.overlayStream = temp;
+		this.overlayStream = tempStream;
+
+		// Swap deviceIds
+		const tempDeviceId = this.mainDeviceId;
+		this.mainDeviceId = this.overlayDeviceId;
+		this.overlayDeviceId = tempDeviceId;
 
 		elements.mainVideo.srcObject = this.mainStream;
 		elements.overlayVideo.srcObject = this.overlayStream;
@@ -187,17 +181,16 @@ export class LiveCaptureMode implements CaptureMode {
 		debugLog("LiveCaptureMode.resume()", {
 			isMainFront: this.isMainFront,
 			hasDualCameras: this.hasDualCameras,
+			mainDeviceId: this.mainDeviceId,
+			overlayDeviceId: this.overlayDeviceId,
 		});
 		UIUtils.showStatus("Resuming cameras...");
 
 		if (this.hasDualCameras) {
-			// Restore dual camera setup with correct orientation
-			const mainFacing = this.isMainFront ? "user" : "environment";
-			const overlayFacing = this.isMainFront ? "environment" : "user";
-
+			// Restore dual camera setup using deviceIds
 			try {
-				this.mainStream = await CaptureUtils.getCamera(mainFacing);
-				this.overlayStream = await CaptureUtils.getCamera(overlayFacing);
+				this.mainStream = await CaptureUtils.getCameraByDeviceId(this.mainDeviceId);
+				this.overlayStream = await CaptureUtils.getCameraByDeviceId(this.overlayDeviceId);
 				elements.mainVideo.srcObject = this.mainStream;
 				elements.overlayVideo.srcObject = this.overlayStream;
 				UIUtils.updateCameraOrientation(this.isMainFront, true);
@@ -213,9 +206,8 @@ export class LiveCaptureMode implements CaptureMode {
 			}
 		} else {
 			// Restore single camera setup
-			const facing = this.isMainFront ? "user" : "environment";
 			try {
-				this.mainStream = await CaptureUtils.getCamera(facing);
+				this.mainStream = await CaptureUtils.getCameraByDeviceId(this.mainDeviceId);
 				elements.mainVideo.srcObject = this.mainStream;
 				UIUtils.updateCameraOrientation(this.isMainFront, false);
 				debugLog("Single camera resumed successfully");

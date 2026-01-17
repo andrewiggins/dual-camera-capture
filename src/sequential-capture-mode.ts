@@ -14,6 +14,8 @@ export class SequentialCaptureMode implements CaptureMode {
 	private capturedOverlay: ImageData | null = null;
 	private overlayWasFront = false;
 	private step = 0; // 0 = not started, 1 = capturing overlay, 2 = capturing main
+	private currentDeviceId = "";
+	private otherDeviceId = "";
 
 	async init(): Promise<void> {
 		debugLog("SequentialCaptureMode.init()");
@@ -39,27 +41,32 @@ export class SequentialCaptureMode implements CaptureMode {
 
 		CaptureUtils.stopStream(this.mainStream);
 
-		try {
-			this.mainStream = await CaptureUtils.getCamera(facingMode);
+		// Exclude the "other" camera's deviceId when switching
+		const excludeIds = this.otherDeviceId ? [this.otherDeviceId] : [];
+		const result = await CaptureUtils.getCameraWithFallback(facingMode, excludeIds);
+
+		if (result) {
+			this.mainStream = result.stream;
+			// Save current as "other" for next switch, update current
+			this.otherDeviceId = this.currentDeviceId;
+			this.currentDeviceId = result.deviceId;
 			elements.mainVideo.srcObject = this.mainStream;
 			this.isMainFront = facingMode === "user";
 			this.updateOrientation();
 
 			debugLog("Camera switched successfully", {
 				facingMode,
+				deviceId: result.deviceId,
+				usedFallback: result.usedFallback,
 				isMainFront: this.isMainFront,
 				tracks: this.mainStream.getVideoTracks().map((t) => ({
 					label: t.label,
 					settings: t.getSettings(),
 				})),
 			});
-		} catch (e) {
-			debugLog(
-				"Failed to switch camera",
-				{ name: (e as Error).name, message: (e as Error).message },
-				true,
-			);
-			UIUtils.showStatus("Error switching camera: " + (e as Error).message);
+		} else {
+			debugLog("Failed to switch camera - no camera available", null, true);
+			UIUtils.showStatus("Error: No camera available");
 		}
 	}
 
@@ -211,12 +218,12 @@ export class SequentialCaptureMode implements CaptureMode {
 		debugLog("SequentialCaptureMode.resume()", {
 			isMainFront: this.isMainFront,
 			step: this.step,
+			currentDeviceId: this.currentDeviceId,
 		});
 		UIUtils.showStatus("Resuming camera...");
 
-		const facing: FacingMode = this.isMainFront ? "user" : "environment";
 		try {
-			this.mainStream = await CaptureUtils.getCamera(facing);
+			this.mainStream = await CaptureUtils.getCameraByDeviceId(this.currentDeviceId);
 			elements.mainVideo.srcObject = this.mainStream;
 			this.updateOrientation();
 			debugLog("Camera resumed successfully");
