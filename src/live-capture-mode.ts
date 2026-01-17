@@ -1,6 +1,6 @@
 import { debugLog } from "./debug.ts";
 import * as elements from "./elements.ts";
-import * as CaptureUtils from "./capture-utils.ts";
+import * as CaptureUtils from "./canvas.ts";
 import * as UIUtils from "./ui-utils.ts";
 import type { Camera } from "./camera.ts";
 import type { CaptureMode } from "./app.ts";
