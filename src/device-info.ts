@@ -8,8 +8,6 @@ export const isIOS =
 	/iPad|iPhone|iPod/.test(navigator.userAgent) ||
 	(navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
 
-export let hasMultipleCameras = false;
-
 /**
  * Detect available video input devices
  */
@@ -17,7 +15,6 @@ export async function detectCameras(): Promise<MediaDeviceInfo[]> {
 	try {
 		const devices = await navigator.mediaDevices.enumerateDevices();
 		const videoDevices = devices.filter((d) => d.kind === "videoinput");
-		hasMultipleCameras = videoDevices.length >= 2;
 		debugLog(`Found ${videoDevices.length} video input device(s):`);
 		videoDevices.forEach((d, i) => {
 			debugLog(

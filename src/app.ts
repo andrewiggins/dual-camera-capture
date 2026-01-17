@@ -18,10 +18,10 @@ export class DualCameraApp {
 		debugLog("DualCameraApp.init()", { isIOS: DeviceInfo.isIOS });
 
 		// Detect available cameras
-		await DeviceInfo.detectCameras();
+		const cameras = await DeviceInfo.detectCameras();
 
 		// Force sequential mode on iOS with multiple cameras
-		if (DeviceInfo.isIOS && DeviceInfo.hasMultipleCameras) {
+		if (DeviceInfo.isIOS && cameras.length >= 2) {
 			debugLog(
 				"iOS detected with multiple cameras - forcing sequential capture mode",
 			);
@@ -31,7 +31,7 @@ export class DualCameraApp {
 			this.currentMode = new LiveCaptureMode();
 
 			// Show mode toggle for non-iOS with multiple cameras
-			if (DeviceInfo.hasMultipleCameras) {
+			if (cameras.length >= 2) {
 				elements.modeToggle.classList.add("show");
 			}
 		}
