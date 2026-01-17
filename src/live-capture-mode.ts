@@ -15,13 +15,6 @@ export class LiveCaptureMode implements CaptureMode {
 	private mainCamera: Camera | null = null;
 	private overlayCamera: Camera | null = null;
 
-	// private mainStream: MediaStream | null = null;
-	// private overlayStream: MediaStream | null = null;
-	// private isMainFront = false;
-	// private hasDualCameras = false;
-	// private mainDeviceId = "";
-	// private overlayDeviceId = "";
-
 	constructor(cameras: Camera[]) {
 		this.type = "LiveCaptureMode";
 		this.cameras = cameras;
