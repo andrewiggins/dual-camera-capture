@@ -14,37 +14,38 @@ This is a web application that captures photos from both front and back cameras 
 - `src/index.css` - Main application styles
 - `src/debug.css` - Debug panel styles
 - `src/index.ts` - Entry point (initializes debug and starts app)
-- `src/app.ts` - `DualCameraApp` controller class (manages modes and event listeners)
+- `src/app.ts` - `DualCameraApp` controller class, `CaptureMode` interface, iOS detection
 - `src/elements.ts` - DOM element references
-- `src/device-info.ts` - `DeviceInfo` singleton (iOS detection, camera enumeration)
-- `src/capture-utils.ts` - `CaptureUtils` (canvas drawing, camera access, download)
+- `src/camera.ts` - `Camera` class, `FacingMode` type, `getCameras()` for camera enumeration
+- `src/canvas.ts` - Canvas utilities (drawVideoToCanvas, drawRoundedOverlay, downloadCanvas)
 - `src/ui-utils.ts` - `UIUtils` (status messages, orientation updates)
 - `src/live-capture-mode.ts` - `LiveCaptureMode` class (simultaneous dual camera)
 - `src/sequential-capture-mode.ts` - `SequentialCaptureMode` class (one camera at a time)
 - `src/debug.ts` - Debug utilities (exports `DEBUG`, `debugLog`, `initDebug`)
-- `src/types.ts` - TypeScript interfaces (`CaptureMode`, `FacingMode`)
 
 **Build Process**: Uses Vite for development server and production builds. TypeScript is used for type safety with `tsc` for type checking only (Vite handles compilation).
 
 **Camera Management**:
 
-- Uses MediaDevices API to access multiple cameras
-- Primary approach: Uses `facingMode` constraint ("environment" for back, "user" for front)
-- Fallback: If facingMode fails, enumerates all video devices by deviceId
+- `Camera` class wraps `MediaStream` and tracks deviceId and facingMode
+- `getCameras()` function initializes cameras using facingMode constraints first, then falls back to deviceId enumeration
+- Cameras are initialized once at app startup, then passed to capture mode classes
 - Graceful degradation: If only one camera is available, enters single-camera mode with error overlay
 
 **Class Architecture**:
 
 - `DualCameraApp`: Main controller that manages capture modes and event listeners
+- `Camera`: Wrapper class for MediaStream with deviceId/facingMode tracking and start/stop lifecycle
 - `LiveCaptureMode`: Handles simultaneous dual camera streams (non-iOS)
 - `SequentialCaptureMode`: Handles one-camera-at-a-time capture (iOS or optional)
-- Both mode classes implement the same interface: `init()`, `capture()`, `switchCameras()`, `cleanup()`
+- Both mode classes implement `CaptureMode` interface: `init()`, `capture()`, `switchCameras()`, `cleanup()`, `pause()`, `resume()`
 
 **Stream Architecture**:
 
-- `mainStream`: The primary camera feed (initially back camera, displayed full-screen)
-- `overlayStream`: The secondary camera feed (initially front camera, displayed as picture-in-picture)
-- Streams are swapped when user clicks "Switch Cameras" button or taps the overlay video
+- `mainCamera`: The primary `Camera` object (initially back/environment camera, displayed full-screen)
+- `overlayCamera`: The secondary `Camera` object (initially front/user camera, displayed as picture-in-picture)
+- Cameras are swapped when user clicks "Switch Cameras" button or taps the overlay video
+- Each `Camera` manages its own `MediaStream` internally via `getStream()` and `stop()` methods
 
 **Photo Capture**:
 
@@ -94,6 +95,6 @@ This is a web application that captures photos from both front and back cameras 
 3. User captures the second photo (becomes the main image)
 4. Photos are composited and downloaded
 
-This mode is **forced on iOS** because iOS Safari cannot run two camera streams simultaneously (WebKit limitation). On other devices with multiple cameras, users can optionally switch to sequential mode using the "Sequential Mode" button. The `sequentialMode` flag controls which UI and capture flow is active.
+This mode is **forced on iOS** because iOS Safari cannot run two camera streams simultaneously (WebKit limitation). On other devices with multiple cameras, users can optionally switch to sequential mode using the "Sequential Mode" button.
 
-iOS detection uses user agent string and `maxTouchPoints` for iPad detection.
+iOS detection (in `app.ts`) uses user agent string and `maxTouchPoints` for iPad detection.
