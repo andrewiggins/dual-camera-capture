@@ -1,5 +1,3 @@
-import { debugLog } from "./debug.ts";
-
 /** Camera facing mode type */
 export type FacingMode = "environment" | "user";
 
@@ -51,15 +49,8 @@ async function getAllVideoDevices(): Promise<MediaDeviceInfo[]> {
 	try {
 		const devices = await navigator.mediaDevices.enumerateDevices();
 		const videoDevices = devices.filter((d) => d.kind === "videoinput");
-		debugLog(`Found ${videoDevices.length} video input device(s):`);
-		videoDevices.forEach((d, i) => {
-			debugLog(
-				`  Device ${i}: ${d.label || "(no label)"} [${d.deviceId.slice(0, 8)}...]`,
-			);
-		});
 		return videoDevices;
-	} catch (e) {
-		debugLog("Failed to enumerate devices", e, true);
+	} catch {
 		return [];
 	}
 }
@@ -83,29 +74,21 @@ async function getVideoStream({
 }
 
 export async function getCameras(): Promise<Camera[]> {
-	const cameras = [];
+	const cameras: Camera[] = [];
 
 	// Step 1: Try to get both cameras by facingMode first
 	try {
 		const result = await getVideoStream({ facingMode: "environment" });
 		cameras.push(new Camera(result, "environment"));
-		debugLog("Got environment camera with facingMode environment");
-	} catch (e) {
-		debugLog("Environment camera facingMode failed", {
-			name: (e as Error).name,
-			message: (e as Error).message,
-		});
+	} catch {
+		// Environment camera facingMode failed
 	}
 
 	try {
 		const result = await getVideoStream({ facingMode: "user" });
 		cameras.push(new Camera(result, "user"));
-		debugLog("Got front camera with facingMode user");
-	} catch (e) {
-		debugLog("Front camera facingMode failed", {
-			name: (e as Error).name,
-			message: (e as Error).message,
-		});
+	} catch {
+		// Front camera facingMode failed
 	}
 
 	// Step 2: For any that failed, try fallback by deviceId
@@ -121,14 +104,8 @@ export async function getCameras(): Promise<Camera[]> {
 			try {
 				const result = await getVideoStream({ deviceId: device.deviceId });
 				cameras.push(new Camera(result));
-				debugLog("Got camera by deviceId fallback", {
-					deviceId: device.deviceId,
-				});
-			} catch (e) {
-				debugLog(`Fallback device ${device.deviceId.slice(0, 8)}... failed`, {
-					name: (e as Error).name,
-					message: (e as Error).message,
-				});
+			} catch {
+				// Fallback device failed
 			}
 
 			if (cameras.length >= 2) {
@@ -136,8 +113,6 @@ export async function getCameras(): Promise<Camera[]> {
 			}
 		}
 	}
-
-	debugLog(`Total cameras obtained: ${cameras.length}`);
 
 	return cameras;
 }

@@ -1,5 +1,3 @@
-import { debugLog } from "./debug.ts";
-
 /**
  * Draw a video frame to a canvas, optionally flipping horizontally
  */
@@ -117,12 +115,10 @@ export function downloadCanvas(canvas: HTMLCanvasElement): Promise<void> {
 				return;
 			}
 
-			debugLog("Blob created", { size: blob.size, type: blob.type });
 			const url = URL.createObjectURL(blob);
 			const a = document.createElement("a");
 			a.href = url;
 			a.download = `dual-camera-${Date.now()}.png`;
-			debugLog("Initiating download", { filename: a.download });
 			document.body.appendChild(a);
 			a.click();
 			document.body.removeChild(a);

@@ -9,46 +9,7 @@
 		<title>Dual Camera Capture</title>
 	</head>
 	<body>
-		<div id="container">
-			<video id="mainVideo" autoplay playsinline></video>
-			<video id="overlayVideo" autoplay playsinline></video>
-			<div id="overlayError">
-				<div class="error-content">
-					<div class="error-icon">⚠️</div>
-					<div class="error-message">Second camera not available</div>
-				</div>
-			</div>
-
-			<!-- Sequential capture mode: Preview of captured overlay -->
-			<div id="sequentialOverlayPreview">
-				<canvas id="sequentialOverlayCanvas"></canvas>
-				<div id="sequentialOverlayPlaceholder">Overlay preview</div>
-			</div>
-
-			<!-- Sequential capture mode: Step instructions -->
-			<div id="sequentialInstructions">Step 1: Capture the overlay photo</div>
-
-			<div id="controls">
-				<button id="modeToggle">Sequential Mode</button>
-				<button id="switchBtn">Switch Cameras</button>
-				<button id="captureBtn">Capture Photo</button>
-			</div>
-
-			<div id="status"></div>
-
-			<!-- Debug UI (only visible in debug mode) -->
-			<button id="debugToggle">Show Logs</button>
-			<div id="debugPanel">
-				<div id="debugHeader">
-					<span>Debug Logs</span>
-					<button id="debugClear">Clear</button>
-				</div>
-				<div id="debugLogs"></div>
-			</div>
-		</div>
-
-		<canvas id="canvas"></canvas>
-
-		<script type="module" src="src/index.ts"></script>
+		<div id="app"></div>
+		<script type="module" src="src/index.tsx"></script>
 	</body>
 </html>
