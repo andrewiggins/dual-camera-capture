@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Camera Viewer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #1a1a1a;
+            color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            width: 100%;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2rem;
+        }
+
+        .video-container {
+            position: relative;
+            background: #000;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+            margin-bottom: 20px;
+        }
+
+        video {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+        }
+
+        button:hover {
+            background: #0056b3;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0, 123, 255, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button:disabled {
+            background: #555;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .info {
+            text-align: center;
+            margin-top: 20px;
+            padding: 15px;
+            background: #2a2a2a;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .camera-count {
+            color: #4CAF50;
+            font-weight: 600;
+        }
+
+        .error {
+            background: #d32f2f;
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Camera Viewer</h1>
+        
+        <div id="error-message" class="error" style="display: none;"></div>
+        
+        <div class="video-container">
+            <video id="video" autoplay playsinline></video>
+        </div>
+        
+        <div class="controls">
+            <button id="start-btn">Start Camera</button>
+            <button id="cycle-btn" disabled>Switch Camera</button>
+            <button id="stop-btn" disabled>Stop Camera</button>
+        </div>
+        
+        <div class="info">
+            <p>Available cameras: <span id="camera-count" class="camera-count">0</span></p>
+            <p>Current camera: <span id="current-camera">None</span></p>
+        </div>
+    </div>
+
+    <script>
+        const video = document.getElementById('video');
+        const startBtn = document.getElementById('start-btn');
+        const cycleBtn = document.getElementById('cycle-btn');
+        const stopBtn = document.getElementById('stop-btn');
+        const cameraCountEl = document.getElementById('camera-count');
+        const currentCameraEl = document.getElementById('current-camera');
+        const errorMessageEl = document.getElementById('error-message');
+
+        let cameras = [];
+        let currentCameraIndex = 0;
+        let currentStream = null;
+
+        // Show error message
+        function showError(message) {
+            errorMessageEl.textContent = message;
+            errorMessageEl.style.display = 'block';
+        }
+
+        // Hide error message
+        function hideError() {
+            errorMessageEl.style.display = 'none';
+        }
+
+        // Get list of available video input devices
+        async function getCameras() {
+            try {
+                const devices = await navigator.mediaDevices.enumerateDevices();
+                cameras = devices.filter(device => device.kind === 'videoinput');
+                cameraCountEl.textContent = cameras.length;
+                
+                if (cameras.length > 1) {
+                    cycleBtn.disabled = false;
+                }
+                
+                return cameras;
+            } catch (err) {
+                showError('Error enumerating devices: ' + err.message);
+                console.error('Error enumerating devices:', err);
+                return [];
+            }
+        }
+
+        // Start camera stream
+        async function startCamera(deviceId = null) {
+            try {
+                hideError();
+                
+                // Stop current stream if exists
+                if (currentStream) {
+                    currentStream.getTracks().forEach(track => track.stop());
+                }
+
+                const constraints = {
+                    video: deviceId ? { deviceId: { exact: deviceId } } : true,
+                    audio: false
+                };
+
+                currentStream = await navigator.mediaDevices.getUserMedia(constraints);
+                video.srcObject = currentStream;
+
+                // Update camera list after getting permission
+                await getCameras();
+
+                // Find current camera info
+                const videoTrack = currentStream.getVideoTracks()[0];
+                const currentDeviceId = videoTrack.getSettings().deviceId;
+                const currentCameraInfo = cameras.find(cam => cam.deviceId === currentDeviceId);
+                
+                if (currentCameraInfo) {
+                    currentCameraIndex = cameras.indexOf(currentCameraInfo);
+                    currentCameraEl.textContent = currentCameraInfo.label || `Camera ${currentCameraIndex + 1}`;
+                }
+
+                startBtn.disabled = true;
+                stopBtn.disabled = false;
+                
+                if (cameras.length > 1) {
+                    cycleBtn.disabled = false;
+                }
+
+            } catch (err) {
+                showError('Error accessing camera: ' + err.message);
+                console.error('Error accessing camera:', err);
+            }
+        }
+
+        // Stop camera stream
+        function stopCamera() {
+            if (currentStream) {
+                currentStream.getTracks().forEach(track => track.stop());
+                video.srcObject = null;
+                currentStream = null;
+            }
+
+            startBtn.disabled = false;
+            stopBtn.disabled = true;
+            cycleBtn.disabled = true;
+            currentCameraEl.textContent = 'None';
+        }
+
+        // Cycle to next camera
+        async function cycleCamera() {
+            if (cameras.length === 0) {
+                await getCameras();
+            }
+
+            if (cameras.length > 0) {
+                currentCameraIndex = (currentCameraIndex + 1) % cameras.length;
+                const nextCamera = cameras[currentCameraIndex];
+                await startCamera(nextCamera.deviceId);
+            }
+        }
+
+        // Event listeners
+        startBtn.addEventListener('click', () => startCamera());
+        stopBtn.addEventListener('click', stopCamera);
+        cycleBtn.addEventListener('click', cycleCamera);
+
+        // Initialize - get camera list on load
+        getCameras();
+    </script>
+</body>
+</html>
