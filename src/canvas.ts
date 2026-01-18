@@ -51,7 +51,11 @@ export function drawVideoToCanvas(
 
 	// Use viewport aspect ratio for output, but scale up for quality
 	// Use the larger of viewport or source dimensions for better quality
-	const scale = Math.max(srcWidth / viewportWidth, srcHeight / viewportHeight, 1);
+	const scale = Math.max(
+		srcWidth / viewportWidth,
+		srcHeight / viewportHeight,
+		1,
+	);
 	canvas.width = Math.round(viewportWidth * scale);
 	canvas.height = Math.round(viewportHeight * scale);
 
@@ -78,7 +82,7 @@ export function drawVideoToCanvas(
 /**
  * Draw a rounded rectangle path (helper for overlay drawing)
  */
-export function roundedRectPath(
+function roundedRectPath(
 	ctx: CanvasRenderingContext2D,
 	x: number,
 	y: number,
@@ -122,39 +126,6 @@ export function drawRoundedOverlay(
 	// Clip and draw image
 	ctx.clip();
 	ctx.drawImage(image, x, y, width, height);
-	ctx.restore();
-}
-
-/**
- * Draw an error overlay when second camera is unavailable
- */
-export function drawErrorOverlay(
-	ctx: CanvasRenderingContext2D,
-	x: number,
-	y: number,
-	width: number,
-	height: number,
-	borderRadius: number,
-): void {
-
-	ctx.save();
-	roundedRectPath(ctx, x, y, width, height, borderRadius);
-
-	ctx.fillStyle = "rgba(40, 40, 40, 0.95)";
-	ctx.fill();
-
-	ctx.strokeStyle = "#ff6b6b";
-	ctx.lineWidth = 6;
-	ctx.stroke();
-
-	ctx.fillStyle = "#fff";
-	ctx.textAlign = "center";
-	ctx.textBaseline = "middle";
-	ctx.font = "bold 40px Arial";
-	ctx.fillText("\u26a0\ufe0f", x + width / 2, y + height / 2 - 20);
-	ctx.font = "14px Arial";
-	ctx.fillText("Second camera", x + width / 2, y + height / 2 + 20);
-	ctx.fillText("not available", x + width / 2, y + height / 2 + 38);
 	ctx.restore();
 }
 

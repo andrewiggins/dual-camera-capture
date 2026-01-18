@@ -90,15 +90,6 @@ export class LiveCaptureMode implements CaptureMode {
 				overlayHeight,
 				borderRadius,
 			);
-		} else {
-			CaptureUtils.drawErrorOverlay(
-				ctx,
-				overlayX,
-				overlayY,
-				overlayWidth,
-				overlayHeight,
-				borderRadius,
-			);
 		}
 
 		try {
