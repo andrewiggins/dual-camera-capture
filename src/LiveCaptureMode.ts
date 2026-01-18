@@ -51,7 +51,7 @@ export class LiveCaptureMode implements CaptureMode {
 			const blob = await CaptureUtils.canvasToBlob(mainImage);
 			debugLog("Photo capture complete");
 
-			this.captureDialog.show(blob);
+			this.captureDialog.show(blob, mainImage.width, mainImage.height);
 		} catch (e) {
 			debugLog("Failed to capture photo", e, true);
 			showStatus("Error: Failed to capture photo");

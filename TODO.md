@@ -1,4 +1,3 @@
-- [ ] Pass in image width and height to the capture dialog so the image can reserve the correct size before displaying. We shouldn't flash the old image when showing the dialog mutiple times with a new image
 - [ ] Make padding on image match final padding (20px means something different depending on the size of the final image. overlay padding on canvas should be adjusted to the final image size)
 - [ ] Add basic PWA functionality so it can be pinned to the homescreen and used offline
 - [ ] Consider adding a way to turn on debug without modifying URL since that won't be possible in PWA

@@ -116,7 +116,7 @@ export class SequentialCaptureMode implements CaptureMode {
 			const blob = await CaptureUtils.canvasToBlob(canvas);
 			debugLog("Photo capture complete");
 
-			this.captureDialog.show(blob);
+			this.captureDialog.show(blob, canvas.width, canvas.height);
 			if (this.streamManager.hasDualCameras()) {
 				await this.reset();
 			}

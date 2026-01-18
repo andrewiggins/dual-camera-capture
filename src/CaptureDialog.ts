@@ -73,18 +73,23 @@ export class CaptureDialog extends HTMLElement {
 
 	/**
 	 * Show the dialog with a captured image blob
+	 * @param blob The image blob to display
+	 * @param width The image width (used to reserve space before load)
+	 * @param height The image height (used to reserve space before load)
 	 */
-	show(blob: Blob): void {
+	show(blob: Blob, width: number, height: number): void {
 		this.cleanup();
 
 		this.currentBlob = blob;
 		this.currentUrl = URL.createObjectURL(blob);
 
+		// Set aspect-ratio before src to reserve space and prevent layout shift
+		this.image.style.aspectRatio = `${width} / ${height}`;
 		this.image.src = this.currentUrl;
 		this.downloadLink.href = this.currentUrl;
 		this.downloadLink.download = `dual-camera-${Date.now()}.png`;
 
-		debugLog("CaptureDialog.show()", { blobSize: blob.size });
+		debugLog("CaptureDialog.show()", { blobSize: blob.size, width, height });
 		this.dialog.showModal();
 	}
 
@@ -124,6 +129,11 @@ export class CaptureDialog extends HTMLElement {
 			this.currentUrl = null;
 		}
 		this.currentBlob = null;
+
+		this.image.style.aspectRatio = "";
+		this.image.src = "";
+		this.downloadLink.href = "";
+		this.downloadLink.download = "";
 	}
 }
 
