@@ -1,4 +1,4 @@
-import type { CaptureDialog } from "./capture-dialog.ts";
+import type { CaptureDialog } from "./CaptureDialog.ts";
 
 export const captureBtn = document.getElementById(
 	"captureBtn",

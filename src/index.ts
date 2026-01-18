@@ -1,6 +1,6 @@
-import { debugLog, initDebug } from "./debug.ts";
-import { registerCaptureDialog } from "./capture-dialog.ts"; // Register custom element before DOM queries
-import { DualCameraApp } from "./app.ts";
+import { debugLog, initDebug } from "./debugLog.ts";
+import { registerCaptureDialog } from "./CaptureDialog.ts"; // Register custom element before DOM queries
+import { DualCameraApp } from "./DualCameraApp.ts";
 import "./index.css";
 
 // Initialize debug module

@@ -1,10 +1,10 @@
-import { debugLog } from "./debug.ts";
+import { debugLog } from "./debugLog.ts";
 import * as elements from "./elements.ts";
-import { getCameras } from "./camera.ts";
-import { LiveCaptureMode } from "./live-capture-mode.ts";
-import { SequentialCaptureMode } from "./sequential-capture-mode.ts";
-import { VideoStreamManager } from "./video-stream-manager.ts";
-import { showStatus } from "./status.ts";
+import { getCameras } from "./getCameras.ts";
+import { LiveCaptureMode } from "./LiveCaptureMode.ts";
+import { SequentialCaptureMode } from "./SequentialCaptureMode.ts";
+import { VideoStreamManager } from "./VideoStreamManager.ts";
+import { showStatus } from "./showStatus.ts";
 
 const modeToggle = document.getElementById("modeToggle") as HTMLButtonElement;
 const switchBtn = document.getElementById("switchBtn") as HTMLButtonElement;

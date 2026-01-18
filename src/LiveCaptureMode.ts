@@ -1,9 +1,9 @@
-import { debugLog } from "./debug.ts";
+import { debugLog } from "./debugLog.ts";
 import * as CaptureUtils from "./canvas.ts";
-import type { CaptureMode } from "./app.ts";
-import type { VideoStreamManager } from "./video-stream-manager.ts";
-import type { CaptureDialog } from "./capture-dialog.ts";
-import { showStatus } from "./status.ts";
+import type { CaptureMode } from "./DualCameraApp.ts";
+import type { VideoStreamManager } from "./VideoStreamManager.ts";
+import type { CaptureDialog } from "./CaptureDialog.ts";
+import { showStatus } from "./showStatus.ts";
 
 /**
  * Live Capture Mode - Simultaneous dual camera streams

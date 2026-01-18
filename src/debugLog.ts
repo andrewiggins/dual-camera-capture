@@ -1,4 +1,4 @@
-import "./debug.css";
+import "./debugLog.css";
 
 // Check for debug mode via URL parameter
 const urlParams = new URLSearchParams(window.location.search);

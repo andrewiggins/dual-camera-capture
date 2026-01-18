@@ -1,4 +1,4 @@
-import { debugLog } from "./debug.ts";
+import { debugLog } from "./debugLog.ts";
 
 /** Camera facing mode type */
 export type FacingMode = "environment" | "user";

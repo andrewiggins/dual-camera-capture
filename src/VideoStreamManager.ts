@@ -1,5 +1,5 @@
-import { debugLog } from "./debug.ts";
-import type { Camera } from "./camera.ts";
+import { debugLog } from "./debugLog.ts";
+import type { Camera } from "./getCameras.ts";
 
 const mainVideoEl = document.getElementById("mainVideo") as HTMLVideoElement;
 const overlayVideoEl = document.getElementById(

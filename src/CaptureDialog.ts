@@ -1,5 +1,5 @@
-import { debugLog } from "./debug.ts";
-import "./capture-dialog.css";
+import { debugLog } from "./debugLog.ts";
+import "./CaptureDialog.css";
 
 /**
  * Custom element for displaying captured photos with download/share options
