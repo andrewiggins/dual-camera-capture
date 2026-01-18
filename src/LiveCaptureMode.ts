@@ -44,7 +44,7 @@ export class LiveCaptureMode implements CaptureMode {
 				overlayVideo.video,
 				overlayVideo.camera.shouldFlip,
 			);
-			CaptureUtils.drawOverlayOnMainCanvas(mainImage, overlayImage);
+			CaptureUtils.drawOverlayOnMainCanvas(mainImage, overlayImage, mainVideo.video.clientWidth);
 		}
 
 		try {

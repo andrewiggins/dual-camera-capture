@@ -104,17 +104,23 @@ function roundedRectPath(
 
 /**
  * Draw an overlay image with rounded corners and border
+ * @param viewportWidth - The viewport width used to scale positioning to match CSS preview
  */
 export function drawOverlayOnMainCanvas(
 	mainImage: OffscreenCanvas,
 	overlayImage: CanvasImageSource,
+	viewportWidth: number,
 ): void {
+	// Calculate scale factor to match CSS preview positioning
+	// CSS uses fixed 20px offset relative to viewport, but canvas is scaled up
+	const scale = mainImage.width / viewportWidth;
+
 	const overlayWidth = mainImage.width * 0.25;
 	// Overlay height matches main video's viewport aspect ratio
 	const overlayHeight = (mainImage.height / mainImage.width) * overlayWidth;
-	const overlayX = 20;
-	const overlayY = 20;
-	const borderRadius = 12;
+	const overlayX = 20 * scale;
+	const overlayY = 20 * scale;
+	const borderRadius = 12 * scale;
 
 	const ctx = mainImage.getContext("2d")!;
 
@@ -128,9 +134,9 @@ export function drawOverlayOnMainCanvas(
 		borderRadius,
 	);
 
-	// Draw black border
+	// Draw black border (scaled to match CSS preview)
 	ctx.strokeStyle = "#000";
-	ctx.lineWidth = 6;
+	ctx.lineWidth = 6 * scale;
 	ctx.stroke();
 
 	// Clip and draw image

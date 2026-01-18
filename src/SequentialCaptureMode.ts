@@ -109,7 +109,7 @@ export class SequentialCaptureMode implements CaptureMode {
 			mainVideo.camera.shouldFlip,
 		);
 		if (this.capturedOverlay) {
-			CaptureUtils.drawOverlayOnMainCanvas(canvas, this.capturedOverlay);
+			CaptureUtils.drawOverlayOnMainCanvas(canvas, this.capturedOverlay, mainVideo.video.clientWidth);
 		}
 
 		try {
