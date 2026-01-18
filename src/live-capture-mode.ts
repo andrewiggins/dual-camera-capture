@@ -61,15 +61,15 @@ export class LiveCaptureMode implements CaptureMode {
 
 		const ctx = canvas.getContext("2d")!;
 		const overlayWidth = canvas.width * 0.25;
+		// Overlay height matches main video's viewport aspect ratio
+		const overlayHeight =
+			(elements.mainVideo.clientHeight / elements.mainVideo.clientWidth) *
+			overlayWidth;
 		const overlayX = 20;
 		const overlayY = 20;
 		const borderRadius = 12;
 
 		if (overlayCamera) {
-			const overlayHeight =
-				(elements.overlayVideo.videoHeight / elements.overlayVideo.videoWidth) *
-				overlayWidth;
-
 			// Create temp canvas with flipped overlay (front camera needs flip)
 			const tempCanvas = document.createElement("canvas");
 			CaptureUtils.drawVideoToCanvas(
@@ -93,6 +93,7 @@ export class LiveCaptureMode implements CaptureMode {
 				overlayX,
 				overlayY,
 				overlayWidth,
+				overlayHeight,
 				borderRadius,
 			);
 		}

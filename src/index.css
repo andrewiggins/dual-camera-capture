@@ -5,8 +5,9 @@
 }
 
 body {
-	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
-		Ubuntu, Cantarell, sans-serif;
+	font-family:
+		-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu,
+		Cantarell, sans-serif;
 	background-color: #000;
 	overflow: hidden;
 	height: 100vh;
@@ -21,6 +22,10 @@ body {
 	display: flex;
 	align-items: center;
 	justify-content: center;
+
+	/* Overlay sizing - aspect ratio set dynamically by JS based on video */
+	--overlay-width: 150px;
+	--overlay-aspect-ratio: 3 / 4; /* Default fallback, updated when video loads */
 }
 
 #mainVideo {
@@ -37,8 +42,8 @@ body {
 	position: absolute;
 	top: 20px;
 	left: 20px;
-	width: 150px;
-	height: 200px;
+	width: var(--overlay-width);
+	aspect-ratio: var(--overlay-aspect-ratio);
 	object-fit: cover;
 	border: 3px solid #000;
 	border-radius: 12px;
@@ -54,8 +59,8 @@ body {
 	position: absolute;
 	top: 20px;
 	left: 20px;
-	width: 150px;
-	height: 200px;
+	width: var(--overlay-width);
+	aspect-ratio: var(--overlay-aspect-ratio);
 	background-color: rgba(40, 40, 40, 0.95);
 	border: 3px solid #ff6b6b;
 	border-radius: 12px;
@@ -124,6 +129,7 @@ button {
 #switchBtn {
 	background-color: rgba(255, 255, 255, 0.3);
 	color: #fff;
+	-webkit-backdrop-filter: blur(10px);
 	backdrop-filter: blur(10px);
 }
 
@@ -156,8 +162,8 @@ canvas {
 	position: absolute;
 	top: 20px;
 	left: 20px;
-	width: 150px;
-	height: 200px;
+	width: var(--overlay-width);
+	aspect-ratio: var(--overlay-aspect-ratio);
 	border: 3px solid #000;
 	border-radius: 12px;
 	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
@@ -220,6 +226,7 @@ canvas {
 	display: none;
 	background-color: rgba(100, 100, 255, 0.4);
 	color: #fff;
+	-webkit-backdrop-filter: blur(10px);
 	backdrop-filter: blur(10px);
 }
 
@@ -232,11 +239,9 @@ canvas {
 }
 
 @media (max-width: 768px) {
-	#overlayVideo,
-	#overlayError,
-	#sequentialOverlayPreview {
-		width: 120px;
-		height: 160px;
+	#container {
+		/* Mobile overlay base width - height calculated by JS */
+		--overlay-width: 120px;
 	}
 
 	#sequentialInstructions {

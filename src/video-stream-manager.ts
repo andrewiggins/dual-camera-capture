@@ -1,5 +1,6 @@
 import { debugLog } from "./debug.ts";
 import * as elements from "./elements.ts";
+import * as UIUtils from "./ui-utils.ts";
 import type { Camera } from "./camera.ts";
 
 /**
@@ -14,6 +15,16 @@ export class VideoStreamManager {
 
 	constructor(cameras: Camera[], isIOS: boolean) {
 		this.isIOS = isIOS;
+
+		// Update overlay dimensions when main video metadata loads
+		elements.mainVideo.addEventListener("loadedmetadata", () => {
+			UIUtils.updateOverlayDimensions();
+		});
+
+		// Update overlay dimensions on resize/orientation change
+		window.addEventListener("resize", () => {
+			UIUtils.updateOverlayDimensions();
+		});
 
 		if (cameras.length > 0) {
 			this.mainCamera = cameras[0];
