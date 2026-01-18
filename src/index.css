@@ -23,8 +23,8 @@ body {
 	align-items: center;
 	justify-content: center;
 
-	/* Overlay sizing - aspect ratio set dynamically by JS based on video */
-	--overlay-width: 150px;
+	/* Overlay sizing - 25% width matches final captured image */
+	--overlay-width: 25%;
 	--overlay-aspect-ratio: 3 / 4; /* Default fallback, updated when video loads */
 }
 
@@ -239,11 +239,6 @@ canvas {
 }
 
 @media (max-width: 768px) {
-	#container {
-		/* Mobile overlay base width - height calculated by JS */
-		--overlay-width: 120px;
-	}
-
 	#sequentialInstructions {
 		top: auto;
 		bottom: max(120px, calc(env(safe-area-inset-bottom) + 100px));

@@ -107,8 +107,9 @@ export class SequentialCaptureMode implements CaptureMode {
 		if (this.capturedOverlay) {
 			const ctx = canvas.getContext("2d")!;
 			const overlayWidth = canvas.width * 0.25;
+			// Use current viewport aspect ratio (matches CSS preview and live mode)
 			const overlayHeight =
-				(this.capturedOverlay.height / this.capturedOverlay.width) *
+				(elements.mainVideo.clientHeight / elements.mainVideo.clientWidth) *
 				overlayWidth;
 
 			// Create temp canvas for overlay
