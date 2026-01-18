@@ -63,9 +63,10 @@ export class SequentialCaptureMode implements CaptureMode {
 	private async captureOverlay(): Promise<void> {
 		debugLog("SequentialCaptureMode.captureOverlay()");
 
+		const mainVideo = this.streamManager.getMainCameraVideo();
 		this.capturedOverlay = CaptureUtils.drawVideoToCanvas(
-			elements.mainVideo,
-			this.streamManager.isMainFront(),
+			mainVideo.video,
+			mainVideo.camera.shouldFlip,
 		);
 
 		// Show preview
@@ -91,9 +92,10 @@ export class SequentialCaptureMode implements CaptureMode {
 	private async captureMain(): Promise<void> {
 		debugLog("SequentialCaptureMode.captureMain()");
 
+		const mainVideo = this.streamManager.getMainCameraVideo();
 		const canvas = CaptureUtils.drawVideoToCanvas(
-			elements.mainVideo,
-			this.streamManager.isMainFront(),
+			mainVideo.video,
+			mainVideo.camera.shouldFlip,
 		);
 		if (this.capturedOverlay) {
 			CaptureUtils.drawOverlayOnMainCanvas(canvas, this.capturedOverlay);

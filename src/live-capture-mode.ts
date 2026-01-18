@@ -24,44 +24,36 @@ export class LiveCaptureMode implements CaptureMode {
 	async init(): Promise<void> {
 		debugLog("LiveCaptureMode.init()");
 
-		const mainCamera = this.streamManager.getMainCamera();
-		const overlayCamera = this.streamManager.getOverlayCamera();
+		const overlayCamera = this.streamManager.getOverlayCameraVideo();
 
-		if (mainCamera && overlayCamera) {
+		if (overlayCamera) {
 			// Both cameras available - dual camera mode
 			debugLog("Both cameras available - dual camera mode");
 			this.streamManager.showOverlay();
 			UIUtils.showStatus("Cameras ready!", 2000);
-		} else if (mainCamera) {
+		} else {
 			// Single camera mode
-			debugLog("Only one camera available - single camera mode", {
-				mainCamera: mainCamera.deviceId,
-			});
+			debugLog("Only one camera available - single camera mode");
 			elements.overlayError.classList.add("show");
 			UIUtils.disableSwitchButton();
 			UIUtils.showStatus("Single camera mode", 2000);
-		} else {
-			debugLog("No cameras available", null, true);
-			UIUtils.showStatus("Error: No cameras found");
 		}
 	}
 
 	async capture(): Promise<void> {
-		debugLog("LiveCaptureMode.capture()", {
-			mainVideoWidth: elements.mainVideo.videoWidth,
-			mainVideoHeight: elements.mainVideo.videoHeight,
-			hasOverlay: !!this.streamManager.getOverlayCamera(),
-		});
+		debugLog("LiveCaptureMode.capture()");
 
+		const mainVideo = this.streamManager.getMainCameraVideo();
 		const mainImage = CaptureUtils.drawVideoToCanvas(
-			elements.mainVideo,
-			this.streamManager.isMainFront(),
+			mainVideo.video,
+			mainVideo.camera.shouldFlip,
 		);
 
-		if (this.streamManager.getOverlayCamera()) {
+		const overlayVideo = this.streamManager.getOverlayCameraVideo();
+		if (overlayVideo) {
 			const overlayImage = CaptureUtils.drawVideoToCanvas(
-				elements.overlayVideo,
-				!this.streamManager.isMainFront(),
+				overlayVideo.video,
+				overlayVideo.camera.shouldFlip,
 			);
 			CaptureUtils.drawOverlayOnMainCanvas(mainImage, overlayImage);
 		}
@@ -78,7 +70,6 @@ export class LiveCaptureMode implements CaptureMode {
 	}
 
 	async switchCameras(): Promise<void> {
-		if (!this.streamManager.getOverlayCamera()) return;
 		await this.streamManager.swapCameras();
 		UIUtils.showStatus("Cameras switched!", 1500);
 	}

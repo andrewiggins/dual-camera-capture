@@ -19,6 +19,10 @@ export class Camera {
 		this.facingMode = facingMode;
 	}
 
+	get shouldFlip(): boolean {
+		return this.facingMode === "user";
+	}
+
 	async getStream(): Promise<MediaStream> {
 		if (this.#stream) {
 			return this.#stream;

@@ -42,7 +42,24 @@ export class DualCameraApp {
 		// Detect available cameras
 		UIUtils.showStatus("Initializing cameras...");
 		const cameras = await getCameras(isIOS);
-		this.streamManager = new VideoStreamManager(cameras, isIOS);
+		if (cameras.length === 0) {
+			debugLog("No cameras found", null, true);
+			UIUtils.showStatus("Error: No cameras found");
+			return;
+		}
+
+		debugLog(`Detected ${cameras.length} camera(s)`, {
+			cameras: cameras.map((c) => ({
+				deviceId: c.deviceId,
+				facingMode: c.facingMode,
+			})),
+		});
+
+		this.streamManager = new VideoStreamManager(
+			cameras[0],
+			cameras.slice(1),
+			isIOS,
+		);
 
 		// Force sequential mode on iOS with multiple cameras
 		if (isIOS && cameras.length >= 2) {
