@@ -1,10 +1,12 @@
 import { debugLog } from "./debug.ts";
 import * as elements from "./elements.ts";
 import { getCameras } from "./camera.ts";
-import * as UIUtils from "./ui-utils.ts";
 import { LiveCaptureMode } from "./live-capture-mode.ts";
 import { SequentialCaptureMode } from "./sequential-capture-mode.ts";
 import { VideoStreamManager } from "./video-stream-manager.ts";
+import { showStatus } from "./status.ts";
+
+const modeToggle = document.getElementById("modeToggle") as HTMLButtonElement;
 
 /**
  * Interface for capture mode implementations
@@ -13,7 +15,6 @@ import { VideoStreamManager } from "./video-stream-manager.ts";
 export interface CaptureMode {
 	type: string;
 	init(): Promise<void>;
-	switchCameras(): Promise<void>;
 	capture(): Promise<void>;
 	cleanup(): void;
 	pause(): Promise<void>;
@@ -40,11 +41,11 @@ export class DualCameraApp {
 		debugLog("DualCameraApp.init()", { isIOS });
 
 		// Detect available cameras
-		UIUtils.showStatus("Initializing cameras...");
+		showStatus("Initializing cameras...");
 		const cameras = await getCameras(isIOS);
 		if (cameras.length === 0) {
 			debugLog("No cameras found", null, true);
-			UIUtils.showStatus("Error: No cameras found");
+			showStatus("Error: No cameras found");
 			return;
 		}
 
@@ -78,7 +79,7 @@ export class DualCameraApp {
 
 			// Show mode toggle for non-iOS with multiple cameras
 			if (!isIOS && cameras.length >= 2) {
-				elements.modeToggle.classList.add("show");
+				modeToggle.classList.add("show");
 			}
 		}
 
@@ -87,14 +88,9 @@ export class DualCameraApp {
 	}
 
 	private setupEventListeners(): void {
-		elements.overlayVideo.addEventListener("click", async () => {
-			debugLog("Overlay video clicked");
-			await this.currentMode?.switchCameras();
-		});
-
 		elements.switchBtn.addEventListener("click", async () => {
 			debugLog("Switch button clicked");
-			await this.currentMode?.switchCameras();
+			await this.streamManager.swapCameras();
 		});
 
 		elements.captureBtn.addEventListener("click", async () => {
@@ -102,7 +98,7 @@ export class DualCameraApp {
 			await this.currentMode?.capture();
 		});
 
-		elements.modeToggle.addEventListener("click", async () => {
+		modeToggle.addEventListener("click", async () => {
 			debugLog("Mode toggle clicked");
 			await this.toggleMode();
 		});
@@ -139,18 +135,18 @@ export class DualCameraApp {
 				this.streamManager,
 				elements.captureDialog,
 			);
-			elements.modeToggle.textContent = "Sequential Mode";
+			modeToggle.textContent = "Sequential Mode";
 			elements.captureBtn.textContent = "Capture Photo";
 			elements.switchBtn.textContent = "Switch Cameras";
-			UIUtils.showStatus("Switching to live mode...");
+			showStatus("Switching to live mode...");
 		} else {
 			// Switch to sequential mode
 			this.currentMode = new SequentialCaptureMode(
 				this.streamManager,
 				elements.captureDialog,
 			);
-			elements.modeToggle.textContent = "Live Mode";
-			UIUtils.showStatus("Sequential capture mode", 2000);
+			modeToggle.textContent = "Live Mode";
+			showStatus("Sequential capture mode", 2000);
 		}
 
 		await this.currentMode.init();

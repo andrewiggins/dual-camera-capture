@@ -5,6 +5,7 @@ import * as UIUtils from "./ui-utils.ts";
 import type { CaptureMode } from "./app.ts";
 import type { VideoStreamManager } from "./video-stream-manager.ts";
 import type { CaptureDialog } from "./capture-dialog.ts";
+import { showStatus } from "./status.ts";
 
 /**
  * Live Capture Mode - Simultaneous dual camera streams
@@ -30,13 +31,13 @@ export class LiveCaptureMode implements CaptureMode {
 			// Both cameras available - dual camera mode
 			debugLog("Both cameras available - dual camera mode");
 			this.streamManager.showOverlay();
-			UIUtils.showStatus("Cameras ready!", 2000);
+			showStatus("Cameras ready!", 2000);
 		} else {
 			// Single camera mode
 			debugLog("Only one camera available - single camera mode");
 			elements.overlayError.classList.add("show");
 			UIUtils.disableSwitchButton();
-			UIUtils.showStatus("Single camera mode", 2000);
+			showStatus("Single camera mode", 2000);
 		}
 	}
 
@@ -65,13 +66,8 @@ export class LiveCaptureMode implements CaptureMode {
 			this.captureDialog.show(blob);
 		} catch (e) {
 			debugLog("Failed to capture photo", e, true);
-			UIUtils.showStatus("Error: Failed to capture photo");
+			showStatus("Error: Failed to capture photo");
 		}
-	}
-
-	async switchCameras(): Promise<void> {
-		await this.streamManager.swapCameras();
-		UIUtils.showStatus("Cameras switched!", 1500);
 	}
 
 	async pause(): Promise<void> {
@@ -80,19 +76,18 @@ export class LiveCaptureMode implements CaptureMode {
 	}
 
 	async resume(): Promise<void> {
-		UIUtils.showStatus("Resuming cameras...");
-
+		showStatus("Resuming cameras...");
 		try {
 			await this.streamManager.resumeAll();
 			debugLog("Cameras resumed successfully");
-			UIUtils.showStatus("Cameras resumed!", 2000);
+			showStatus("Cameras resumed!", 2000);
 		} catch (e) {
 			debugLog(
 				"Failed to resume cameras",
 				{ name: (e as Error).name, message: (e as Error).message },
 				true,
 			);
-			UIUtils.showStatus("Error resuming cameras");
+			showStatus("Error resuming cameras");
 		}
 	}
 

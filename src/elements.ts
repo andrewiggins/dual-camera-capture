@@ -1,21 +1,11 @@
 import type { CaptureDialog } from "./capture-dialog.ts";
 
-export const mainVideo = document.getElementById(
-	"mainVideo",
-) as HTMLVideoElement;
-export const overlayVideo = document.getElementById(
-	"overlayVideo",
-) as HTMLVideoElement;
 export const captureBtn = document.getElementById(
 	"captureBtn",
 ) as HTMLButtonElement;
 export const switchBtn = document.getElementById(
 	"switchBtn",
 ) as HTMLButtonElement;
-export const modeToggle = document.getElementById(
-	"modeToggle",
-) as HTMLButtonElement;
-export const status = document.getElementById("status") as HTMLDivElement;
 export const overlayError = document.getElementById(
 	"overlayError",
 ) as HTMLDivElement;

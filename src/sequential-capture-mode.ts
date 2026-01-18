@@ -1,7 +1,7 @@
 import { debugLog } from "./debug.ts";
 import * as elements from "./elements.ts";
 import * as CaptureUtils from "./canvas.ts";
-import * as UIUtils from "./ui-utils.ts";
+import { showStatus } from "./status.ts";
 import type { CaptureMode } from "./app.ts";
 import type { VideoStreamManager } from "./video-stream-manager.ts";
 import type { CaptureDialog } from "./capture-dialog.ts";
@@ -86,7 +86,7 @@ export class SequentialCaptureMode implements CaptureMode {
 		await this.streamManager.swapCameras();
 		this.updateInstructions();
 
-		UIUtils.showStatus("Overlay captured! Now capture main photo.", 2000);
+		showStatus("Overlay captured! Now capture main photo.", 2000);
 	}
 
 	private async captureMain(): Promise<void> {
@@ -109,7 +109,7 @@ export class SequentialCaptureMode implements CaptureMode {
 			await this.reset();
 		} catch (e) {
 			debugLog("Failed to capture photo", e, true);
-			UIUtils.showStatus("Error: Failed to capture photo");
+			showStatus("Error: Failed to capture photo");
 		}
 	}
 
@@ -131,13 +131,6 @@ export class SequentialCaptureMode implements CaptureMode {
 		this.updateInstructions();
 	}
 
-	async switchCameras(): Promise<void> {
-		debugLog("SequentialCaptureMode.switchCameras()");
-		await this.streamManager.swapCameras();
-		this.updateInstructions();
-		UIUtils.showStatus("Camera switched!", 1500);
-	}
-
 	async pause(): Promise<void> {
 		debugLog("SequentialCaptureMode.pause()");
 		await this.streamManager.pauseAll();
@@ -145,19 +138,19 @@ export class SequentialCaptureMode implements CaptureMode {
 
 	async resume(): Promise<void> {
 		debugLog("SequentialCaptureMode.resume()", { step: this.step });
-		UIUtils.showStatus("Resuming camera...");
+		showStatus("Resuming camera...");
 
 		try {
 			await this.streamManager.resumeAll();
 			debugLog("Camera resumed successfully");
-			UIUtils.showStatus("Camera resumed!", 2000);
+			showStatus("Camera resumed!", 2000);
 		} catch (e) {
 			debugLog(
 				"Failed to resume camera",
 				{ name: (e as Error).name, message: (e as Error).message },
 				true,
 			);
-			UIUtils.showStatus("Error resuming camera");
+			showStatus("Error resuming camera");
 		}
 	}
 
