@@ -159,27 +159,17 @@ export function drawErrorOverlay(
 }
 
 /**
- * Download a canvas as a PNG image
+ * Convert a canvas to a PNG blob
  */
-export function downloadCanvas(canvas: HTMLCanvasElement): Promise<void> {
+export function canvasToBlob(canvas: HTMLCanvasElement): Promise<Blob> {
 	return new Promise((resolve, reject) => {
 		canvas.toBlob((blob) => {
 			if (!blob) {
 				reject(new Error("Failed to create blob"));
 				return;
 			}
-
 			debugLog("Blob created", { size: blob.size, type: blob.type });
-			const url = URL.createObjectURL(blob);
-			const a = document.createElement("a");
-			a.href = url;
-			a.download = `dual-camera-${Date.now()}.png`;
-			debugLog("Initiating download", { filename: a.download });
-			document.body.appendChild(a);
-			a.click();
-			document.body.removeChild(a);
-			URL.revokeObjectURL(url);
-			resolve();
+			resolve(blob);
 		}, "image/png");
 	});
 }

@@ -4,6 +4,7 @@ import * as CaptureUtils from "./canvas.ts";
 import * as UIUtils from "./ui-utils.ts";
 import type { CaptureMode } from "./app.ts";
 import type { VideoStreamManager } from "./video-stream-manager.ts";
+import type { CaptureDialog } from "./capture-dialog.ts";
 
 /**
  * Live Capture Mode - Simultaneous dual camera streams
@@ -12,10 +13,12 @@ import type { VideoStreamManager } from "./video-stream-manager.ts";
 export class LiveCaptureMode implements CaptureMode {
 	type: string;
 	private streamManager: VideoStreamManager;
+	private captureDialog: CaptureDialog;
 
-	constructor(streamManager: VideoStreamManager) {
+	constructor(streamManager: VideoStreamManager, captureDialog: CaptureDialog) {
 		this.type = "LiveCaptureMode";
 		this.streamManager = streamManager;
+		this.captureDialog = captureDialog;
 	}
 
 	async init(): Promise<void> {
@@ -99,9 +102,9 @@ export class LiveCaptureMode implements CaptureMode {
 		}
 
 		try {
-			await CaptureUtils.downloadCanvas(canvas);
+			const blob = await CaptureUtils.canvasToBlob(canvas);
 			debugLog("Photo capture complete");
-			UIUtils.showStatus("Photo captured!", 2000);
+			this.captureDialog.show(blob);
 		} catch (e) {
 			debugLog("Failed to capture photo", e, true);
 			UIUtils.showStatus("Error: Failed to capture photo");

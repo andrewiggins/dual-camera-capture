@@ -1,3 +1,5 @@
+import type { CaptureDialog } from "./capture-dialog.ts";
+
 export const mainVideo = document.getElementById(
 	"mainVideo",
 ) as HTMLVideoElement;
@@ -30,3 +32,6 @@ export const sequentialOverlayCanvas = document.getElementById(
 export const sequentialOverlayPlaceholder = document.getElementById(
 	"sequentialOverlayPlaceholder",
 ) as HTMLDivElement;
+export const captureDialog = document.getElementById(
+	"captureDialog",
+) as CaptureDialog;

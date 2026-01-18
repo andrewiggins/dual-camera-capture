@@ -4,6 +4,7 @@ import * as CaptureUtils from "./canvas.ts";
 import * as UIUtils from "./ui-utils.ts";
 import type { CaptureMode } from "./app.ts";
 import type { VideoStreamManager } from "./video-stream-manager.ts";
+import type { CaptureDialog } from "./capture-dialog.ts";
 
 /**
  * Sequential Capture Mode - One camera at a time
@@ -12,12 +13,14 @@ import type { VideoStreamManager } from "./video-stream-manager.ts";
 export class SequentialCaptureMode implements CaptureMode {
 	type: string;
 	private streamManager: VideoStreamManager;
+	private captureDialog: CaptureDialog;
 	private capturedOverlay: ImageData | null = null;
 	private step = 0; // 0 = not started, 1 = capturing overlay, 2 = capturing main
 
-	constructor(streamManager: VideoStreamManager) {
+	constructor(streamManager: VideoStreamManager, captureDialog: CaptureDialog) {
 		this.type = "SequentialCaptureMode";
 		this.streamManager = streamManager;
+		this.captureDialog = captureDialog;
 	}
 
 	async init(): Promise<void> {
@@ -126,9 +129,9 @@ export class SequentialCaptureMode implements CaptureMode {
 		}
 
 		try {
-			await CaptureUtils.downloadCanvas(canvas);
+			const blob = await CaptureUtils.canvasToBlob(canvas);
 			debugLog("Photo capture complete");
-			UIUtils.showStatus("Photo captured!", 2000);
+			this.captureDialog.show(blob);
 			await this.reset();
 		} catch (e) {
 			debugLog("Failed to capture photo", e, true);

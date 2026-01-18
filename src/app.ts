@@ -49,9 +49,15 @@ export class DualCameraApp {
 			debugLog(
 				"iOS detected with multiple cameras - forcing sequential capture mode",
 			);
-			this.currentMode = new SequentialCaptureMode(this.streamManager);
+			this.currentMode = new SequentialCaptureMode(
+				this.streamManager,
+				elements.captureDialog,
+			);
 		} else {
-			this.currentMode = new LiveCaptureMode(this.streamManager);
+			this.currentMode = new LiveCaptureMode(
+				this.streamManager,
+				elements.captureDialog,
+			);
 
 			// Show mode toggle for non-iOS with multiple cameras
 			if (!isIOS && cameras.length >= 2) {
@@ -112,14 +118,20 @@ export class DualCameraApp {
 		let isSequentialMode = this.currentMode?.type === "SequentialCaptureMode";
 		if (isSequentialMode) {
 			// Switch to live mode
-			this.currentMode = new LiveCaptureMode(this.streamManager);
+			this.currentMode = new LiveCaptureMode(
+				this.streamManager,
+				elements.captureDialog,
+			);
 			elements.modeToggle.textContent = "Sequential Mode";
 			elements.captureBtn.textContent = "Capture Photo";
 			elements.switchBtn.textContent = "Switch Cameras";
 			UIUtils.showStatus("Switching to live mode...");
 		} else {
 			// Switch to sequential mode
-			this.currentMode = new SequentialCaptureMode(this.streamManager);
+			this.currentMode = new SequentialCaptureMode(
+				this.streamManager,
+				elements.captureDialog,
+			);
 			elements.modeToggle.textContent = "Live Mode";
 			UIUtils.showStatus("Sequential capture mode", 2000);
 		}
