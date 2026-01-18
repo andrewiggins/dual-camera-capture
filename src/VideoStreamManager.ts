@@ -48,6 +48,8 @@ export class VideoStreamManager {
 			}
 		}
 
+		this.updateOrientation();
+
 		// Update overlay dimensions when main video metadata loads
 		mainVideoEl.addEventListener("loadedmetadata", () => {
 			this.updateOverlayDimensions();
@@ -87,14 +89,18 @@ export class VideoStreamManager {
 
 	private updateOrientation(): void {
 		if (this.mainCamera.shouldFlip) {
+			debugLog("Flipping main camera video horizontally");
 			mainVideoEl.classList.add("front-camera");
 		} else {
+			debugLog("Setting main camera video to normal orientation");
 			mainVideoEl.classList.remove("front-camera");
 		}
 
 		if (this.overlayCamera?.shouldFlip) {
+			debugLog("Flipping overlay camera video horizontally");
 			overlayVideoEl.classList.add("front-camera");
 		} else {
+			debugLog("Setting overlay camera video to normal orientation");
 			overlayVideoEl.classList.remove("front-camera");
 		}
 	}
