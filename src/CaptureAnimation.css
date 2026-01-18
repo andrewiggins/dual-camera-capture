@@ -1,0 +1,16 @@
+#captureFlash {
+	position: fixed;
+	inset: 0;
+	background: #fff;
+	opacity: 0;
+	pointer-events: none;
+	z-index: 100;
+}
+
+#captureAnimatedImage {
+	position: fixed;
+	opacity: 0;
+	pointer-events: none;
+	z-index: 99;
+	object-fit: cover;
+}

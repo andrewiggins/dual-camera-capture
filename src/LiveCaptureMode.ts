@@ -4,6 +4,7 @@ import type { CaptureMode } from "./DualCameraApp.ts";
 import type { VideoStreamManager } from "./VideoStreamManager.ts";
 import type { CaptureDialog } from "./CaptureDialog.ts";
 import { showStatus } from "./showStatus.ts";
+import { CaptureAnimation, getDialogCenterTarget } from "./CaptureAnimation.ts";
 
 /**
  * Live Capture Mode - Simultaneous dual camera streams
@@ -13,11 +14,13 @@ export class LiveCaptureMode implements CaptureMode {
 	type: string;
 	private streamManager: VideoStreamManager;
 	private captureDialog: CaptureDialog;
+	private animation: CaptureAnimation;
 
 	constructor(streamManager: VideoStreamManager, captureDialog: CaptureDialog) {
 		this.type = "LiveCaptureMode";
 		this.streamManager = streamManager;
 		this.captureDialog = captureDialog;
+		this.animation = new CaptureAnimation();
 	}
 
 	async init(): Promise<void> {
@@ -50,6 +53,14 @@ export class LiveCaptureMode implements CaptureMode {
 		try {
 			const blob = await CaptureUtils.canvasToBlob(mainImage);
 			debugLog("Photo capture complete");
+
+			// Create blob URL for animation
+			const animationUrl = URL.createObjectURL(blob);
+			const target = getDialogCenterTarget(mainImage.width, mainImage.height);
+
+			// Play animation, then show dialog
+			await this.animation.play(animationUrl, target);
+			URL.revokeObjectURL(animationUrl);
 
 			this.captureDialog.show(blob, mainImage.width, mainImage.height);
 		} catch (e) {
