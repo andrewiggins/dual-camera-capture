@@ -5,6 +5,7 @@ import { showStatus } from "./showStatus.ts";
 import type { CaptureMode } from "./DualCameraApp.ts";
 import type { VideoStreamManager } from "./VideoStreamManager.ts";
 import type { CaptureDialog } from "./CaptureDialog.ts";
+import { CaptureAnimation, getDialogCenterTarget, getOverlayPreviewTarget } from "./CaptureAnimation.ts";
 
 /**
  * Sequential Capture Mode - One camera at a time
@@ -14,6 +15,7 @@ export class SequentialCaptureMode implements CaptureMode {
 	type: string;
 	private streamManager: VideoStreamManager;
 	private captureDialog: CaptureDialog;
+	private animation: CaptureAnimation;
 	private capturedOverlay: OffscreenCanvas | null = null;
 	private step = 0; // 0 = not started, 1 = capturing overlay, 2 = capturing main
 
@@ -21,6 +23,7 @@ export class SequentialCaptureMode implements CaptureMode {
 		this.type = "SequentialCaptureMode";
 		this.streamManager = streamManager;
 		this.captureDialog = captureDialog;
+		this.animation = new CaptureAnimation();
 	}
 
 	async init(): Promise<void> {
@@ -80,17 +83,26 @@ export class SequentialCaptureMode implements CaptureMode {
 			mainVideo.camera.shouldFlip,
 		);
 
+		debugLog("Overlay captured", {
+			width: this.capturedOverlay.width,
+			height: this.capturedOverlay.height,
+		});
+
+		// Create temp blob for animation
+		const animationBlob = await CaptureUtils.canvasToBlob(this.capturedOverlay);
+		const animationUrl = URL.createObjectURL(animationBlob);
+		const target = getOverlayPreviewTarget();
+
+		// Play animation, then show preview
+		await this.animation.play(animationUrl, target);
+		URL.revokeObjectURL(animationUrl);
+
 		// Show preview
 		const previewCanvas = elements.sequentialOverlayCanvas;
 		previewCanvas.width = this.capturedOverlay.width;
 		previewCanvas.height = this.capturedOverlay.height;
 		previewCanvas.getContext("2d")!.drawImage(this.capturedOverlay, 0, 0);
 		elements.sequentialOverlayPlaceholder.style.display = "none";
-
-		debugLog("Overlay captured", {
-			width: this.capturedOverlay.width,
-			height: this.capturedOverlay.height,
-		});
 
 		// Move to step 2 and switch to the other camera
 		this.step = 2;
@@ -115,6 +127,14 @@ export class SequentialCaptureMode implements CaptureMode {
 		try {
 			const blob = await CaptureUtils.canvasToBlob(canvas);
 			debugLog("Photo capture complete");
+
+			// Create blob URL for animation
+			const animationUrl = URL.createObjectURL(blob);
+			const target = getDialogCenterTarget(canvas.width, canvas.height);
+
+			// Play animation, then show dialog
+			await this.animation.play(animationUrl, target);
+			URL.revokeObjectURL(animationUrl);
 
 			this.captureDialog.show(blob, canvas.width, canvas.height);
 			if (this.streamManager.hasDualCameras()) {
