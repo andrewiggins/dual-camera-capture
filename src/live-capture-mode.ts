@@ -47,54 +47,29 @@ export class LiveCaptureMode implements CaptureMode {
 	}
 
 	async capture(): Promise<void> {
-		const overlayCamera = this.streamManager.getOverlayCamera();
-
 		debugLog("LiveCaptureMode.capture()", {
 			mainVideoWidth: elements.mainVideo.videoWidth,
 			mainVideoHeight: elements.mainVideo.videoHeight,
-			hasOverlay: !!overlayCamera,
+			hasOverlay: !!this.streamManager.getOverlayCamera(),
 		});
 
-		const canvas = elements.canvas;
-		CaptureUtils.drawVideoToCanvas(
+		const mainImage = CaptureUtils.drawVideoToCanvas(
 			elements.mainVideo,
-			canvas,
 			this.streamManager.isMainFront(),
 		);
 
-		const ctx = canvas.getContext("2d")!;
-		const overlayWidth = canvas.width * 0.25;
-		// Overlay height matches main video's viewport aspect ratio
-		const overlayHeight =
-			(elements.mainVideo.clientHeight / elements.mainVideo.clientWidth) *
-			overlayWidth;
-		const overlayX = 20;
-		const overlayY = 20;
-		const borderRadius = 12;
-
-		if (overlayCamera) {
-			// Create temp canvas with flipped overlay (front camera needs flip)
-			const tempCanvas = document.createElement("canvas");
-			CaptureUtils.drawVideoToCanvas(
+		if (this.streamManager.getOverlayCamera()) {
+			const overlayImage = CaptureUtils.drawVideoToCanvas(
 				elements.overlayVideo,
-				tempCanvas,
 				!this.streamManager.isMainFront(),
 			);
-
-			CaptureUtils.drawRoundedOverlay(
-				ctx,
-				tempCanvas,
-				overlayX,
-				overlayY,
-				overlayWidth,
-				overlayHeight,
-				borderRadius,
-			);
+			CaptureUtils.drawOverlayOnMainCanvas(mainImage, overlayImage);
 		}
 
 		try {
-			const blob = await CaptureUtils.canvasToBlob(canvas);
+			const blob = await CaptureUtils.canvasToBlob(mainImage);
 			debugLog("Photo capture complete");
+
 			this.captureDialog.show(blob);
 		} catch (e) {
 			debugLog("Failed to capture photo", e, true);
@@ -131,7 +106,6 @@ export class LiveCaptureMode implements CaptureMode {
 	}
 
 	cleanup(): void {
-		debugLog("LiveCaptureMode.cleanup()");
 		// UI-only cleanup - streams managed by VideoStreamManager
 	}
 }

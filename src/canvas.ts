@@ -1,5 +1,3 @@
-import { debugLog } from "./debug.ts";
-
 /**
  * Calculate the source crop region for object-fit: cover behavior.
  * Returns the portion of the source that's visible in the viewport.
@@ -38,11 +36,8 @@ function calculateCoverCrop(
  */
 export function drawVideoToCanvas(
 	video: HTMLVideoElement,
-	canvas: HTMLCanvasElement,
 	flipHorizontal = false,
-): CanvasRenderingContext2D {
-	const ctx = canvas.getContext("2d")!;
-
+): OffscreenCanvas {
 	// Get viewport dimensions (what user sees) and source dimensions (full stream)
 	const viewportWidth = video.clientWidth;
 	const viewportHeight = video.clientHeight;
@@ -56,8 +51,12 @@ export function drawVideoToCanvas(
 		srcHeight / viewportHeight,
 		1,
 	);
-	canvas.width = Math.round(viewportWidth * scale);
-	canvas.height = Math.round(viewportHeight * scale);
+
+	const width = Math.round(viewportWidth * scale);
+	const height = Math.round(viewportHeight * scale);
+
+	const canvas = new OffscreenCanvas(width, height);
+	const ctx = canvas.getContext("2d")!;
 
 	// Calculate which portion of the source video is visible (object-fit: cover)
 	const { sx, sy, sw, sh } = calculateCoverCrop(
@@ -76,14 +75,14 @@ export function drawVideoToCanvas(
 	ctx.drawImage(video, sx, sy, sw, sh, 0, 0, canvas.width, canvas.height);
 	ctx.restore();
 
-	return ctx;
+	return canvas;
 }
 
 /**
  * Draw a rounded rectangle path (helper for overlay drawing)
  */
 function roundedRectPath(
-	ctx: CanvasRenderingContext2D,
+	ctx: OffscreenCanvasRenderingContext2D,
 	x: number,
 	y: number,
 	width: number,
@@ -106,17 +105,28 @@ function roundedRectPath(
 /**
  * Draw an overlay image with rounded corners and border
  */
-export function drawRoundedOverlay(
-	ctx: CanvasRenderingContext2D,
-	image: CanvasImageSource,
-	x: number,
-	y: number,
-	width: number,
-	height: number,
-	borderRadius: number,
+export function drawOverlayOnMainCanvas(
+	mainImage: OffscreenCanvas,
+	overlayImage: CanvasImageSource,
 ): void {
+	const overlayWidth = mainImage.width * 0.25;
+	// Overlay height matches main video's viewport aspect ratio
+	const overlayHeight = (mainImage.height / mainImage.width) * overlayWidth;
+	const overlayX = 20;
+	const overlayY = 20;
+	const borderRadius = 12;
+
+	const ctx = mainImage.getContext("2d")!;
+
 	ctx.save();
-	roundedRectPath(ctx, x, y, width, height, borderRadius);
+	roundedRectPath(
+		ctx,
+		overlayX,
+		overlayY,
+		overlayWidth,
+		overlayHeight,
+		borderRadius,
+	);
 
 	// Draw black border
 	ctx.strokeStyle = "#000";
@@ -125,22 +135,16 @@ export function drawRoundedOverlay(
 
 	// Clip and draw image
 	ctx.clip();
-	ctx.drawImage(image, x, y, width, height);
+	ctx.drawImage(overlayImage, overlayX, overlayY, overlayWidth, overlayHeight);
 	ctx.restore();
 }
 
 /**
  * Convert a canvas to a PNG blob
  */
-export function canvasToBlob(canvas: HTMLCanvasElement): Promise<Blob> {
-	return new Promise((resolve, reject) => {
-		canvas.toBlob((blob) => {
-			if (!blob) {
-				reject(new Error("Failed to create blob"));
-				return;
-			}
-			debugLog("Blob created", { size: blob.size, type: blob.type });
-			resolve(blob);
-		}, "image/png");
+export function canvasToBlob(canvas: OffscreenCanvas): Promise<Blob> {
+	return canvas.convertToBlob({
+		type: "image/png",
+		quality: 1.0,
 	});
 }

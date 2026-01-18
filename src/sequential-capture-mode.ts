@@ -14,7 +14,7 @@ export class SequentialCaptureMode implements CaptureMode {
 	type: string;
 	private streamManager: VideoStreamManager;
 	private captureDialog: CaptureDialog;
-	private capturedOverlay: ImageData | null = null;
+	private capturedOverlay: OffscreenCanvas | null = null;
 	private step = 0; // 0 = not started, 1 = capturing overlay, 2 = capturing main
 
 	constructor(streamManager: VideoStreamManager, captureDialog: CaptureDialog) {
@@ -63,22 +63,16 @@ export class SequentialCaptureMode implements CaptureMode {
 	private async captureOverlay(): Promise<void> {
 		debugLog("SequentialCaptureMode.captureOverlay()");
 
-		const canvas = elements.canvas;
-		CaptureUtils.drawVideoToCanvas(
+		this.capturedOverlay = CaptureUtils.drawVideoToCanvas(
 			elements.mainVideo,
-			canvas,
 			this.streamManager.isMainFront(),
 		);
 
-		// Store captured image
-		const ctx = canvas.getContext("2d")!;
-		this.capturedOverlay = ctx.getImageData(0, 0, canvas.width, canvas.height);
-
 		// Show preview
 		const previewCanvas = elements.sequentialOverlayCanvas;
-		previewCanvas.width = canvas.width;
-		previewCanvas.height = canvas.height;
-		previewCanvas.getContext("2d")!.putImageData(this.capturedOverlay, 0, 0);
+		previewCanvas.width = this.capturedOverlay.width;
+		previewCanvas.height = this.capturedOverlay.height;
+		previewCanvas.getContext("2d")!.drawImage(this.capturedOverlay, 0, 0);
 		elements.sequentialOverlayPlaceholder.style.display = "none";
 
 		debugLog("Overlay captured", {
@@ -97,41 +91,18 @@ export class SequentialCaptureMode implements CaptureMode {
 	private async captureMain(): Promise<void> {
 		debugLog("SequentialCaptureMode.captureMain()");
 
-		const canvas = elements.canvas;
-		CaptureUtils.drawVideoToCanvas(
+		const canvas = CaptureUtils.drawVideoToCanvas(
 			elements.mainVideo,
-			canvas,
 			this.streamManager.isMainFront(),
 		);
-
 		if (this.capturedOverlay) {
-			const ctx = canvas.getContext("2d")!;
-			const overlayWidth = canvas.width * 0.25;
-			// Use current viewport aspect ratio (matches CSS preview and live mode)
-			const overlayHeight =
-				(elements.mainVideo.clientHeight / elements.mainVideo.clientWidth) *
-				overlayWidth;
-
-			// Create temp canvas for overlay
-			const tempCanvas = document.createElement("canvas");
-			tempCanvas.width = this.capturedOverlay.width;
-			tempCanvas.height = this.capturedOverlay.height;
-			tempCanvas.getContext("2d")!.putImageData(this.capturedOverlay, 0, 0);
-
-			CaptureUtils.drawRoundedOverlay(
-				ctx,
-				tempCanvas,
-				20,
-				20,
-				overlayWidth,
-				overlayHeight,
-				12,
-			);
+			CaptureUtils.drawOverlayOnMainCanvas(canvas, this.capturedOverlay);
 		}
 
 		try {
 			const blob = await CaptureUtils.canvasToBlob(canvas);
 			debugLog("Photo capture complete");
+
 			this.captureDialog.show(blob);
 			await this.reset();
 		} catch (e) {

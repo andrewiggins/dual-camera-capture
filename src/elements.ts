@@ -6,7 +6,6 @@ export const mainVideo = document.getElementById(
 export const overlayVideo = document.getElementById(
 	"overlayVideo",
 ) as HTMLVideoElement;
-export const canvas = document.getElementById("canvas") as HTMLCanvasElement;
 export const captureBtn = document.getElementById(
 	"captureBtn",
 ) as HTMLButtonElement;
