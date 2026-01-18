@@ -185,4 +185,8 @@ export class VideoStreamManager {
 			video: overlayVideoEl,
 		};
 	}
+
+	hasDualCameras(): boolean {
+		return this.overlayCamera !== null;
+	}
 }

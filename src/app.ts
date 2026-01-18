@@ -7,6 +7,8 @@ import { VideoStreamManager } from "./video-stream-manager.ts";
 import { showStatus } from "./status.ts";
 
 const modeToggle = document.getElementById("modeToggle") as HTMLButtonElement;
+const switchBtn = document.getElementById("switchBtn") as HTMLButtonElement;
+const overlayError = document.getElementById("overlayError") as HTMLDivElement;
 
 /**
  * Interface for capture mode implementations
@@ -63,7 +65,7 @@ export class DualCameraApp {
 		);
 
 		// Force sequential mode on iOS with multiple cameras
-		if (isIOS && cameras.length >= 2) {
+		if (isIOS && this.streamManager.hasDualCameras()) {
 			debugLog(
 				"iOS detected with multiple cameras - forcing sequential capture mode",
 			);
@@ -78,17 +80,36 @@ export class DualCameraApp {
 			);
 
 			// Show mode toggle for non-iOS with multiple cameras
-			if (!isIOS && cameras.length >= 2) {
+			if (!isIOS && this.streamManager.hasDualCameras()) {
 				modeToggle.classList.add("show");
 			}
 		}
 
 		await this.currentMode.init();
+
+		// Handle single camera mode (shared logic)
+		if (!this.streamManager.hasDualCameras()) {
+			this.handleSingleCameraMode();
+		}
+
 		this.setupEventListeners();
 	}
 
+	/**
+	 * Handle single camera mode - shared logic for both capture modes
+	 * Disables switch functionality, shows error overlay, and shows status message
+	 */
+	private handleSingleCameraMode(): void {
+		debugLog("Entering single camera mode");
+		switchBtn.disabled = true;
+		switchBtn.style.opacity = "0.5";
+		switchBtn.style.cursor = "not-allowed";
+		overlayError.classList.add("show");
+		showStatus("Single camera mode", 2000);
+	}
+
 	private setupEventListeners(): void {
-		elements.switchBtn.addEventListener("click", async () => {
+		switchBtn.addEventListener("click", async () => {
 			debugLog("Switch button clicked");
 			await this.streamManager.swapCameras();
 		});
@@ -137,7 +158,6 @@ export class DualCameraApp {
 			);
 			modeToggle.textContent = "Sequential Mode";
 			elements.captureBtn.textContent = "Capture Photo";
-			elements.switchBtn.textContent = "Switch Cameras";
 			showStatus("Switching to live mode...");
 		} else {
 			// Switch to sequential mode

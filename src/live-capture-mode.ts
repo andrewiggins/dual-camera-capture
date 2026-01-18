@@ -1,7 +1,5 @@
 import { debugLog } from "./debug.ts";
-import * as elements from "./elements.ts";
 import * as CaptureUtils from "./canvas.ts";
-import * as UIUtils from "./ui-utils.ts";
 import type { CaptureMode } from "./app.ts";
 import type { VideoStreamManager } from "./video-stream-manager.ts";
 import type { CaptureDialog } from "./capture-dialog.ts";
@@ -25,19 +23,9 @@ export class LiveCaptureMode implements CaptureMode {
 	async init(): Promise<void> {
 		debugLog("LiveCaptureMode.init()");
 
-		const overlayCamera = this.streamManager.getOverlayCameraVideo();
-
-		if (overlayCamera) {
-			// Both cameras available - dual camera mode
-			debugLog("Both cameras available - dual camera mode");
+		if (this.streamManager.hasDualCameras()) {
 			this.streamManager.showOverlay();
 			showStatus("Cameras ready!", 2000);
-		} else {
-			// Single camera mode
-			debugLog("Only one camera available - single camera mode");
-			elements.overlayError.classList.add("show");
-			UIUtils.disableSwitchButton();
-			showStatus("Single camera mode", 2000);
 		}
 	}
 
@@ -92,6 +80,6 @@ export class LiveCaptureMode implements CaptureMode {
 	}
 
 	cleanup(): void {
-		// UI-only cleanup - streams managed by VideoStreamManager
+		// No UI cleanup needed - overlay error managed by DualCameraApp
 	}
 }

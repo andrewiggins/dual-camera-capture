@@ -26,18 +26,26 @@ export class SequentialCaptureMode implements CaptureMode {
 	async init(): Promise<void> {
 		debugLog("SequentialCaptureMode.init()");
 
-		// Hide overlay video, show sequential UI
+		// Hide overlay video
 		this.streamManager.hideOverlay();
-		elements.sequentialInstructions.classList.add("show");
-		elements.sequentialOverlayPreview.classList.add("show");
 
-		// Update button text
-		elements.captureBtn.textContent = "Capture Overlay";
-		elements.switchBtn.textContent = "Switch Camera";
+		if (this.streamManager.hasDualCameras()) {
+			// Dual camera mode - show sequential UI
+			elements.sequentialInstructions.classList.add("show");
+			elements.sequentialOverlayPreview.classList.add("show");
 
-		// Use whatever camera is currently set as main
-		this.step = 1;
-		this.updateInstructions();
+			// Update button text
+			elements.captureBtn.textContent = "Capture Overlay";
+
+			// Use whatever camera is currently set as main
+			this.step = 1;
+			this.updateInstructions();
+		} else {
+			// Single camera mode - simple capture (overlay error shown by DualCameraApp)
+			debugLog("Single camera mode - using simple capture");
+			elements.captureBtn.textContent = "Capture Photo";
+			this.step = 0;
+		}
 	}
 
 	private updateInstructions(): void {
@@ -53,7 +61,10 @@ export class SequentialCaptureMode implements CaptureMode {
 	async capture(): Promise<void> {
 		debugLog("SequentialCaptureMode.capture()", { step: this.step });
 
-		if (this.step === 1) {
+		if (this.step === 0) {
+			// Single camera mode - reuse captureMain (no overlay, no reset)
+			await this.captureMain();
+		} else if (this.step === 1) {
 			await this.captureOverlay();
 		} else if (this.step === 2) {
 			await this.captureMain();
@@ -106,7 +117,9 @@ export class SequentialCaptureMode implements CaptureMode {
 			debugLog("Photo capture complete");
 
 			this.captureDialog.show(blob);
-			await this.reset();
+			if (this.streamManager.hasDualCameras()) {
+				await this.reset();
+			}
 		} catch (e) {
 			debugLog("Failed to capture photo", e, true);
 			showStatus("Error: Failed to capture photo");
@@ -162,7 +175,6 @@ export class SequentialCaptureMode implements CaptureMode {
 		// Hide sequential UI
 		elements.sequentialInstructions.classList.remove("show");
 		elements.sequentialOverlayPreview.classList.remove("show");
-		this.streamManager.showOverlay();
 		elements.sequentialOverlayPlaceholder.style.display = "flex";
 	}
 }

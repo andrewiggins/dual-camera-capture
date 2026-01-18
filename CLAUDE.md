@@ -18,7 +18,6 @@ This is a web application that captures photos from both front and back cameras 
 - `src/elements.ts` - DOM element references
 - `src/camera.ts` - `Camera` class, `FacingMode` type, `getCameras()` for camera enumeration
 - `src/canvas.ts` - Canvas utilities (drawVideoToCanvas, drawRoundedOverlay, downloadCanvas)
-- `src/ui-utils.ts` - `UIUtils` (status messages, orientation updates)
 - `src/live-capture-mode.ts` - `LiveCaptureMode` class (simultaneous dual camera)
 - `src/sequential-capture-mode.ts` - `SequentialCaptureMode` class (one camera at a time)
 - `src/debug.ts` - Debug utilities (exports `DEBUG`, `debugLog`, `initDebug`)
