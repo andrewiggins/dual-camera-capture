@@ -11,60 +11,74 @@ This is a web application that captures photos from both front and back cameras 
 **File Structure**:
 
 - `index.html` - HTML markup only
+- `camera-viewer.html` - Simple camera tester for debugging
 - `src/index.css` - Main application styles
-- `src/debug.css` - Debug panel styles
+- `src/debugLog.css` - Debug panel styles
+- `src/CaptureDialog.css` - Capture preview dialog styles
 - `src/index.ts` - Entry point (initializes debug and starts app)
-- `src/app.ts` - `DualCameraApp` controller class, `CaptureMode` interface, iOS detection
+- `src/DualCameraApp.ts` - `DualCameraApp` controller class, `CaptureMode` interface, iOS detection
 - `src/elements.ts` - DOM element references
-- `src/camera.ts` - `Camera` class, `FacingMode` type, `getCameras()` for camera enumeration
-- `src/canvas.ts` - Canvas utilities (drawVideoToCanvas, drawRoundedOverlay, downloadCanvas)
-- `src/live-capture-mode.ts` - `LiveCaptureMode` class (simultaneous dual camera)
-- `src/sequential-capture-mode.ts` - `SequentialCaptureMode` class (one camera at a time)
-- `src/debug.ts` - Debug utilities (exports `DEBUG`, `debugLog`, `initDebug`)
+- `src/getCameras.ts` - `Camera` class, `FacingMode` type, `getCameras()` for camera enumeration
+- `src/canvas.ts` - Canvas utilities using OffscreenCanvas (drawVideoToCanvas, drawOverlayOnMainCanvas, canvasToBlob)
+- `src/LiveCaptureMode.ts` - `LiveCaptureMode` class (simultaneous dual camera)
+- `src/SequentialCaptureMode.ts` - `SequentialCaptureMode` class (one camera at a time)
+- `src/VideoStreamManager.ts` - `VideoStreamManager` class for centralized stream lifecycle
+- `src/CaptureDialog.ts` - `CaptureDialog` custom element for photo preview before download
+- `src/showStatus.ts` - `showStatus()` function for status messages
+- `src/debugLog.ts` - Debug utilities (exports `DEBUG`, `debugLog`, `initDebug`)
 
 **Build Process**: Uses Vite for development server and production builds. TypeScript is used for type safety with `tsc` for type checking only (Vite handles compilation).
 
 **Camera Management**:
 
-- `Camera` class wraps `MediaStream` and tracks deviceId and facingMode
+- `Camera` class wraps `MediaStream` and tracks deviceId, facingMode, and `shouldFlip` (true for front-facing cameras)
 - `getCameras()` function initializes cameras using facingMode constraints first, then falls back to deviceId enumeration
+- On iOS, cameras are stopped immediately after discovery to prevent stream collisions
 - Cameras are initialized once at app startup, then passed to capture mode classes
-- Graceful degradation: If only one camera is available, enters single-camera mode with error overlay
+- Graceful degradation: If only one camera is available, enters single-camera mode
 
 **Class Architecture**:
 
 - `DualCameraApp`: Main controller that manages capture modes and event listeners
-- `Camera`: Wrapper class for MediaStream with deviceId/facingMode tracking and start/stop lifecycle
+- `Camera`: Wrapper class for MediaStream with deviceId/facingMode/shouldFlip tracking and start/stop lifecycle
+- `VideoStreamManager`: Centralizes stream lifecycle, handles camera swapping, orientation updates, and overlay dimensions
 - `LiveCaptureMode`: Handles simultaneous dual camera streams (non-iOS)
-- `SequentialCaptureMode`: Handles one-camera-at-a-time capture (iOS or optional)
-- Both mode classes implement `CaptureMode` interface: `init()`, `capture()`, `switchCameras()`, `cleanup()`, `pause()`, `resume()`
+- `SequentialCaptureMode`: Handles one-camera-at-a-time capture (iOS or optional), supports single camera mode
+- `CaptureDialog`: Custom element for photo preview with download/share options before saving
+- Both capture mode classes implement `CaptureMode` interface: `init()`, `capture()`, `cleanup()`, `pause()`, `resume()`
 
 **Stream Architecture**:
 
+- `VideoStreamManager` manages video element to camera stream bindings
 - `mainCamera`: The primary `Camera` object (initially back/environment camera, displayed full-screen)
 - `overlayCamera`: The secondary `Camera` object (initially front/user camera, displayed as picture-in-picture)
 - Cameras are swapped when user clicks "Switch Cameras" button or taps the overlay video
 - Each `Camera` manages its own `MediaStream` internally via `getStream()` and `stop()` methods
+- Overlay dimensions dynamically match viewport aspect ratio via CSS custom properties
 
 **Photo Capture**:
 
-- Uses HTML5 Canvas to composite both video streams
-- Main feed rendered at full canvas size
+- Uses OffscreenCanvas to composite video streams (no DOM canvas element needed)
+- Canvas captures viewport aspect ratio, not raw video stream dimensions
+- Main feed rendered at full canvas size with object-fit: cover cropping applied
 - Overlay feed rendered in top-left corner with rounded corners and black border
-- If second camera unavailable, error overlay drawn on canvas instead
+- If second camera unavailable, no overlay is rendered (single camera mode)
+- Captured photo shown in CaptureDialog for preview before download/share
+- Web Share API supported for sharing on mobile devices
 - Image downloaded as PNG with timestamp filename
 
 **UI States**:
 
 - Dual camera mode: Both cameras active, switch button enabled
-- Single camera mode: One camera active, error overlay shown, switch button disabled
-- Status messages shown temporarily in top-right corner
+- Single camera mode: One camera active, switch button disabled, captures render without overlay
+- Status messages shown temporarily in top-right corner via `showStatus()`
 
 ## Development
 
 **Running Locally**: Run `npm run dev` to start the Vite development server. HTTPS is required for camera access on non-localhost domains.
 
 **Commands**:
+
 - `npm run dev` - Start development server
 - `npm run build` - Build for production (outputs to `dist/`)
 - `npm run preview` - Preview production build locally
@@ -80,15 +94,16 @@ This is a web application that captures photos from both front and back cameras 
 
 **Mobile Viewport Handling**: Uses dynamic viewport height (`100dvh`) to handle Android/iOS browser chrome that slides in/out. Safe area insets (`env(safe-area-inset-bottom)`) ensure buttons stay visible above system UI (home indicators, navigation bars). The `viewport-fit=cover` meta tag enables safe area support.
 
-**Front Camera Orientation**: Front-facing camera feed is horizontally flipped (`scaleX(-1)`) to create a mirror effect, preventing upside-down appearance in landscape mode. The `updateCameraOrientation()` function tracks which camera is active and applies the `.front-camera` CSS class. Canvas capture also applies the flip transformation when drawing front camera feeds.
+**Front Camera Orientation**: Front-facing camera feed is horizontally flipped (`scaleX(-1)`) to create a mirror effect, preventing upside-down appearance in landscape mode. The `Camera.shouldFlip` property indicates which cameras need flipping, and `VideoStreamManager` applies the `.front-camera` CSS class accordingly. Canvas capture also applies the flip transformation when drawing front camera feeds.
 
 **Rounded Corners on Canvas**: The overlay in captured photos uses quadraticCurveTo to draw rounded rectangles, not CSS border-radius (which only affects DOM rendering).
 
 **Error Handling**: Camera initialization errors are logged but app continues in degraded mode. No camera = error message shown.
 
-**Browser Compatibility**: Relies on modern browser APIs (getUserMedia, Canvas, Blob). Mobile browsers must support "environment" facingMode constraint for best results.
+**Browser Compatibility**: Relies on modern browser APIs (getUserMedia, OffscreenCanvas, Blob, Web Share API). Mobile browsers must support "environment" facingMode constraint for best results.
 
 **Sequential Capture Mode**: An alternative capture mode where photos are taken one at a time instead of using simultaneous camera streams:
+
 1. User captures the first photo (becomes the overlay)
 2. App automatically switches to the other camera
 3. User captures the second photo (becomes the main image)
@@ -96,4 +111,4 @@ This is a web application that captures photos from both front and back cameras 
 
 This mode is **forced on iOS** because iOS Safari cannot run two camera streams simultaneously (WebKit limitation). On other devices with multiple cameras, users can optionally switch to sequential mode using the "Sequential Mode" button.
 
-iOS detection (in `app.ts`) uses user agent string and `maxTouchPoints` for iPad detection.
+iOS detection (in `DualCameraApp.ts`) uses user agent string and `maxTouchPoints` for iPad detection.
