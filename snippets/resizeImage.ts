@@ -1,37 +1,71 @@
 async function resizeImage(
-	image: Blob | MediaSource,
+	file: ImageBitmapSource,
 	maxWidth: number,
 	maxHeight: number,
-	options: { quality?: number; type?: string; highQuality?: boolean } = {},
+	options: {
+		quality?: number;
+		type?: string;
+		highQuality?: boolean;
+		progressiveFactor?: number;
+	} = {},
 ) {
 	const {
-		quality = 0.9, // JPEG/WebP quality
-		type = "image/jpeg", // output format
-		highQuality = false, // enable high-quality smoothing
+		quality = 0.9,
+		type = "image/jpeg",
+		highQuality = false,
+		progressiveFactor = 0.5, // scale down in steps (0.5 = half each step)
 	} = options;
 
-	const img = new Image();
-	img.src = URL.createObjectURL(image);
-	await img.decode();
+	// --- 1. Decode image with EXIF orientation handling ---
+	const bitmap = await createImageBitmap(file, {
+		imageOrientation: "from-image", // auto-rotate based on EXIF
+	});
 
-	const scale = Math.min(maxWidth / img.width, maxHeight / img.height);
-	const width = img.width * scale;
-	const height = img.height * scale;
+	let { width, height } = bitmap;
 
-	const canvas = document.createElement("canvas");
-	canvas.width = width;
-	canvas.height = height;
+	// --- 2. Compute final target size ---
+	const scale = Math.min(maxWidth / width, maxHeight / height, 1);
+	const targetWidth = Math.round(width * scale);
+	const targetHeight = Math.round(height * scale);
 
-	const ctx = canvas.getContext("2d")!;
+	// --- 3. Progressive downscaling using OffscreenCanvas ---
+	let currentBitmap = bitmap;
 
-	if (highQuality) {
-		ctx.imageSmoothingEnabled = true;
-		ctx.imageSmoothingQuality = "high";
+	while (width * progressiveFactor > targetWidth) {
+		const stepWidth = Math.round(width * progressiveFactor);
+		const stepHeight = Math.round(height * progressiveFactor);
+
+		const stepCanvas = new OffscreenCanvas(stepWidth, stepHeight);
+		const stepCtx = stepCanvas.getContext("2d")!;
+
+		if (highQuality) {
+			stepCtx.imageSmoothingEnabled = true;
+			stepCtx.imageSmoothingQuality = "high";
+		}
+
+		stepCtx.drawImage(currentBitmap, 0, 0, stepWidth, stepHeight);
+
+		currentBitmap = await createImageBitmap(stepCanvas);
+		width = stepWidth;
+		height = stepHeight;
 	}
 
-	ctx.drawImage(img, 0, 0, width, height);
+	// --- 4. Final resize to target dimensions ---
+	const finalCanvas = new OffscreenCanvas(targetWidth, targetHeight);
+	const finalCtx = finalCanvas.getContext("2d")!;
 
-	return new Promise((resolve) => {
-		canvas.toBlob((blob) => resolve(blob), type, quality);
+	if (highQuality) {
+		finalCtx.imageSmoothingEnabled = true;
+		finalCtx.imageSmoothingQuality = "high";
+	}
+
+	finalCtx.drawImage(currentBitmap, 0, 0, targetWidth, targetHeight);
+
+	// --- 5. Export as Blob ---
+	const blob = await finalCanvas.convertToBlob({
+		type,
+		quality,
 	});
+
+	return blob;
 }
