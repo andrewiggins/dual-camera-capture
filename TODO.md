@@ -1,5 +1,8 @@
+- [ ] SequentialOverlayMode should clear the overlay preview if the mode is switched and an overlay has been taken
+- [ ] Add the ability to move the overlay to other corners of the screen
+- [ ] Consider cycling through all cameras? in switch camera? Or showing a popup to select? Or some other settings UI?
 - [ ] Add basic PWA functionality so it can be pinned to the homescreen and used offline
-- [ ] Consider adding a way to turn on debug without modifying URL since that won't be possible in PWA
-- [ ] Consider refactor into a Preact + Signals app
+- [ ] Add settings panel to control whether camera fills the screen or fits the screen, as well as shows logs
+  - [ ] Consider adding a way to turn on debug without modifying URL since that won't be possible in PWA
 - [ ] Add a little flash animation when a photo is taken
-- [ ] Animate the image from the main camera to the overlay in sequential mode (view transitions?)
+- [ ] Consider refactor into a Preact + Signals app
