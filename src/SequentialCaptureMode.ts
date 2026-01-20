@@ -198,8 +198,16 @@ export class SequentialCaptureMode implements CaptureMode {
 
 	cleanup(): void {
 		debugLog("SequentialCaptureMode.cleanup()");
+
 		this.capturedOverlay = null;
-		this.step = 0;
+		this.step = 1;
+
+		// Clear preview and show placeholder
+		const previewCanvas = elements.sequentialOverlayCanvas;
+		previewCanvas
+			.getContext("2d")!
+			.clearRect(0, 0, previewCanvas.width, previewCanvas.height);
+		elements.sequentialOverlayPlaceholder.style.display = "flex";
 
 		// Hide sequential UI
 		elements.sequentialInstructions.classList.remove("show");

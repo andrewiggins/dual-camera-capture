@@ -1,4 +1,3 @@
-- [ ] SequentialOverlayMode should clear the overlay preview if the mode is switched and an overlay has been taken
 - [ ] Add the ability to move the overlay to other corners of the screen
 - [ ] Consider cycling through all cameras? in switch camera? Or showing a popup to select? Or some other settings UI?
 - [ ] Add basic PWA functionality so it can be pinned to the homescreen and used offline
