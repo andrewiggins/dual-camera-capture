@@ -100,19 +100,24 @@ export class SequentialCaptureMode implements CaptureMode {
 		const previewCanvas = elements.sequentialOverlayCanvas;
 
 		// Play animation with OffscreenCanvas directly, then show preview
-		await this.animation.play(this.capturedOverlay, "overlay-preview", () => {
-			// Apply view-transition-name dynamically to canvas during transition
-			previewCanvas.style.viewTransitionName = "overlay-preview";
-			previewCanvas.width = this.capturedOverlay!.width;
-			previewCanvas.height = this.capturedOverlay!.height;
-			previewCanvas.getContext("2d")!.drawImage(this.capturedOverlay!, 0, 0);
-			elements.sequentialOverlayPlaceholder.style.display = "none";
-		});
+		await this.animation.play(
+			this.capturedOverlay,
+			"overlay-preview",
+			async () => {
+				// Apply view-transition-name dynamically to canvas during transition
+				previewCanvas.style.viewTransitionName = "overlay-preview";
+				previewCanvas.width = this.capturedOverlay!.width;
+				previewCanvas.height = this.capturedOverlay!.height;
+				previewCanvas.getContext("2d")!.drawImage(this.capturedOverlay!, 0, 0);
+				elements.sequentialOverlayPlaceholder.style.display = "none";
+
+				await this.streamManager.swapCameras();
+			},
+		);
 		previewCanvas.style.viewTransitionName = "";
 
 		// Move to step 2 and switch to the other camera
 		this.step = 2;
-		await this.streamManager.swapCameras();
 		this.updateInstructions();
 
 		showStatus("Overlay captured! Now capture main photo.", 2000);
