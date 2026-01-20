@@ -1,18 +1,18 @@
-/* Fullscreen capture image - shown briefly as transition source */
+/* Fullscreen capture canvas - shown briefly as transition source */
 /* view-transition-name is set dynamically to match the destination */
+/* Note: Canvas stretches to fill viewport; content is already sized to match viewport aspect ratio */
 #captureAnimatedImage {
+	display: none;
 	position: fixed;
 	inset: 0;
 	width: 100%;
 	height: 100%;
-	object-fit: cover;
 	pointer-events: none;
 	z-index: 99;
 }
 
-/* Hide when not in use */
-#captureAnimatedImage:not(.active) {
-	display: none;
+#captureAnimatedImage.active {
+	display: block;
 }
 
 /* Keep flash for visual feedback */

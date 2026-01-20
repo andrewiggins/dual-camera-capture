@@ -153,10 +153,6 @@ button {
 	display: block;
 }
 
-canvas {
-	display: none;
-}
-
 /* Sequential capture mode styles */
 #sequentialOverlayPreview {
 	position: absolute;

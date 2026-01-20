@@ -25,10 +25,10 @@
 	padding: 16px;
 }
 
+/* Canvas element - intrinsic size from width/height attributes, scaled by max-* constraints */
 .capture-dialog-image {
 	max-width: 100%;
 	max-height: calc(90vh - 100px);
-	object-fit: contain;
 	border-radius: 8px;
 	view-transition-name: dialog-image;
 }
@@ -59,6 +59,12 @@
 
 .capture-dialog-btn.download-btn:hover {
 	background-color: #45a049;
+}
+
+.capture-dialog-btn.download-btn.disabled {
+	background-color: #888;
+	pointer-events: none;
+	cursor: default;
 }
 
 .capture-dialog-btn.share-btn {

@@ -1,4 +1,5 @@
 import { debugLog } from "./debugLog.ts";
+import { canvasToBlob } from "./canvas.ts";
 import "./CaptureDialog.css";
 
 /**
@@ -6,12 +7,13 @@ import "./CaptureDialog.css";
  */
 export class CaptureDialog extends HTMLElement {
 	private dialog: HTMLDialogElement;
-	private image: HTMLImageElement;
+	private canvas: HTMLCanvasElement;
 	private downloadLink: HTMLAnchorElement;
 	private shareBtn: HTMLButtonElement;
 	private retakeBtn: HTMLButtonElement;
-	private currentBlob: Blob | null = null;
-	private currentUrl: string | null = null;
+	private sourceCanvas: OffscreenCanvas | null = null;
+	private blobPromise: Promise<Blob> | null = null;
+	private blobUrl: string | null = null;
 
 	constructor() {
 		super();
@@ -20,16 +22,16 @@ export class CaptureDialog extends HTMLElement {
 		this.dialog.className = "capture-dialog";
 		this.dialog.innerHTML = `
 			<div class="capture-dialog-content">
-				<img class="capture-dialog-image" alt="Captured photo" />
+				<canvas class="capture-dialog-image"></canvas>
 				<div class="capture-dialog-actions">
-					<a class="capture-dialog-btn download-btn" download>Download</a>
+					<a class="capture-dialog-btn download-btn disabled">Download</a>
 					<button class="capture-dialog-btn share-btn" type="button">Share</button>
 					<button class="capture-dialog-btn retake-btn" type="button">Take Another</button>
 				</div>
 			</div>
 		`;
 
-		this.image = this.dialog.querySelector(".capture-dialog-image")!;
+		this.canvas = this.dialog.querySelector(".capture-dialog-image")!;
 		this.downloadLink = this.dialog.querySelector(".download-btn")!;
 		this.shareBtn = this.dialog.querySelector(".share-btn")!;
 		this.retakeBtn = this.dialog.querySelector(".retake-btn")!;
@@ -72,25 +74,69 @@ export class CaptureDialog extends HTMLElement {
 	}
 
 	/**
-	 * Show the dialog with a captured image blob
-	 * @param blob The image blob to display
-	 * @param width The image width (used to reserve space before load)
-	 * @param height The image height (used to reserve space before load)
+	 * Show the dialog with a captured image from OffscreenCanvas
+	 * @param source The OffscreenCanvas containing the captured image
 	 */
-	show(blob: Blob, width: number, height: number): void {
+	show(source: OffscreenCanvas): void {
 		this.cleanup();
 
-		this.currentBlob = blob;
-		this.currentUrl = URL.createObjectURL(blob);
+		this.sourceCanvas = source;
 
-		// Set aspect-ratio before src to reserve space and prevent layout shift
-		this.image.style.aspectRatio = `${width} / ${height}`;
-		this.image.src = this.currentUrl;
-		this.downloadLink.href = this.currentUrl;
-		this.downloadLink.download = `dual-camera-${Date.now()}.png`;
+		// Set canvas dimensions and draw the image
+		this.canvas.width = source.width;
+		this.canvas.height = source.height;
+		const ctx = this.canvas.getContext("2d")!;
+		ctx.drawImage(source, 0, 0);
 
-		debugLog("CaptureDialog.show()", { blobSize: blob.size, width, height });
+		debugLog("CaptureDialog.show()", {
+			width: source.width,
+			height: source.height,
+		});
 		this.dialog.showModal();
+
+		// Start blob conversion in the next major task (link will be enabled when ready)
+		// so that the main thread work of convertToBlob doesn't block the dialog opening
+		setTimeout(() => this.prepareDownload(), 0);
+	}
+
+	/**
+	 * Get or create the blob from the source canvas.
+	 * Caches the promise to avoid duplicate conversions.
+	 */
+	private getBlob(): Promise<Blob> {
+		if (this.blobPromise) return this.blobPromise;
+		if (!this.sourceCanvas) {
+			return Promise.reject(new Error("No source canvas"));
+		}
+
+		performance.mark("blob-start");
+		this.blobPromise = canvasToBlob(this.sourceCanvas).then((blob) => {
+			const blobTime = performance.measure("blob-duration", "blob-start");
+			debugLog("Blob conversion complete", {
+				duration: blobTime.duration.toFixed(2),
+				size: blob.size,
+			});
+			return blob;
+		});
+
+		return this.blobPromise;
+	}
+
+	/**
+	 * Start blob conversion and enable download link when ready
+	 */
+	private async prepareDownload(): Promise<void> {
+		try {
+			const blob = await this.getBlob();
+
+			// Enable download link
+			this.blobUrl = URL.createObjectURL(blob);
+			this.downloadLink.href = this.blobUrl;
+			this.downloadLink.download = `dual-camera-${Date.now()}.jpg`;
+			this.downloadLink.classList.remove("disabled");
+		} catch (e) {
+			debugLog("Blob conversion failed:", e, true);
+		}
 	}
 
 	/**
@@ -103,13 +149,14 @@ export class CaptureDialog extends HTMLElement {
 	}
 
 	private async handleShare(): Promise<void> {
-		if (!this.currentBlob || !navigator.share) return;
-
-		const file = new File([this.currentBlob], `dual-camera-${Date.now()}.png`, {
-			type: "image/png",
-		});
+		if (!navigator.share) return;
 
 		try {
+			const blob = await this.getBlob();
+			const file = new File([blob], `dual-camera-${Date.now()}.jpg`, {
+				type: "image/jpeg",
+			});
+
 			await navigator.share({
 				files: [file],
 				title: "Dual Camera Photo",
@@ -124,16 +171,25 @@ export class CaptureDialog extends HTMLElement {
 
 	private cleanup(): void {
 		debugLog("CaptureDialog.cleanup()");
-		if (this.currentUrl) {
-			URL.revokeObjectURL(this.currentUrl);
-			this.currentUrl = null;
-		}
-		this.currentBlob = null;
+		this.sourceCanvas = null;
+		this.blobPromise = null;
 
-		this.image.style.aspectRatio = "";
-		this.image.src = "";
+		// Revoke blob URL
+		if (this.blobUrl) {
+			URL.revokeObjectURL(this.blobUrl);
+			this.blobUrl = null;
+		}
+
+		// Reset download link
 		this.downloadLink.href = "";
 		this.downloadLink.download = "";
+		this.downloadLink.classList.add("disabled");
+
+		// Clear canvas
+		const ctx = this.canvas.getContext("2d");
+		if (ctx) {
+			ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+		}
 	}
 }
 

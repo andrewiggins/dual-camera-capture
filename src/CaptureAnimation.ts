@@ -12,25 +12,25 @@ function afterFrameAsync(): Promise<void> {
  */
 export class CaptureAnimation {
 	private flashElement: HTMLDivElement;
-	private imageElement: HTMLImageElement;
+	private canvasElement: HTMLCanvasElement;
 
 	constructor() {
 		this.flashElement = document.getElementById(
 			"captureFlash",
 		) as HTMLDivElement;
-		this.imageElement = document.getElementById(
+		this.canvasElement = document.getElementById(
 			"captureAnimatedImage",
-		) as HTMLImageElement;
+		) as HTMLCanvasElement;
 	}
 
 	/**
 	 * Animate capture with ViewTransitions API
-	 * @param imageSource Blob URL for captured image
+	 * @param sourceCanvas OffscreenCanvas containing the captured image
 	 * @param transitionName The view-transition-name to use (must match destination element)
 	 * @param showDestination Callback that shows the destination element (dialog/preview)
 	 */
 	async play(
-		imageSource: string,
+		sourceCanvas: OffscreenCanvas,
 		transitionName: string,
 		showDestination: () => void,
 	): Promise<void> {
@@ -44,26 +44,32 @@ export class CaptureAnimation {
 			return;
 		}
 
-		// Set up source image (fullscreen) with matching transition name
-		this.imageElement.src = imageSource;
-		this.imageElement.style.viewTransitionName = transitionName;
-		this.imageElement.classList.add("active");
+		// Set canvas dimensions to match source
+		this.canvasElement.width = sourceCanvas.width;
+		this.canvasElement.height = sourceCanvas.height;
 
-		// Let captureImage render on screen first so ViewTransition doesn't animate it in
+		// Draw OffscreenCanvas to visible canvas (sync operation)
+		const ctx = this.canvasElement.getContext("2d")!;
+		ctx.drawImage(sourceCanvas, 0, 0);
+
+		this.canvasElement.style.viewTransitionName = transitionName;
+		this.canvasElement.classList.add("active");
+
+		// Let canvas render on screen first so ViewTransition doesn't animate it in
 		await afterFrameAsync();
 
 		// Start view transition
 		const transition = document.startViewTransition(() => {
 			// Hide source, show destination
-			this.imageElement.classList.remove("active");
+			this.canvasElement.classList.remove("active");
 			showDestination();
 		});
 
 		await transition.finished;
 
 		// Clean up
-		this.imageElement.style.viewTransitionName = "";
-		this.imageElement.src = "";
+		this.canvasElement.style.viewTransitionName = "";
+		ctx.clearRect(0, 0, this.canvasElement.width, this.canvasElement.height);
 	}
 
 	/**

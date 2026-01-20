@@ -1,10 +1,6 @@
 import { debugLog } from "./debugLog.ts";
 import * as elements from "./elements.ts";
-import {
-	drawVideoToCanvas,
-	drawOverlayOnMainCanvas,
-	canvasToBlob,
-} from "./canvas.ts";
+import { drawVideoToCanvas, drawOverlayOnMainCanvas } from "./canvas.ts";
 import { showStatus } from "./showStatus.ts";
 import type { CaptureMode } from "./DualCameraApp.ts";
 import type { VideoStreamManager } from "./VideoStreamManager.ts";
@@ -101,13 +97,10 @@ export class SequentialCaptureMode implements CaptureMode {
 			height: this.capturedOverlay.height,
 		});
 
-		// Create temp blob for animation
-		const animationBlob = await canvasToBlob(this.capturedOverlay);
-		const animationUrl = URL.createObjectURL(animationBlob);
 		const previewCanvas = elements.sequentialOverlayCanvas;
 
-		// Play animation, then show preview
-		await this.animation.play(animationUrl, "overlay-preview", () => {
+		// Play animation with OffscreenCanvas directly, then show preview
+		await this.animation.play(this.capturedOverlay, "overlay-preview", () => {
 			// Apply view-transition-name dynamically to canvas during transition
 			previewCanvas.style.viewTransitionName = "overlay-preview";
 			previewCanvas.width = this.capturedOverlay!.width;
@@ -116,7 +109,6 @@ export class SequentialCaptureMode implements CaptureMode {
 			elements.sequentialOverlayPlaceholder.style.display = "none";
 		});
 		previewCanvas.style.viewTransitionName = "";
-		URL.revokeObjectURL(animationUrl);
 
 		// Move to step 2 and switch to the other camera
 		this.step = 2;
@@ -142,25 +134,15 @@ export class SequentialCaptureMode implements CaptureMode {
 			);
 		}
 
-		try {
-			const blob = await canvasToBlob(canvas);
-			debugLog("Photo capture complete");
+		debugLog("Photo capture complete");
 
-			// Create blob URL for animation
-			const animationUrl = URL.createObjectURL(blob);
+		// Play animation with OffscreenCanvas directly (no blob conversion needed)
+		await this.animation.play(canvas, "dialog-image", () => {
+			this.captureDialog.show(canvas);
+		});
 
-			// Play animation, then show dialog
-			await this.animation.play(animationUrl, "dialog-image", () => {
-				this.captureDialog.show(blob, canvas.width, canvas.height);
-			});
-			URL.revokeObjectURL(animationUrl);
-
-			if (this.streamManager.hasDualCameras()) {
-				await this.reset();
-			}
-		} catch (e) {
-			debugLog("Failed to capture photo", e, true);
-			showStatus("Error: Failed to capture photo");
+		if (this.streamManager.hasDualCameras()) {
+			await this.reset();
 		}
 	}
 

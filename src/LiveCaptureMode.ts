@@ -1,9 +1,5 @@
 import { debugLog } from "./debugLog.ts";
-import {
-	drawVideoToCanvas,
-	drawOverlayOnMainCanvas,
-	canvasToBlob,
-} from "./canvas.ts";
+import { drawVideoToCanvas, drawOverlayOnMainCanvas } from "./canvas.ts";
 import type { CaptureMode } from "./DualCameraApp.ts";
 import type { VideoStreamManager } from "./VideoStreamManager.ts";
 import type { CaptureDialog } from "./CaptureDialog.ts";
@@ -65,35 +61,10 @@ export class LiveCaptureMode implements CaptureMode {
 			duration: drawTime.duration.toFixed(2),
 		});
 
-		try {
-			performance.mark("blob-start");
-			const blob = await canvasToBlob(mainImage);
-
-			const bloblTime = performance.measure("blob-duration", "blob-start");
-			debugLog("Convert to blob complete", {
-				duration: bloblTime.duration.toFixed(2),
-			});
-
-			// Create blob URL for animation
-			performance.mark("createObjectURL-start");
-			const animationUrl = URL.createObjectURL(blob);
-			const urlTime = performance.measure(
-				"createObjectURL-duration",
-				"createObjectURL-start",
-			);
-			debugLog("Blob URL created", {
-				duration: urlTime.duration.toFixed(2),
-			});
-
-			// Play animation, then show dialog
-			await this.animation.play(animationUrl, "dialog-image", () => {
-				this.captureDialog.show(blob, mainImage.width, mainImage.height);
-			});
-			URL.revokeObjectURL(animationUrl);
-		} catch (e) {
-			debugLog("Failed to capture photo", e, true);
-			showStatus("Error: Failed to capture photo");
-		}
+		// Play animation with OffscreenCanvas directly (no blob conversion needed)
+		await this.animation.play(mainImage, "dialog-image", () => {
+			this.captureDialog.show(mainImage);
+		});
 	}
 
 	async capture(): Promise<void> {
