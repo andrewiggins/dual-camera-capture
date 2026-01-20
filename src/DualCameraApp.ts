@@ -19,7 +19,7 @@ export interface CaptureMode {
 	init(): Promise<void>;
 	capture(): Promise<void>;
 	cleanup(): void;
-	pause(): Promise<void>;
+	stop(): Promise<void>;
 	resume(): Promise<void>;
 }
 
@@ -133,7 +133,7 @@ export class DualCameraApp {
 		debugLog("Visibility changed", { hidden: document.hidden });
 
 		if (document.hidden) {
-			await this.currentMode?.pause();
+			await this.currentMode?.stop();
 		} else {
 			await this.currentMode?.resume();
 		}

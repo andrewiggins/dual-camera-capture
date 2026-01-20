@@ -1,3 +1,4 @@
+- [ ] Try to avoid converting the blob to an image for animation purposes. Could we use an onscreen canvas instead so we don't block the animation on blob creation?
 - [ ] Add the ability to move the overlay to other corners of the screen
 - [ ] Add basic PWA functionality so it can be pinned to the homescreen and used offline
 - [ ] Consider cycling through all cameras? in switch camera? Or showing a popup to select? Or some other settings UI?

@@ -149,15 +149,27 @@ export class VideoStreamManager {
 		overlayVideoEl.style.display = "none";
 	}
 
-	async pauseAll(): Promise<void> {
-		debugLog("VideoStreamManager.pauseAll()");
+	pauseVideos(): void {
+		debugLog("VideoStreamManager.pauseVideos()");
+		mainVideoEl.pause();
+		overlayVideoEl.pause();
+	}
+
+	playVideos(): void {
+		debugLog("VideoStreamManager.playVideos()");
+		mainVideoEl.play();
+		overlayVideoEl.play();
+	}
+
+	async stopAllStreams(): Promise<void> {
+		debugLog("VideoStreamManager.stopAllStreams()");
 		this.mainCamera.stop();
 		this.overlayCamera?.stop();
 		mainVideoEl.srcObject = null;
 		overlayVideoEl.srcObject = null;
 	}
 
-	async resumeAll(): Promise<void> {
+	async resumeAllStreams(): Promise<void> {
 		debugLog("VideoStreamManager.resumeAll()", {
 			mainDeviceId: this.mainCamera.deviceId,
 			overlayDeviceId: this.overlayCamera?.deviceId,

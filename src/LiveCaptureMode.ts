@@ -36,7 +36,7 @@ export class LiveCaptureMode implements CaptureMode {
 		}
 	}
 
-	async capture(): Promise<void> {
+	private async doCapture(): Promise<void> {
 		debugLog("LiveCaptureMode.capture()");
 
 		performance.mark("capture-start");
@@ -96,15 +96,24 @@ export class LiveCaptureMode implements CaptureMode {
 		}
 	}
 
-	async pause(): Promise<void> {
+	async capture(): Promise<void> {
+		try {
+			this.streamManager.pauseVideos();
+			await this.doCapture();
+		} finally {
+			this.streamManager.playVideos();
+		}
+	}
+
+	async stop(): Promise<void> {
 		debugLog("LiveCaptureMode.pause()");
-		await this.streamManager.pauseAll();
+		await this.streamManager.stopAllStreams();
 	}
 
 	async resume(): Promise<void> {
 		showStatus("Resuming cameras...");
 		try {
-			await this.streamManager.resumeAll();
+			await this.streamManager.resumeAllStreams();
 			debugLog("Cameras resumed successfully");
 			showStatus("Cameras resumed!", 2000);
 		} catch (e) {

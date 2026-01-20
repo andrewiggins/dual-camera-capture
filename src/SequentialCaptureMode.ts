@@ -65,7 +65,7 @@ export class SequentialCaptureMode implements CaptureMode {
 		}
 	}
 
-	async capture(): Promise<void> {
+	private async doCapture(): Promise<void> {
 		debugLog("SequentialCaptureMode.capture()", { step: this.step });
 
 		if (this.step === 0) {
@@ -75,6 +75,15 @@ export class SequentialCaptureMode implements CaptureMode {
 			await this.captureOverlay();
 		} else if (this.step === 2) {
 			await this.captureMain();
+		}
+	}
+
+	async capture(): Promise<void> {
+		try {
+			this.streamManager.pauseVideos();
+			await this.doCapture();
+		} finally {
+			this.streamManager.playVideos();
 		}
 	}
 
@@ -173,9 +182,9 @@ export class SequentialCaptureMode implements CaptureMode {
 		this.updateInstructions();
 	}
 
-	async pause(): Promise<void> {
+	async stop(): Promise<void> {
 		debugLog("SequentialCaptureMode.pause()");
-		await this.streamManager.pauseAll();
+		await this.streamManager.stopAllStreams();
 	}
 
 	async resume(): Promise<void> {
@@ -183,7 +192,7 @@ export class SequentialCaptureMode implements CaptureMode {
 		showStatus("Resuming camera...");
 
 		try {
-			await this.streamManager.resumeAll();
+			await this.streamManager.resumeAllStreams();
 			debugLog("Camera resumed successfully");
 			showStatus("Camera resumed!", 2000);
 		} catch (e) {
