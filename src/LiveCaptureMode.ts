@@ -39,6 +39,8 @@ export class LiveCaptureMode implements CaptureMode {
 	async capture(): Promise<void> {
 		debugLog("LiveCaptureMode.capture()");
 
+		performance.mark("capture-start");
+		performance.mark("draw-start");
 		const mainVideo = this.streamManager.getMainCameraVideo();
 		const mainImage = drawVideoToCanvas(
 			mainVideo.video,
@@ -58,12 +60,30 @@ export class LiveCaptureMode implements CaptureMode {
 			);
 		}
 
+		const drawTime = performance.measure("draw-duration", "draw-start");
+		debugLog("Video frames drawn to canvas", {
+			duration: drawTime.duration.toFixed(2),
+		});
+
 		try {
+			performance.mark("blob-start");
 			const blob = await canvasToBlob(mainImage);
-			debugLog("Photo capture complete");
+
+			const bloblTime = performance.measure("blob-duration", "blob-start");
+			debugLog("Convert to blob complete", {
+				duration: bloblTime.duration.toFixed(2),
+			});
 
 			// Create blob URL for animation
+			performance.mark("createObjectURL-start");
 			const animationUrl = URL.createObjectURL(blob);
+			const urlTime = performance.measure(
+				"createObjectURL-duration",
+				"createObjectURL-start",
+			);
+			debugLog("Blob URL created", {
+				duration: urlTime.duration.toFixed(2),
+			});
 
 			// Play animation, then show dialog
 			await this.animation.play(animationUrl, "dialog-image", () => {

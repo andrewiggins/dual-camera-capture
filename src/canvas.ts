@@ -150,7 +150,7 @@ export function drawOverlayOnMainCanvas(
  */
 export function canvasToBlob(canvas: OffscreenCanvas): Promise<Blob> {
 	return canvas.convertToBlob({
-		type: "image/png",
-		quality: 1.0,
+		type: "image/jpeg",
+		quality: 0.75,
 	});
 }
