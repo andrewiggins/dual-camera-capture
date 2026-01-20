@@ -1,5 +1,9 @@
 import { debugLog } from "./debugLog.ts";
-import * as CaptureUtils from "./canvas.ts";
+import {
+	drawVideoToCanvas,
+	drawOverlayOnMainCanvas,
+	canvasToBlob,
+} from "./canvas.ts";
 import type { CaptureMode } from "./DualCameraApp.ts";
 import type { VideoStreamManager } from "./VideoStreamManager.ts";
 import type { CaptureDialog } from "./CaptureDialog.ts";
@@ -36,22 +40,26 @@ export class LiveCaptureMode implements CaptureMode {
 		debugLog("LiveCaptureMode.capture()");
 
 		const mainVideo = this.streamManager.getMainCameraVideo();
-		const mainImage = CaptureUtils.drawVideoToCanvas(
+		const mainImage = drawVideoToCanvas(
 			mainVideo.video,
 			mainVideo.camera.shouldFlip,
 		);
 
 		const overlayVideo = this.streamManager.getOverlayCameraVideo();
 		if (overlayVideo) {
-			const overlayImage = CaptureUtils.drawVideoToCanvas(
+			const overlayImage = drawVideoToCanvas(
 				overlayVideo.video,
 				overlayVideo.camera.shouldFlip,
 			);
-			CaptureUtils.drawOverlayOnMainCanvas(mainImage, overlayImage, mainVideo.video.clientWidth);
+			drawOverlayOnMainCanvas(
+				mainImage,
+				overlayImage,
+				mainVideo.video.clientWidth,
+			);
 		}
 
 		try {
-			const blob = await CaptureUtils.canvasToBlob(mainImage);
+			const blob = await canvasToBlob(mainImage);
 			debugLog("Photo capture complete");
 
 			// Create blob URL for animation

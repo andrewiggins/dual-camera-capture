@@ -1,6 +1,10 @@
 import { debugLog } from "./debugLog.ts";
 import * as elements from "./elements.ts";
-import * as CaptureUtils from "./canvas.ts";
+import {
+	drawVideoToCanvas,
+	drawOverlayOnMainCanvas,
+	canvasToBlob,
+} from "./canvas.ts";
 import { showStatus } from "./showStatus.ts";
 import type { CaptureMode } from "./DualCameraApp.ts";
 import type { VideoStreamManager } from "./VideoStreamManager.ts";
@@ -78,7 +82,7 @@ export class SequentialCaptureMode implements CaptureMode {
 		debugLog("SequentialCaptureMode.captureOverlay()");
 
 		const mainVideo = this.streamManager.getMainCameraVideo();
-		this.capturedOverlay = CaptureUtils.drawVideoToCanvas(
+		this.capturedOverlay = drawVideoToCanvas(
 			mainVideo.video,
 			mainVideo.camera.shouldFlip,
 		);
@@ -89,7 +93,7 @@ export class SequentialCaptureMode implements CaptureMode {
 		});
 
 		// Create temp blob for animation
-		const animationBlob = await CaptureUtils.canvasToBlob(this.capturedOverlay);
+		const animationBlob = await canvasToBlob(this.capturedOverlay);
 		const animationUrl = URL.createObjectURL(animationBlob);
 		const previewCanvas = elements.sequentialOverlayCanvas;
 
@@ -117,12 +121,12 @@ export class SequentialCaptureMode implements CaptureMode {
 		debugLog("SequentialCaptureMode.captureMain()");
 
 		const mainVideo = this.streamManager.getMainCameraVideo();
-		const canvas = CaptureUtils.drawVideoToCanvas(
+		const canvas = drawVideoToCanvas(
 			mainVideo.video,
 			mainVideo.camera.shouldFlip,
 		);
 		if (this.capturedOverlay) {
-			CaptureUtils.drawOverlayOnMainCanvas(
+			drawOverlayOnMainCanvas(
 				canvas,
 				this.capturedOverlay,
 				mainVideo.video.clientWidth,
@@ -130,7 +134,7 @@ export class SequentialCaptureMode implements CaptureMode {
 		}
 
 		try {
-			const blob = await CaptureUtils.canvasToBlob(canvas);
+			const blob = await canvasToBlob(canvas);
 			debugLog("Photo capture complete");
 
 			// Create blob URL for animation
