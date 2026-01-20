@@ -1,5 +1,6 @@
-- [ ] Try to avoid converting the blob to an image for animation purposes. Could we use an onscreen canvas instead so we don't block the animation on blob creation?
-- [ ] Add the ability to move the overlay to other corners of the screen
+- [ ] Add ability to retake overlay in sequential mode
+- [ ] Consider cleaning up sequential overlay animation (should buttons be over that animation?) (Maybe fade out overlay preview?)
+- [ ] Add the ability to move the overlay to other corners of the screen. Perhaps make dragging capability a custom element so the live/sequential previews/instructions can all use it?
 - [ ] Add basic PWA functionality so it can be pinned to the homescreen and used offline
 - [ ] Consider cycling through all cameras? in switch camera? Or showing a popup to select? Or some other settings UI?
 - [ ] Add settings panel to control whether camera fills the screen or fits the screen, as well as shows logs
