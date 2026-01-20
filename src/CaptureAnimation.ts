@@ -1,4 +1,11 @@
+import afterframe from "afterframe";
 import "./CaptureAnimation.css";
+
+function afterFrameAsync(): Promise<void> {
+	return new Promise((resolve) => {
+		afterframe(() => resolve());
+	});
+}
 
 /**
  * Handles capture animation effects using ViewTransitions API
@@ -41,6 +48,9 @@ export class CaptureAnimation {
 		this.imageElement.src = imageSource;
 		this.imageElement.style.viewTransitionName = transitionName;
 		this.imageElement.classList.add("active");
+
+		// Let captureImage render on screen first so ViewTransition doesn't animate it in
+		await afterFrameAsync();
 
 		// Start view transition
 		const transition = document.startViewTransition(() => {

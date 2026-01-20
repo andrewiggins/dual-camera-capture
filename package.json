@@ -24,6 +24,9 @@
     "url": "https://github.com/andrewiggins/dual-camera-capture/issues"
   },
   "homepage": "https://github.com/andrewiggins/dual-camera-capture#readme",
+  "dependencies": {
+    "afterframe": "^1.0.2"
+  },
   "devDependencies": {
     "prettier": "^3.0.0",
     "typescript": "^5.9.3",
