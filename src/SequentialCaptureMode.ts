@@ -24,6 +24,11 @@ export class SequentialCaptureMode implements CaptureMode {
 		this.streamManager = streamManager;
 		this.captureDialog = captureDialog;
 		this.animation = new CaptureAnimation();
+
+		// Resume videos when dialog closes
+		this.captureDialog.addEventListener("retake", () => {
+			this.streamManager.playVideos();
+		});
 	}
 
 	async init(): Promise<void> {
@@ -75,12 +80,9 @@ export class SequentialCaptureMode implements CaptureMode {
 	}
 
 	async capture(): Promise<void> {
-		try {
-			this.streamManager.pauseVideos();
-			await this.doCapture();
-		} finally {
-			this.streamManager.playVideos();
-		}
+		this.streamManager.pauseVideos();
+		await this.doCapture();
+		// Videos remain paused until dialog closes (retake event)
 	}
 
 	private async captureOverlay(): Promise<void> {
