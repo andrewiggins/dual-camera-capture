@@ -53,6 +53,7 @@ export class LiveCaptureMode implements CaptureMode {
 				mainImage,
 				overlayImage,
 				mainVideo.video.clientWidth,
+				this.streamManager.getOverlayCorner(),
 			);
 		}
 

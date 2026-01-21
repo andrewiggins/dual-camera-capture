@@ -83,6 +83,10 @@ This is a web application that captures photos from both front and back cameras 
 - `npm run build` - Build for production (outputs to `dist/`)
 - `npm run preview` - Preview production build locally
 - `npm run typecheck` - Run TypeScript type checker
+- `npm run check-format` - Check code formatting with Prettier
+- `npm run format` - Format code with Prettier
+
+**Node Version**: Project uses Volta to pin Node.js 24.13.0.
 
 **Deployment**: GitHub Actions workflow (`.github/workflows/deploy.yml`) automatically builds and deploys to GitHub Pages on push to main branch.
 

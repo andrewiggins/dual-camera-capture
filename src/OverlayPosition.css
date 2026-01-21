@@ -1,0 +1,48 @@
+/* Corner position classes for overlay elements */
+/* Same 20px margin as original top-left position */
+
+.overlay-corner-top-left {
+	top: 20px;
+	left: 20px;
+	right: auto;
+	bottom: auto;
+}
+
+.overlay-corner-top-right {
+	top: 20px;
+	right: 20px;
+	left: auto;
+	bottom: auto;
+}
+
+.overlay-corner-bottom-left {
+	bottom: max(100px, calc(env(safe-area-inset-bottom) + 80px));
+	left: 20px;
+	top: auto;
+	right: auto;
+}
+
+.overlay-corner-bottom-right {
+	bottom: max(100px, calc(env(safe-area-inset-bottom) + 80px));
+	right: 20px;
+	top: auto;
+	left: auto;
+}
+
+/* Smooth snap animation for overlay elements */
+#overlayVideo,
+#overlayError,
+#sequentialOverlayPreview {
+	transition:
+		top 0.25s ease-out,
+		left 0.25s ease-out,
+		right 0.25s ease-out,
+		bottom 0.25s ease-out;
+}
+
+/* Disable transition during drag */
+#overlayVideo.overlay-dragging,
+#overlayError.overlay-dragging,
+#sequentialOverlayPreview.overlay-dragging {
+	transition: none !important;
+}

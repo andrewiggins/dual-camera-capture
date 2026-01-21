@@ -136,6 +136,7 @@ export class SequentialCaptureMode implements CaptureMode {
 				canvas,
 				this.capturedOverlay,
 				mainVideo.video.clientWidth,
+				this.streamManager.getOverlayCorner(),
 			);
 		}
 

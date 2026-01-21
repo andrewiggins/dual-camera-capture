@@ -1,3 +1,5 @@
+import type { Corner } from "./OverlayPosition.ts";
+
 /**
  * Calculate the source crop region for object-fit: cover behavior.
  * Returns the portion of the source that's visible in the viewport.
@@ -105,11 +107,13 @@ function roundedRectPath(
 /**
  * Draw an overlay image with rounded corners and border
  * @param viewportWidth - The viewport width used to scale positioning to match CSS preview
+ * @param corner - Which corner to position the overlay in (default: top-left)
  */
 export function drawOverlayOnMainCanvas(
 	mainImage: OffscreenCanvas,
 	overlayImage: CanvasImageSource,
 	viewportWidth: number,
+	corner: Corner = "top-left",
 ): void {
 	// Calculate scale factor to match CSS preview positioning
 	// CSS uses fixed 20px offset relative to viewport, but canvas is scaled up
@@ -118,9 +122,32 @@ export function drawOverlayOnMainCanvas(
 	const overlayWidth = mainImage.width * 0.25;
 	// Overlay height matches main video's viewport aspect ratio
 	const overlayHeight = (mainImage.height / mainImage.width) * overlayWidth;
-	const overlayX = 20 * scale;
-	const overlayY = 20 * scale;
+	const margin = 20 * scale;
+	const bottomMargin = 100 * scale; // matches CSS for bottom corners
 	const borderRadius = 12 * scale;
+
+	// Calculate position based on corner
+	let overlayX: number;
+	let overlayY: number;
+
+	switch (corner) {
+		case "top-left":
+			overlayX = margin;
+			overlayY = margin;
+			break;
+		case "top-right":
+			overlayX = mainImage.width - overlayWidth - margin;
+			overlayY = margin;
+			break;
+		case "bottom-left":
+			overlayX = margin;
+			overlayY = mainImage.height - overlayHeight - bottomMargin;
+			break;
+		case "bottom-right":
+			overlayX = mainImage.width - overlayWidth - margin;
+			overlayY = mainImage.height - overlayHeight - bottomMargin;
+			break;
+	}
 
 	const ctx = mainImage.getContext("2d")!;
 

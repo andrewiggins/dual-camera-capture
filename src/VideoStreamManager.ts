@@ -1,10 +1,16 @@
 import { debugLog } from "./debugLog.ts";
 import type { Camera } from "./getCameras.ts";
+import { OverlayPosition, type Corner } from "./OverlayPosition.ts";
+import "./OverlayPosition.css";
 
 const mainVideoEl = document.getElementById("mainVideo") as HTMLVideoElement;
 const overlayVideoEl = document.getElementById(
 	"overlayVideo",
 ) as HTMLVideoElement;
+const overlayErrorEl = document.getElementById("overlayError") as HTMLElement;
+const sequentialOverlayPreviewEl = document.getElementById(
+	"sequentialOverlayPreview",
+) as HTMLElement;
 
 export interface CameraVideo {
 	camera: Camera;
@@ -19,6 +25,7 @@ export class VideoStreamManager {
 	private mainCamera: Camera;
 	private overlayCamera: Camera | null = null;
 	private isIOS: boolean;
+	private overlayPosition: OverlayPosition;
 
 	constructor(mainCamera: Camera, extraCameras: Camera[], isIOS: boolean) {
 		this.isIOS = isIOS;
@@ -55,10 +62,11 @@ export class VideoStreamManager {
 			this.updateOverlayDimensions();
 		});
 
-		overlayVideoEl.addEventListener("click", async () => {
-			debugLog("Overlay video clicked");
-			await this.swapCameras();
-		});
+		// Initialize overlay position manager for drag-to-snap and tap-to-swap
+		this.overlayPosition = new OverlayPosition(
+			[overlayVideoEl, overlayErrorEl, sequentialOverlayPreviewEl],
+			() => this.swapCameras(),
+		);
 
 		// Update overlay dimensions on resize/orientation change
 		window.addEventListener("resize", () => {
@@ -206,5 +214,9 @@ export class VideoStreamManager {
 
 	hasDualCameras(): boolean {
 		return this.overlayCamera !== null;
+	}
+
+	getOverlayCorner(): Corner {
+		return this.overlayPosition.getCorner();
 	}
 }
