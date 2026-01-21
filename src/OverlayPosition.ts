@@ -201,11 +201,12 @@ export class OverlayPosition {
 		const margin = 20;
 		// Bottom margin matches CSS: max(100px, calc(env(safe-area-inset-bottom) + 80px))
 		// We approximate this since we can't easily read CSS env() values
-		const safeAreaBottom = parseInt(
-			getComputedStyle(document.documentElement).getPropertyValue(
-				"--safe-area-inset-bottom",
-			),
-		) || 0;
+		const safeAreaBottom =
+			parseInt(
+				getComputedStyle(document.documentElement).getPropertyValue(
+					"--safe-area-inset-bottom",
+				),
+			) || 0;
 		const bottomMargin = Math.max(100, safeAreaBottom + 80);
 
 		const viewportWidth = window.innerWidth;
@@ -215,7 +216,10 @@ export class OverlayPosition {
 			case "top-left":
 				return { left: margin, top: margin };
 			case "top-right":
-				return { left: viewportWidth - elementRect.width - margin, top: margin };
+				return {
+					left: viewportWidth - elementRect.width - margin,
+					top: margin,
+				};
 			case "bottom-left":
 				return {
 					left: margin,
