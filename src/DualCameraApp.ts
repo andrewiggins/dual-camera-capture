@@ -26,6 +26,10 @@ export interface CaptureMode {
 /**
  * Device detection singleton
  * Detects iOS devices and available cameras
+ *
+ * iOS can't render more than one camera stream simultaneously due to WebKit limitations
+ * https://bugs.webkit.org/show_bug.cgi?id=179363
+ * https://bugs.webkit.org/show_bug.cgi?id=238492
  */
 const isIOS =
 	/iPad|iPhone|iPod/.test(navigator.userAgent) ||
