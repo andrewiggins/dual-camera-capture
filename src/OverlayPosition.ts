@@ -34,6 +34,7 @@ export class OverlayPosition {
 
 		// Add pointer event listeners to all elements
 		for (const el of this.elements) {
+			el.style.touchAction = "none"; // Disable default touch actions to enable our custom dragging
 			el.addEventListener("pointerdown", this.handlePointerDown);
 		}
 	}
