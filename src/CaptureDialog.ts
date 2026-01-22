@@ -26,7 +26,7 @@ export class CaptureDialog extends HTMLElement {
 				<div class="capture-dialog-actions">
 					<a class="capture-dialog-btn download-btn disabled">Download</a>
 					<button class="capture-dialog-btn share-btn" type="button">Share</button>
-					<button class="capture-dialog-btn retake-btn" type="button">Take Another</button>
+					<button class="capture-dialog-btn retake-btn" type="button">Retake</button>
 				</div>
 			</div>
 		`;

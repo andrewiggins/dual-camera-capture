@@ -101,11 +101,18 @@ body {
 	transition:
 		transform 0.3s ease,
 		box-shadow 0.3s ease,
+		opacity 0.3s ease,
 		top 0.25s ease-out,
 		left 0.25s ease-out,
 		right 0.25s ease-out,
 		bottom 0.25s ease-out;
 	z-index: 2;
+	/* Hidden until stream is ready */
+	opacity: 0;
+}
+
+#overlayVideo.stream-ready {
+	opacity: 1;
 }
 
 #overlayVideo:hover {
@@ -158,17 +165,17 @@ body {
 	letter-spacing: 0.02em;
 }
 
-/* Controls container */
+/* Controls container - Grid ensures capture button is always centered */
 #controls {
 	position: absolute;
 	bottom: max(30px, env(safe-area-inset-bottom));
 	left: 50%;
 	transform: translateX(-50%);
-	display: flex;
+	display: grid;
+	grid-template-columns: 48px 72px 48px;
 	align-items: center;
 	gap: 16px;
 	z-index: 10;
-	padding: 0 20px;
 }
 
 /* Base button styles */
@@ -180,6 +187,7 @@ button {
 	border: none;
 	cursor: pointer;
 	transition: all 0.2s ease;
+	-webkit-tap-highlight-color: transparent;
 }
 
 /* Capture button - The Hero Element */
@@ -242,13 +250,13 @@ button {
 	width: 48px;
 	height: 48px;
 	padding: 0;
-	background: transparent;
+	background: rgba(0, 0, 0, 0.4);
 	color: var(--cream);
-	border: 1px solid var(--cream-dim);
+	border: 1px solid rgba(245, 240, 232, 0.3);
 	border-radius: 50%;
 	-webkit-backdrop-filter: blur(12px);
 	backdrop-filter: blur(12px);
-	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
 }
 
 #switchBtn svg,
@@ -260,10 +268,10 @@ button {
 
 #switchBtn:hover,
 #modeToggle:hover {
-	background: var(--cream-muted);
-	border-color: var(--cream);
+	background: rgba(0, 0, 0, 0.5);
+	border-color: rgba(245, 240, 232, 0.5);
 	box-shadow:
-		0 2px 8px rgba(0, 0, 0, 0.2),
+		0 4px 12px rgba(0, 0, 0, 0.5),
 		var(--shadow-glow);
 }
 
@@ -278,9 +286,9 @@ button {
 }
 
 #switchBtn:disabled:hover {
-	background: transparent;
-	border-color: var(--cream-dim);
-	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+	background: rgba(0, 0, 0, 0.4);
+	border-color: rgba(245, 240, 232, 0.3);
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
 	transform: none;
 }
 
@@ -392,13 +400,13 @@ button {
 	}
 }
 
-/* Mode toggle button */
+/* Mode toggle button - use visibility to preserve grid space */
 #modeToggle {
-	display: none;
+	visibility: hidden;
 }
 
 #modeToggle.show {
-	display: block;
+	visibility: visible;
 }
 
 /* Mobile responsive adjustments */
@@ -413,6 +421,7 @@ button {
 
 	#controls {
 		bottom: max(40px, calc(env(safe-area-inset-bottom) + 20px));
+		grid-template-columns: 44px 64px 44px;
 		gap: 12px;
 	}
 

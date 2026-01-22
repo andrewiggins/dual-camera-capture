@@ -62,6 +62,11 @@ export class VideoStreamManager {
 			this.updateOverlayDimensions();
 		});
 
+		// Show overlay video once stream is playing (prevents empty black box during load)
+		overlayVideoEl.addEventListener("playing", () => {
+			overlayVideoEl.classList.add("stream-ready");
+		});
+
 		// Initialize overlay position manager for drag-to-snap and tap-to-swap
 		this.overlayPosition = new OverlayPosition(
 			[overlayVideoEl, overlayErrorEl, sequentialOverlayPreviewEl],
@@ -175,6 +180,7 @@ export class VideoStreamManager {
 		this.overlayCamera?.stop();
 		mainVideoEl.srcObject = null;
 		overlayVideoEl.srcObject = null;
+		overlayVideoEl.classList.remove("stream-ready");
 	}
 
 	async resumeAllStreams(): Promise<void> {
