@@ -1,4 +1,4 @@
-/* Capture dialog styles */
+/* Capture dialog - Polaroid Noir styling */
 .capture-dialog {
 	position: fixed;
 	top: 50%;
@@ -6,31 +6,42 @@
 	transform: translate(-50%, -50%);
 	margin: 0;
 	border: none;
-	border-radius: 16px;
+	border-radius: 4px;
 	padding: 0;
 	max-width: 90vw;
 	max-height: 90vh;
-	background: #1a1a1a;
-	box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+	background: var(--surface, #1a1816);
+	box-shadow:
+		0 16px 64px rgba(0, 0, 0, 0.7),
+		0 0 0 1px var(--film-border, #2a2520);
 }
 
 .capture-dialog::backdrop {
-	background: rgba(0, 0, 0, 0.8);
+	background: rgba(0, 0, 0, 0.85);
+	-webkit-backdrop-filter: blur(4px);
+	backdrop-filter: blur(4px);
 }
 
 .capture-dialog-content {
 	display: flex;
 	flex-direction: column;
-	gap: 16px;
-	padding: 16px;
+	gap: 20px;
+	padding: 20px;
 }
 
 /* Canvas element - intrinsic size from width/height attributes, scaled by max-* constraints */
 .capture-dialog-image {
 	max-width: 100%;
-	max-height: calc(90vh - 100px);
-	border-radius: 8px;
+	max-height: calc(90vh - 160px);
+	border-radius: 0;
+	display: block;
 	view-transition-name: dialog-image;
+}
+
+/* When not using frame wrapper, add some rounding */
+.capture-dialog-content > .capture-dialog-image {
+	border-radius: 4px;
+	box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
 }
 
 .capture-dialog-actions {
@@ -41,50 +52,103 @@
 }
 
 .capture-dialog-btn {
+	font-family: var(
+		--font-ui,
+		"DM Sans",
+		-apple-system,
+		BlinkMacSystemFont,
+		sans-serif
+	);
 	padding: 12px 24px;
-	font-size: 16px;
-	font-weight: 600;
+	font-size: 14px;
+	font-weight: 500;
+	letter-spacing: 0.03em;
 	border: none;
-	border-radius: 25px;
+	border-radius: 24px;
 	cursor: pointer;
 	text-decoration: none;
 	text-align: center;
 	transition: all 0.2s ease;
 }
 
+/* Primary action - Download */
 .capture-dialog-btn.download-btn {
-	background-color: #4caf50;
-	color: #fff;
+	background: var(--cream, #f5f0e8);
+	color: var(--bg-deep, #0a0a0a);
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
 .capture-dialog-btn.download-btn:hover {
-	background-color: #45a049;
+	background: #fff;
+	box-shadow:
+		0 2px 8px rgba(0, 0, 0, 0.2),
+		0 0 20px rgba(245, 240, 232, 0.3);
+	transform: translateY(-1px);
+}
+
+.capture-dialog-btn.download-btn:active {
+	transform: translateY(0);
 }
 
 .capture-dialog-btn.download-btn.disabled {
-	background-color: #888;
+	background: var(--cream-dim, #d4cfc5);
+	color: rgba(0, 0, 0, 0.4);
 	pointer-events: none;
 	cursor: default;
+	box-shadow: none;
 }
 
+/* Secondary action - Share */
 .capture-dialog-btn.share-btn {
-	background-color: #2196f3;
-	color: #fff;
+	background: transparent;
+	color: var(--cream, #f5f0e8);
+	border: 1px solid var(--cream-dim, #d4cfc5);
 }
 
 .capture-dialog-btn.share-btn:hover {
-	background-color: #1e88e5;
+	background: rgba(245, 240, 232, 0.1);
+	border-color: var(--cream, #f5f0e8);
+	box-shadow: 0 0 16px rgba(245, 240, 232, 0.15);
 }
 
+.capture-dialog-btn.share-btn:active {
+	transform: scale(0.98);
+}
+
+/* Tertiary action - Retake */
 .capture-dialog-btn.retake-btn {
-	background-color: rgba(255, 255, 255, 0.2);
-	color: #fff;
+	background: transparent;
+	color: var(--cream-dim, #d4cfc5);
+	border: 1px solid rgba(212, 207, 197, 0.3);
 }
 
 .capture-dialog-btn.retake-btn:hover {
-	background-color: rgba(255, 255, 255, 0.3);
+	color: var(--cream, #f5f0e8);
+	border-color: rgba(212, 207, 197, 0.5);
+	background: rgba(255, 255, 255, 0.05);
 }
 
+.capture-dialog-btn.retake-btn:active {
+	transform: scale(0.98);
+}
+
+/* Dialog open animation */
+.capture-dialog[open] {
+	animation: dialogOpen 0.3s ease;
+}
+
+@keyframes dialogOpen {
+	from {
+		opacity: 0;
+		transform: translate(-50%, -50%) scale(0.95);
+	}
+	to {
+		opacity: 1;
+		transform: translate(-50%, -50%) scale(1);
+	}
+}
+
+/* Mobile responsive adjustments */
 @media (max-width: 768px) {
 	.capture-dialog {
 		max-width: 95vw;
@@ -92,16 +156,20 @@
 	}
 
 	.capture-dialog-content {
-		padding: 12px;
-		gap: 12px;
+		padding: 16px;
+		gap: 16px;
 	}
 
 	.capture-dialog-image {
-		max-height: calc(95vh - 90px);
+		max-height: calc(95vh - 140px);
 	}
 
 	.capture-dialog-btn {
 		padding: 10px 18px;
-		font-size: 14px;
+		font-size: 13px;
+	}
+
+	.capture-dialog-actions {
+		gap: 10px;
 	}
 }

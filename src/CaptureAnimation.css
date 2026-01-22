@@ -1,3 +1,16 @@
+/* Capture Animation Styles - Polaroid Noir */
+
+/* Capture flash - visual feedback on shutter press */
+/* Animation is handled via Web Animations API in CaptureAnimation.ts */
+#captureFlash {
+	position: fixed;
+	inset: 0;
+	background: var(--cream, #f5f0e8);
+	opacity: 0;
+	pointer-events: none;
+	z-index: 100;
+}
+
 /* Fullscreen capture canvas - shown briefly as transition source */
 /* view-transition-name is set dynamically to match the destination */
 /* Note: Canvas stretches to fill viewport; content is already sized to match viewport aspect ratio */
@@ -9,18 +22,10 @@
 	height: 100%;
 	pointer-events: none;
 	z-index: 99;
+	border-radius: 8px;
+	box-shadow: var(--shadow-soft, 0 8px 32px rgba(0, 0, 0, 0.6));
 }
 
 #captureAnimatedImage.active {
 	display: block;
-}
-
-/* Keep flash for visual feedback */
-#captureFlash {
-	position: fixed;
-	inset: 0;
-	background: #fff;
-	opacity: 0;
-	pointer-events: none;
-	z-index: 100;
 }

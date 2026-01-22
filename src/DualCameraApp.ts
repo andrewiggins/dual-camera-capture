@@ -7,6 +7,9 @@ import { VideoStreamManager } from "./VideoStreamManager.ts";
 import { showStatus } from "./showStatus.ts";
 
 const modeToggle = document.getElementById("modeToggle") as HTMLButtonElement;
+const modeToggleIcon = document.getElementById(
+	"modeToggleIcon",
+) as unknown as SVGUseElement;
 const switchBtn = document.getElementById("switchBtn") as HTMLButtonElement;
 const overlayError = document.getElementById("overlayError") as HTMLDivElement;
 
@@ -160,16 +163,18 @@ export class DualCameraApp {
 				this.streamManager,
 				elements.captureDialog,
 			);
-			modeToggle.textContent = "Sequential Mode";
-			elements.captureBtn.textContent = "Capture Photo";
-			showStatus("Switching to live mode...");
+			// Update icon to show "sequential" (what clicking will switch TO)
+			modeToggleIcon.setAttribute("href", "#icon-sequential");
+			modeToggle.setAttribute("aria-label", "Sequential Mode");
 		} else {
 			// Switch to sequential mode
 			this.currentMode = new SequentialCaptureMode(
 				this.streamManager,
 				elements.captureDialog,
 			);
-			modeToggle.textContent = "Live Mode";
+			// Update icon to show "live" (what clicking will switch TO)
+			modeToggleIcon.setAttribute("href", "#icon-live");
+			modeToggle.setAttribute("aria-label", "Live Mode");
 			showStatus("Sequential capture mode", 2000);
 		}
 

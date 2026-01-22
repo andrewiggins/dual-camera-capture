@@ -1,5 +1,6 @@
 tmpclaude-*
 *.local.*
+.playwright-mcp
 
 # Logs
 logs

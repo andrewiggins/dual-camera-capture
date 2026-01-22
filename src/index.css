@@ -1,3 +1,26 @@
+/* Polaroid Noir Design System */
+:root {
+	/* Color Palette */
+	--bg-deep: #0a0a0a;
+	--surface: #1a1816;
+	--surface-elevated: #242220;
+	--cream: #f5f0e8;
+	--cream-dim: #d4cfc5;
+	--cream-muted: rgba(245, 240, 232, 0.1);
+	--accent-warm: #e8a87c;
+	--accent-cool: #7eb8c4;
+	--film-border: #2a2520;
+	--error-warm: #d4726a;
+
+	/* Typography */
+	--font-ui: "DM Sans", -apple-system, BlinkMacSystemFont, sans-serif;
+
+	/* Shadows */
+	--shadow-soft: 0 8px 32px rgba(0, 0, 0, 0.6);
+	--shadow-button: 0 4px 16px rgba(0, 0, 0, 0.4);
+	--shadow-glow: 0 0 20px rgba(245, 240, 232, 0.15);
+}
+
 * {
 	margin: 0;
 	padding: 0;
@@ -5,10 +28,8 @@
 }
 
 body {
-	font-family:
-		-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu,
-		Cantarell, sans-serif;
-	background-color: #000;
+	font-family: var(--font-ui);
+	background-color: var(--bg-deep);
 	overflow: hidden;
 	height: 100vh;
 	height: 100dvh;
@@ -28,6 +49,33 @@ body {
 	--overlay-aspect-ratio: 3 / 4; /* Default fallback, updated when video loads */
 }
 
+/* Vignette overlay for atmosphere */
+/* TODO: Revisit if these effects look good on mobile */
+/* #container::before {
+	content: "";
+	position: absolute;
+	inset: 0;
+	background: radial-gradient(
+		ellipse at center,
+		transparent 40%,
+		rgba(0, 0, 0, 0.4) 100%
+	);
+	pointer-events: none;
+	z-index: 1;
+} */
+
+/* Subtle film grain texture */
+/* #container::after {
+	content: "";
+	position: absolute;
+	inset: 0;
+	background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+	opacity: 0.03;
+	pointer-events: none;
+	z-index: 1;
+	mix-blend-mode: overlay;
+} */
+
 #mainVideo {
 	width: 100%;
 	height: 100%;
@@ -38,34 +86,55 @@ body {
 	transform: scaleX(-1);
 }
 
+/* Overlay video - Polaroid-inspired styling */
 #overlayVideo {
 	position: absolute;
 	width: var(--overlay-width);
 	aspect-ratio: var(--overlay-aspect-ratio);
 	object-fit: cover;
-	border: 3px solid #000;
-	border-radius: 12px;
-	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+	border: 1px solid rgba(245, 240, 232, 0.2);
+	border-radius: 16px;
+	box-shadow:
+		var(--shadow-soft),
+		inset 0 0 0 1px rgba(255, 255, 255, 0.05);
 	cursor: pointer;
+	transition:
+		transform 0.3s ease,
+		box-shadow 0.3s ease,
+		top 0.25s ease-out,
+		left 0.25s ease-out,
+		right 0.25s ease-out,
+		bottom 0.25s ease-out;
+	z-index: 2;
+}
+
+#overlayVideo:hover {
+	transform: scale(1.02);
+	box-shadow: var(--shadow-soft), var(--shadow-glow);
 }
 
 #overlayVideo.front-camera {
 	transform: scaleX(-1);
 }
 
+#overlayVideo.front-camera:hover {
+	transform: scaleX(-1) scale(1.02);
+}
+
 #overlayError {
 	position: absolute;
 	width: var(--overlay-width);
 	aspect-ratio: var(--overlay-aspect-ratio);
-	background-color: rgba(40, 40, 40, 0.95);
-	border: 3px solid #ff6b6b;
-	border-radius: 12px;
-	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+	background-color: var(--surface);
+	border: 1px solid var(--error-warm);
+	border-radius: 16px;
+	box-shadow: var(--shadow-soft);
 	display: none;
 	align-items: center;
 	justify-content: center;
 	padding: 15px;
 	text-align: center;
+	z-index: 2;
 }
 
 #overlayError.show {
@@ -73,80 +142,175 @@ body {
 }
 
 #overlayError .error-content {
-	color: #fff;
+	color: var(--cream);
 }
 
 #overlayError .error-icon {
-	font-size: 32px;
+	font-size: 28px;
 	margin-bottom: 8px;
+	opacity: 0.8;
 }
 
 #overlayError .error-message {
-	font-size: 12px;
+	font-size: 11px;
 	line-height: 1.4;
+	color: var(--cream-dim);
+	letter-spacing: 0.02em;
 }
 
+/* Controls container */
 #controls {
 	position: absolute;
 	bottom: max(30px, env(safe-area-inset-bottom));
 	left: 50%;
 	transform: translateX(-50%);
 	display: flex;
-	gap: 15px;
+	align-items: center;
+	gap: 16px;
 	z-index: 10;
 	padding: 0 20px;
 }
 
+/* Base button styles */
 button {
-	padding: 15px 30px;
-	font-size: 16px;
-	font-weight: 600;
+	font-family: var(--font-ui);
+	font-size: 13px;
+	font-weight: 500;
+	letter-spacing: 0.03em;
 	border: none;
-	border-radius: 25px;
 	cursor: pointer;
-	transition: all 0.3s ease;
-	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+	transition: all 0.2s ease;
 }
 
+/* Capture button - The Hero Element */
 #captureBtn {
-	background-color: #fff;
-	color: #000;
+	position: relative;
+	width: 72px;
+	height: 72px;
+	padding: 0;
+	border-radius: 50%;
+	background: var(--cream);
+	box-shadow:
+		var(--shadow-button),
+		inset 0 2px 4px rgba(255, 255, 255, 0.4),
+		inset 0 -2px 4px rgba(0, 0, 0, 0.1);
+	font-size: 0;
+	color: transparent;
+	overflow: hidden;
+}
+
+/* Outer ring */
+#captureBtn::before {
+	content: "";
+	position: absolute;
+	inset: 4px;
+	border-radius: 50%;
+	border: 2px solid var(--film-border);
+	background: transparent;
+}
+
+/* Inner filled circle */
+#captureBtn::after {
+	content: "";
+	position: absolute;
+	inset: 12px;
+	border-radius: 50%;
+	background: var(--cream);
+	box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 #captureBtn:hover {
 	transform: scale(1.05);
-	box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+	box-shadow:
+		var(--shadow-button),
+		var(--shadow-glow),
+		inset 0 2px 4px rgba(255, 255, 255, 0.4),
+		inset 0 -2px 4px rgba(0, 0, 0, 0.1);
 }
 
 #captureBtn:active {
+	transform: scale(0.92);
+	transition: transform 0.1s ease;
+}
+
+/* Secondary buttons - Icon-only circular buttons */
+#switchBtn,
+#modeToggle {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 48px;
+	height: 48px;
+	padding: 0;
+	background: transparent;
+	color: var(--cream);
+	border: 1px solid var(--cream-dim);
+	border-radius: 50%;
+	-webkit-backdrop-filter: blur(12px);
+	backdrop-filter: blur(12px);
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+#switchBtn svg,
+#modeToggle svg {
+	width: 22px;
+	height: 22px;
+	flex-shrink: 0;
+}
+
+#switchBtn:hover,
+#modeToggle:hover {
+	background: var(--cream-muted);
+	border-color: var(--cream);
+	box-shadow:
+		0 2px 8px rgba(0, 0, 0, 0.2),
+		var(--shadow-glow);
+}
+
+#switchBtn:active,
+#modeToggle:active {
 	transform: scale(0.95);
 }
 
-#switchBtn {
-	background-color: rgba(255, 255, 255, 0.3);
-	color: #fff;
-	-webkit-backdrop-filter: blur(10px);
-	backdrop-filter: blur(10px);
+#switchBtn:disabled {
+	opacity: 0.4;
+	cursor: not-allowed;
 }
 
-#switchBtn:hover {
-	background-color: rgba(255, 255, 255, 0.4);
+#switchBtn:disabled:hover {
+	background: transparent;
+	border-color: var(--cream-dim);
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+	transform: none;
 }
 
+/* Status messages - Elegant styling */
 #status {
 	position: absolute;
 	top: 20px;
 	right: 20px;
-	background-color: rgba(0, 0, 0, 0.7);
-	color: #fff;
-	padding: 10px 15px;
+	background-color: var(--surface);
+	color: var(--cream);
+	padding: 12px 18px;
 	border-radius: 8px;
-	font-size: 14px;
-	display: none;
+	border: 1px solid var(--film-border);
+	font-size: 13px;
+	letter-spacing: 0.02em;
+	opacity: 0;
+	visibility: hidden;
+	transform: translateY(-8px);
+	pointer-events: none;
+	transition:
+		opacity 0.3s ease,
+		transform 0.3s ease,
+		visibility 0.3s ease;
+	z-index: 20;
 }
 
 #status.show {
-	display: block;
+	opacity: 1;
+	visibility: visible;
+	transform: translateY(0);
 }
 
 /* Sequential capture mode styles */
@@ -154,12 +318,13 @@ button {
 	position: absolute;
 	width: var(--overlay-width);
 	aspect-ratio: var(--overlay-aspect-ratio);
-	border: 3px solid #000;
-	border-radius: 12px;
-	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+	border: 1px solid rgba(245, 240, 232, 0.2);
+	border-radius: 16px;
+	box-shadow: var(--shadow-soft);
 	overflow: hidden;
 	display: none;
-	background-color: rgba(40, 40, 40, 0.95);
+	background-color: var(--surface);
+	z-index: 2;
 }
 
 #sequentialOverlayPreview.show {
@@ -184,24 +349,28 @@ button {
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	color: rgba(255, 255, 255, 0.5);
-	font-size: 12px;
+	color: var(--cream-dim);
+	font-size: 11px;
+	letter-spacing: 0.03em;
 	text-align: center;
 	padding: 10px;
 	pointer-events: none;
 }
 
+/* Sequential instructions - Step indicator styling */
 #sequentialInstructions {
 	position: absolute;
-	top: 20px;
+	bottom: max(120px, calc(env(safe-area-inset-bottom) + 100px));
 	left: 50%;
 	transform: translateX(-50%);
-	background-color: rgba(0, 0, 0, 0.8);
-	color: #fff;
-	padding: 12px 20px;
-	border-radius: 25px;
-	font-size: 14px;
-	font-weight: 600;
+	background-color: var(--surface);
+	color: var(--cream);
+	padding: 14px 24px;
+	border-radius: 8px;
+	border: 1px solid var(--film-border);
+	font-size: 13px;
+	font-weight: 500;
+	letter-spacing: 0.03em;
 	white-space: nowrap;
 	z-index: 20;
 	display: none;
@@ -209,31 +378,34 @@ button {
 
 #sequentialInstructions.show {
 	display: block;
+	animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+	from {
+		opacity: 0;
+		transform: translateX(-50%) translateY(12px);
+	}
+	to {
+		opacity: 1;
+		transform: translateX(-50%) translateY(0);
+	}
 }
 
 /* Mode toggle button */
 #modeToggle {
 	display: none;
-	background-color: rgba(100, 100, 255, 0.4);
-	color: #fff;
-	-webkit-backdrop-filter: blur(10px);
-	backdrop-filter: blur(10px);
 }
 
 #modeToggle.show {
 	display: block;
 }
 
-#modeToggle:hover {
-	background-color: rgba(100, 100, 255, 0.5);
-}
-
+/* Mobile responsive adjustments */
 @media (max-width: 768px) {
 	#sequentialInstructions {
-		top: auto;
-		bottom: max(120px, calc(env(safe-area-inset-bottom) + 100px));
 		font-size: 12px;
-		padding: 10px 16px;
+		padding: 12px 18px;
 		max-width: calc(100% - 40px);
 		white-space: normal;
 		text-align: center;
@@ -241,11 +413,31 @@ button {
 
 	#controls {
 		bottom: max(40px, calc(env(safe-area-inset-bottom) + 20px));
-		gap: 10px;
+		gap: 12px;
 	}
 
-	button {
-		padding: 12px 20px;
-		font-size: 14px;
+	#captureBtn {
+		width: 64px;
+		height: 64px;
+	}
+
+	#captureBtn::before {
+		inset: 3px;
+	}
+
+	#captureBtn::after {
+		inset: 10px;
+	}
+
+	#switchBtn,
+	#modeToggle {
+		width: 44px;
+		height: 44px;
+	}
+
+	#switchBtn svg,
+	#modeToggle svg {
+		width: 20px;
+		height: 20px;
 	}
 }

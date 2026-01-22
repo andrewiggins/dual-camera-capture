@@ -1,3 +1,5 @@
+## General features/bugs
+
 - [ ] Add ability to retake overlay in sequential mode
 - [ ] Consider cleaning up sequential overlay animation (should buttons be over that animation?) (Maybe fade out overlay preview?)
 - [ ] Add basic PWA functionality so it can be pinned to the homescreen and used offline
@@ -6,3 +8,11 @@
   - [ ] Consider adding a way to turn on debug without modifying URL since that won't be possible in PWA
 - [ ] Add a little flash animation when a photo is taken
 - [ ] Consider refactor into a Preact + Signals app
+
+## Design
+
+- [ ] "Progress indication that feels like loading film" in design plan not implemented?
+- [ ] Implement "Overlay swap: smooth cross-fade when switching cameras"
+- [ ] Implement "Photo capture: brief flash + film-advance style transition"
+- [ ] Consider if polaroid border on final captured photo looks good
+- [ ] Consider if vignette and noise texture look good on mobile
