@@ -92,11 +92,8 @@ body {
 	width: var(--overlay-width);
 	aspect-ratio: var(--overlay-aspect-ratio);
 	object-fit: cover;
-	border: 1px solid rgba(245, 240, 232, 0.2);
 	border-radius: 16px;
-	box-shadow:
-		var(--shadow-soft),
-		inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+	box-shadow: var(--shadow-soft);
 	cursor: pointer;
 	transition:
 		transform 0.3s ease,

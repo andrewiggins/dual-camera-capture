@@ -105,7 +105,8 @@ function roundedRectPath(
 }
 
 /**
- * Draw an overlay image with rounded corners and border
+ * Draw an overlay image with rounded corners, soft shadow, and subtle border
+ * Matches the Polaroid Noir styling from CSS
  * @param viewportWidth - The viewport width used to scale positioning to match CSS preview
  * @param corner - Which corner to position the overlay in (default: top-left)
  */
@@ -124,7 +125,7 @@ export function drawOverlayOnMainCanvas(
 	const overlayHeight = (mainImage.height / mainImage.width) * overlayWidth;
 	const margin = 20 * scale;
 	const bottomMargin = 100 * scale; // matches CSS for bottom corners
-	const borderRadius = 12 * scale;
+	const borderRadius = 16 * scale; // matches CSS border-radius: 16px
 
 	// Calculate position based on corner
 	let overlayX: number;
@@ -151,6 +152,27 @@ export function drawOverlayOnMainCanvas(
 
 	const ctx = mainImage.getContext("2d")!;
 
+	// Draw shadow first (matches CSS: 0 8px 32px rgba(0, 0, 0, 0.6))
+	ctx.save();
+	ctx.shadowColor = "rgba(0, 0, 0, 0.6)";
+	ctx.shadowBlur = 32 * scale;
+	ctx.shadowOffsetX = 0;
+	ctx.shadowOffsetY = 8 * scale;
+
+	// Draw a filled rounded rect to cast the shadow
+	roundedRectPath(
+		ctx,
+		overlayX,
+		overlayY,
+		overlayWidth,
+		overlayHeight,
+		borderRadius,
+	);
+	ctx.fillStyle = "#000"; // Color doesn't matter, just need to fill for shadow
+	ctx.fill();
+	ctx.restore();
+
+	// Clip and draw image
 	ctx.save();
 	roundedRectPath(
 		ctx,
@@ -160,13 +182,6 @@ export function drawOverlayOnMainCanvas(
 		overlayHeight,
 		borderRadius,
 	);
-
-	// Draw black border (scaled to match CSS preview)
-	ctx.strokeStyle = "#000";
-	ctx.lineWidth = 6 * scale;
-	ctx.stroke();
-
-	// Clip and draw image
 	ctx.clip();
 	ctx.drawImage(overlayImage, overlayX, overlayY, overlayWidth, overlayHeight);
 	ctx.restore();
