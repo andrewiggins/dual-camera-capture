@@ -50,7 +50,7 @@ export class DualCameraApp {
 		debugLog("DualCameraApp.init()", { isIOS });
 
 		// Detect available cameras
-		showStatus("Initializing cameras...");
+		showStatus("Initializing cameras...", 2000);
 		const cameras = await getCameras(isIOS);
 		if (cameras.length === 0) {
 			debugLog("No cameras found", null, true);
@@ -112,7 +112,6 @@ export class DualCameraApp {
 		switchBtn.style.opacity = "0.5";
 		switchBtn.style.cursor = "not-allowed";
 		overlayError.classList.add("show");
-		showStatus("Single camera mode", 2000);
 	}
 
 	private setupEventListeners(): void {

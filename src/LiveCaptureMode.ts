@@ -33,7 +33,6 @@ export class LiveCaptureMode implements CaptureMode {
 
 		if (this.streamManager.hasDualCameras()) {
 			this.streamManager.showOverlay();
-			showStatus("Dual camera mode", 2000);
 		}
 	}
 
