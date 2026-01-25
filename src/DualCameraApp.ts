@@ -5,6 +5,7 @@ import { LiveCaptureMode } from "./LiveCaptureMode.ts";
 import { SequentialCaptureMode } from "./SequentialCaptureMode.ts";
 import { VideoStreamManager } from "./VideoStreamManager.ts";
 import { showStatus } from "./showStatus.ts";
+import { setFitMode, getFitMode, type ObjectFitMode } from "./canvas.ts";
 
 const modeToggle = document.getElementById("modeToggle") as HTMLButtonElement;
 const modeToggleIcon = document.getElementById(
@@ -12,6 +13,14 @@ const modeToggleIcon = document.getElementById(
 ) as unknown as SVGUseElement;
 const switchBtn = document.getElementById("switchBtn") as HTMLButtonElement;
 const overlayError = document.getElementById("overlayError") as HTMLDivElement;
+const fitToggle = document.getElementById("fitToggle") as HTMLButtonElement;
+const fitToggleIcon = document.getElementById(
+	"fitToggleIcon",
+) as unknown as SVGUseElement;
+const mainVideoEl = document.getElementById("mainVideo") as HTMLVideoElement;
+const overlayVideoEl = document.getElementById(
+	"overlayVideo",
+) as HTMLVideoElement;
 
 /**
  * Interface for capture mode implementations
@@ -128,6 +137,29 @@ export class DualCameraApp {
 		modeToggle.addEventListener("click", async () => {
 			debugLog("Mode toggle clicked");
 			await this.toggleMode();
+		});
+
+		fitToggle.addEventListener("click", () => {
+			const newMode: ObjectFitMode =
+				getFitMode() === "cover" ? "fit" : "cover";
+			setFitMode(newMode);
+
+			// Update video element classes
+			mainVideoEl.classList.toggle("fit-mode", newMode === "fit");
+			overlayVideoEl.classList.toggle("fit-mode", newMode === "fit");
+
+			// Update icon (show what clicking will switch TO)
+			if (newMode === "cover") {
+				fitToggleIcon.setAttribute("href", "#icon-fit");
+				fitToggle.setAttribute("aria-label", "Switch to Fit Mode");
+				showStatus("Cover mode", 1500);
+			} else {
+				fitToggleIcon.setAttribute("href", "#icon-cover");
+				fitToggle.setAttribute("aria-label", "Switch to Cover Mode");
+				showStatus("Fit mode", 1500);
+			}
+
+			debugLog("Fit mode toggled", { mode: newMode });
 		});
 
 		document.addEventListener("visibilitychange", async () => {

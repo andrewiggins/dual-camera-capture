@@ -289,6 +289,54 @@ button {
 	transform: none;
 }
 
+/* Fit/Cover toggle button - Lower left corner */
+#fitToggle {
+	position: absolute;
+	bottom: max(30px, env(safe-area-inset-bottom));
+	left: max(20px, env(safe-area-inset-left));
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 48px;
+	height: 48px;
+	padding: 0;
+	background: rgba(0, 0, 0, 0.4);
+	color: var(--cream);
+	border: 1px solid rgba(245, 240, 232, 0.3);
+	border-radius: 50%;
+	-webkit-backdrop-filter: blur(12px);
+	backdrop-filter: blur(12px);
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+	z-index: 10;
+}
+
+#fitToggle svg {
+	width: 22px;
+	height: 22px;
+	flex-shrink: 0;
+}
+
+#fitToggle:hover {
+	background: rgba(0, 0, 0, 0.5);
+	border-color: rgba(245, 240, 232, 0.5);
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5), var(--shadow-glow);
+}
+
+#fitToggle:active {
+	transform: scale(0.95);
+}
+
+/* Fit mode styles for video elements */
+#mainVideo.fit-mode {
+	object-fit: contain;
+	background-color: var(--bg-deep);
+}
+
+#overlayVideo.fit-mode {
+	object-fit: contain;
+	background-color: var(--surface);
+}
+
 /* Status messages - Elegant styling */
 #status {
 	position: absolute;
@@ -443,6 +491,18 @@ button {
 
 	#switchBtn svg,
 	#modeToggle svg {
+		width: 20px;
+		height: 20px;
+	}
+
+	#fitToggle {
+		bottom: max(40px, calc(env(safe-area-inset-bottom) + 20px));
+		left: max(16px, env(safe-area-inset-left));
+		width: 44px;
+		height: 44px;
+	}
+
+	#fitToggle svg {
 		width: 20px;
 		height: 20px;
 	}

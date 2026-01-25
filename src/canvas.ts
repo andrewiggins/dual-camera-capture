@@ -1,5 +1,16 @@
 import type { Corner } from "./OverlayPosition.ts";
 
+export type ObjectFitMode = "cover" | "fit";
+let currentFitMode: ObjectFitMode = "cover";
+
+export function setFitMode(mode: ObjectFitMode): void {
+	currentFitMode = mode;
+}
+
+export function getFitMode(): ObjectFitMode {
+	return currentFitMode;
+}
+
 /**
  * Calculate the source crop region for object-fit: cover behavior.
  * Returns the portion of the source that's visible in the viewport.
@@ -34,7 +45,8 @@ function calculateCoverCrop(
 
 /**
  * Draw a video frame to a canvas, capturing only the visible viewport area.
- * Replicates object-fit: cover behavior to match what the user sees on screen.
+ * In "cover" mode: Replicates object-fit: cover behavior to match what the user sees.
+ * In "fit" mode: Captures the full video frame without cropping.
  */
 export function drawVideoToCanvas(
 	video: HTMLVideoElement,
@@ -46,34 +58,49 @@ export function drawVideoToCanvas(
 	const srcWidth = video.videoWidth;
 	const srcHeight = video.videoHeight;
 
-	// Use viewport aspect ratio for output, but scale up for quality
-	// Use the larger of viewport or source dimensions for better quality
-	const scale = Math.max(
-		srcWidth / viewportWidth,
-		srcHeight / viewportHeight,
-		1,
-	);
+	let width: number;
+	let height: number;
+	let sx: number, sy: number, sw: number, sh: number;
 
-	const width = Math.round(viewportWidth * scale);
-	const height = Math.round(viewportHeight * scale);
+	if (currentFitMode === "cover") {
+		// Cover mode: Use viewport aspect ratio for output, but scale up for quality
+		const scale = Math.max(
+			srcWidth / viewportWidth,
+			srcHeight / viewportHeight,
+			1,
+		);
+
+		width = Math.round(viewportWidth * scale);
+		height = Math.round(viewportHeight * scale);
+
+		// Calculate which portion of the source video is visible (object-fit: cover)
+		({ sx, sy, sw, sh } = calculateCoverCrop(
+			srcWidth,
+			srcHeight,
+			viewportWidth,
+			viewportHeight,
+		));
+	} else {
+		// Fit mode: Use full video dimensions without cropping
+		width = srcWidth;
+		height = srcHeight;
+
+		// Draw entire video frame
+		sx = 0;
+		sy = 0;
+		sw = srcWidth;
+		sh = srcHeight;
+	}
 
 	const canvas = new OffscreenCanvas(width, height);
 	const ctx = canvas.getContext("2d")!;
-
-	// Calculate which portion of the source video is visible (object-fit: cover)
-	const { sx, sy, sw, sh } = calculateCoverCrop(
-		srcWidth,
-		srcHeight,
-		viewportWidth,
-		viewportHeight,
-	);
 
 	ctx.save();
 	if (flipHorizontal) {
 		ctx.translate(canvas.width, 0);
 		ctx.scale(-1, 1);
 	}
-	// Draw only the visible portion of the video
+	// Draw the video frame to canvas
 	ctx.drawImage(video, sx, sy, sw, sh, 0, 0, canvas.width, canvas.height);
 	ctx.restore();
 
