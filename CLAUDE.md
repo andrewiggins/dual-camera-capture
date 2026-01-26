@@ -15,7 +15,10 @@ This is a web application that captures photos from both front and back cameras 
 - `src/index.css` - Main application styles
 - `src/debugLog.css` - Debug panel styles
 - `src/CaptureDialog.css` - Capture preview dialog styles
-- `src/index.ts` - Entry point (initializes debug and starts app)
+- `src/CaptureAnimation.css` - Capture animation styles
+- `src/OverlayPosition.css` - Overlay position/corner styles
+- `src/SettingsDialog.css` - Settings dialog styles
+- `src/index.ts` - Entry point (loads settings, initializes debug/PWA, registers custom elements, starts app)
 - `src/DualCameraApp.ts` - `DualCameraApp` controller class, `CaptureMode` interface, iOS detection
 - `src/elements.ts` - DOM element references
 - `src/getCameras.ts` - `Camera` class, `FacingMode` type, `getCameras()` for camera enumeration
@@ -24,8 +27,13 @@ This is a web application that captures photos from both front and back cameras 
 - `src/SequentialCaptureMode.ts` - `SequentialCaptureMode` class (one camera at a time)
 - `src/VideoStreamManager.ts` - `VideoStreamManager` class for centralized stream lifecycle
 - `src/CaptureDialog.ts` - `CaptureDialog` custom element for photo preview before download
+- `src/CaptureAnimation.ts` - `CaptureAnimation` class using ViewTransitions API for capture-to-dialog animations
+- `src/OverlayPosition.ts` - `OverlayPosition` class with drag-to-snap overlay positioning
 - `src/showStatus.ts` - `showStatus()` function for status messages
-- `src/debugLog.ts` - Debug utilities (exports `DEBUG`, `debugLog`, `initDebug`)
+- `src/debugLog.ts` - Debug utilities (exports `debugLog`, `initDebug`, `showDebugPanel`, `hideDebugPanel`, `toggleDebugPanel`, `logDebugStartup`)
+- `src/settings.ts` - `Settings` interface and localStorage persistence (`loadSettings`, `saveSettings`, `updateSetting`)
+- `src/SettingsDialog.ts` - `SettingsDialog` custom element with debug mode toggle and PWA update button
+- `src/pwa.ts` - PWA service worker registration and update management (`initPWA`, `onUpdateAvailable`, `triggerUpdate`)
 
 **Build Process**: Uses Vite for development server and production builds. TypeScript is used for type safety with `tsc` for type checking only (Vite handles compilation).
 
@@ -45,6 +53,9 @@ This is a web application that captures photos from both front and back cameras 
 - `LiveCaptureMode`: Handles simultaneous dual camera streams (non-iOS)
 - `SequentialCaptureMode`: Handles one-camera-at-a-time capture (iOS or optional), supports single camera mode
 - `CaptureDialog`: Custom element for photo preview with download/share options before saving
+- `CaptureAnimation`: Animates captured image from viewport to CaptureDialog using ViewTransitions API
+- `OverlayPosition`: Manages overlay drag-to-snap positioning across four corners
+- `SettingsDialog`: Custom element for settings with debug mode toggle and PWA update button
 - Both capture mode classes implement `CaptureMode` interface: `init()`, `capture()`, `cleanup()`, `pause()`, `resume()`
 
 **Stream Architecture**:
@@ -52,7 +63,8 @@ This is a web application that captures photos from both front and back cameras 
 - `VideoStreamManager` manages video element to camera stream bindings
 - `mainCamera`: The primary `Camera` object (initially back/environment camera, displayed full-screen)
 - `overlayCamera`: The secondary `Camera` object (initially front/user camera, displayed as picture-in-picture)
-- Cameras are swapped when user clicks "Switch Cameras" button or taps the overlay video
+- Cameras are swapped when user clicks "Switch Cameras" button or taps the overlay
+- Overlay can be dragged to any corner (top-left, top-right, bottom-left, bottom-right) using `OverlayPosition` class
 - Each `Camera` manages its own `MediaStream` internally via `getStream()` and `stop()` methods
 - Overlay dimensions dynamically match viewport aspect ratio via CSS custom properties
 
@@ -61,11 +73,31 @@ This is a web application that captures photos from both front and back cameras 
 - Uses OffscreenCanvas to composite video streams (no DOM canvas element needed)
 - Canvas captures viewport aspect ratio, not raw video stream dimensions
 - Main feed rendered at full canvas size with object-fit: cover cropping applied
-- Overlay feed rendered in top-left corner with rounded corners and black border
+- Overlay feed rendered in user-selected corner (default top-left) with rounded corners and black border
 - If second camera unavailable, no overlay is rendered (single camera mode)
 - Captured photo shown in CaptureDialog for preview before download/share
 - Web Share API supported for sharing on mobile devices
 - Image downloaded as PNG with timestamp filename
+
+**Capture Animation**:
+
+- Uses ViewTransitions API to animate captured image from viewport to CaptureDialog
+- `CaptureAnimation` class manages the transition with a temporary canvas element
+- Falls back to immediate dialog display if ViewTransitions not supported
+
+**Settings System**:
+
+- `Settings` interface stores user preferences (currently just `debug` boolean)
+- Settings persisted to localStorage via `loadSettings()` and `saveSettings()`
+- `SettingsDialog` custom element provides UI for toggling debug mode
+- Settings gear icon in top-right corner opens the dialog
+
+**PWA Support**:
+
+- Service worker provides offline capability using vite-plugin-pwa
+- `initPWA()` registers service worker and sets up hourly update checks
+- When updates are available, "Reload to Update" button appears in Settings dialog
+- Manual update model: users control when to reload for new version
 
 **UI States**:
 
@@ -104,7 +136,7 @@ This is a web application that captures photos from both front and back cameras 
 
 **Error Handling**: Camera initialization errors are logged but app continues in degraded mode. No camera = error message shown.
 
-**Browser Compatibility**: Relies on modern browser APIs (getUserMedia, OffscreenCanvas, Blob, Web Share API). Mobile browsers must support "environment" facingMode constraint for best results.
+**Browser Compatibility**: Relies on modern browser APIs (getUserMedia, OffscreenCanvas, Blob, Web Share API, ViewTransitions API). Mobile browsers must support "environment" facingMode constraint for best results. ViewTransitions API is optional (graceful fallback).
 
 **Sequential Capture Mode**: An alternative capture mode where photos are taken one at a time instead of using simultaneous camera streams:
 
