@@ -16,26 +16,65 @@
 	</head>
 	<body>
 		<!-- SVG Sprite Sheet (hidden) -->
-		<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+		<svg xmlns="http://www.w3.org/2000/svg" style="display: none">
 			<!-- Sequential Mode Icon: Two offset frames with 1 and 2 indicators -->
-			<symbol id="icon-sequential" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-				<rect x="3" y="3" width="8" height="10" rx="1.5"/>
-				<rect x="13" y="11" width="8" height="10" rx="1.5"/>
-				<path d="M7 8L7 6" stroke-width="2.5"/>
-				<path d="M17 16L17 18" stroke-width="2.5"/>
-				<path d="M16 16L18 16" stroke-width="2.5"/>
+			<symbol
+				id="icon-sequential"
+				viewBox="0 0 24 24"
+				fill="none"
+				stroke="currentColor"
+				stroke-width="2"
+				stroke-linecap="round"
+				stroke-linejoin="round"
+			>
+				<rect x="3" y="3" width="8" height="10" rx="1.5" />
+				<rect x="13" y="11" width="8" height="10" rx="1.5" />
+				<path d="M7 8L7 6" stroke-width="2.5" />
+				<path d="M17 16L17 18" stroke-width="2.5" />
+				<path d="M16 16L18 16" stroke-width="2.5" />
 			</symbol>
 			<!-- Live Mode Icon: Two overlapping frames (simultaneous) -->
-			<symbol id="icon-live" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-				<rect x="3" y="5" width="10" height="12" rx="1.5"/>
-				<rect x="11" y="7" width="10" height="12" rx="1.5"/>
+			<symbol
+				id="icon-live"
+				viewBox="0 0 24 24"
+				fill="none"
+				stroke="currentColor"
+				stroke-width="2"
+				stroke-linecap="round"
+				stroke-linejoin="round"
+			>
+				<rect x="3" y="5" width="10" height="12" rx="1.5" />
+				<rect x="11" y="7" width="10" height="12" rx="1.5" />
 			</symbol>
 			<!-- Switch Cameras Icon -->
-			<symbol id="icon-switch" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-				<path d="M16 3L20 7L16 11"/>
-				<path d="M20 7H9C6.79 7 5 8.79 5 11"/>
-				<path d="M8 21L4 17L8 13"/>
-				<path d="M4 17H15C17.21 17 19 15.21 19 13"/>
+			<symbol
+				id="icon-switch"
+				viewBox="0 0 24 24"
+				fill="none"
+				stroke="currentColor"
+				stroke-width="2"
+				stroke-linecap="round"
+				stroke-linejoin="round"
+			>
+				<path d="M16 3L20 7L16 11" />
+				<path d="M20 7H9C6.79 7 5 8.79 5 11" />
+				<path d="M8 21L4 17L8 13" />
+				<path d="M4 17H15C17.21 17 19 15.21 19 13" />
+			</symbol>
+			<!-- Settings Gear Icon -->
+			<symbol
+				id="icon-settings"
+				viewBox="0 0 24 24"
+				fill="none"
+				stroke="currentColor"
+				stroke-width="2"
+				stroke-linecap="round"
+				stroke-linejoin="round"
+			>
+				<circle cx="12" cy="12" r="3" />
+				<path
+					d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"
+				/>
 			</symbol>
 		</svg>
 
@@ -61,13 +100,17 @@
 			<div id="controls">
 				<button id="modeToggle" type="button" aria-label="Sequential Mode">
 					<svg width="24" height="24" aria-hidden="true">
-						<use id="modeToggleIcon" href="#icon-sequential"/>
+						<use id="modeToggleIcon" href="#icon-sequential" />
 					</svg>
 				</button>
-				<button id="captureBtn" type="button" aria-label="Capture Photo"></button>
+				<button
+					id="captureBtn"
+					type="button"
+					aria-label="Capture Photo"
+				></button>
 				<button id="switchBtn" type="button" aria-label="Switch Cameras">
 					<svg width="24" height="24" aria-hidden="true">
-						<use href="#icon-switch"/>
+						<use href="#icon-switch" />
 					</svg>
 				</button>
 			</div>
@@ -78,8 +121,14 @@
 			<div id="captureFlash"></div>
 			<canvas id="captureAnimatedImage"></canvas>
 
+			<!-- Settings button -->
+			<button id="settingsBtn" type="button" aria-label="Settings">
+				<svg width="22" height="22" aria-hidden="true">
+					<use href="#icon-settings" />
+				</svg>
+			</button>
+
 			<!-- Debug UI (only visible in debug mode) -->
-			<button id="debugToggle" type="button">Show Logs</button>
 			<div id="debugPanel">
 				<div id="debugHeader">
 					<span>Debug Logs</span>
@@ -90,6 +139,7 @@
 		</div>
 
 		<capture-dialog id="captureDialog"></capture-dialog>
+		<settings-dialog id="settingsDialog"></settings-dialog>
 
 		<script type="module" src="src/index.ts"></script>
 	</body>

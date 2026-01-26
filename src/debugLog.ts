@@ -1,8 +1,5 @@
+import { settings } from "./settings.ts";
 import "./debugLog.css";
-
-// Check for debug mode via URL parameter
-const urlParams = new URLSearchParams(window.location.search);
-export const DEBUG = urlParams.has("debug");
 
 let debugPanelVisible = false;
 
@@ -17,7 +14,7 @@ export function debugLog(
 	data: unknown = null,
 	isError = false,
 ): void {
-	if (!DEBUG) return;
+	if (!settings.debug) return;
 	const timestamp = new Date().toISOString().split("T")[1].slice(0, 12);
 
 	// Console logging
@@ -51,16 +48,23 @@ export function debugLog(
 	}
 }
 
-function toggleDebugPanel(): void {
-	debugPanelVisible = !debugPanelVisible;
+export function showDebugPanel(): void {
+	debugPanelVisible = true;
 	const panel = document.getElementById("debugPanel");
-	const toggle = document.getElementById("debugToggle");
+	panel?.classList.add("show");
+}
+
+export function hideDebugPanel(): void {
+	debugPanelVisible = false;
+	const panel = document.getElementById("debugPanel");
+	panel?.classList.remove("show");
+}
+
+export function toggleDebugPanel(): void {
 	if (debugPanelVisible) {
-		panel?.classList.add("show");
-		if (toggle) toggle.textContent = "Hide Logs";
+		hideDebugPanel();
 	} else {
-		panel?.classList.remove("show");
-		if (toggle) toggle.textContent = "Show Logs";
+		showDebugPanel();
 	}
 }
 
@@ -72,25 +76,32 @@ function clearDebugLogs(): void {
 	debugLog("Logs cleared");
 }
 
+export function logDebugStartup(): void {
+	console.log("=== DEBUG MODE ENABLED ===");
+	console.log("User Agent:", navigator.userAgent);
+	console.log("URL:", window.location.href);
+
+	debugLog("DEBUG MODE ENABLED");
+	debugLog("User Agent: " + navigator.userAgent);
+	debugLog("URL: " + window.location.href);
+}
+
 export function initDebug(): void {
-	// Debug button event listeners
-	document
-		.getElementById("debugToggle")
-		?.addEventListener("click", toggleDebugPanel);
+	// Debug panel clear button event listener
 	document
 		.getElementById("debugClear")
 		?.addEventListener("click", clearDebugLogs);
 
-	if (DEBUG) {
-		// Show debug toggle button
-		document.getElementById("debugToggle")?.classList.add("show");
+	// Debug panel close on header click (to hide panel)
+	document.getElementById("debugHeader")?.addEventListener("click", (e) => {
+		// Only toggle if clicking header directly, not the clear button
+		if ((e.target as HTMLElement).id === "debugHeader") {
+			hideDebugPanel();
+		}
+	});
 
-		console.log("=== DEBUG MODE ENABLED ===");
-		console.log("User Agent:", navigator.userAgent);
-		console.log("URL:", window.location.href);
-
-		debugLog("DEBUG MODE ENABLED");
-		debugLog("User Agent: " + navigator.userAgent);
-		debugLog("URL: " + window.location.href);
+	// Log startup info if debug is already enabled (from localStorage)
+	if (settings.debug) {
+		logDebugStartup();
 	}
 }

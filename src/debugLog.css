@@ -1,33 +1,4 @@
 /* Debug panel styles - Polaroid Noir theme */
-#debugToggle {
-	display: none;
-	position: absolute;
-	bottom: 20px;
-	right: 20px;
-	padding: 8px 14px;
-	font-family: var(--font-ui, "DM Sans", sans-serif);
-	font-size: 11px;
-	font-weight: 500;
-	letter-spacing: 0.03em;
-	background-color: var(--accent-warm, #e8a87c);
-	color: var(--bg-deep, #0a0a0a);
-	border: none;
-	border-radius: 6px;
-	cursor: pointer;
-	z-index: 100;
-	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-	transition: all 0.2s ease;
-}
-
-#debugToggle:hover {
-	background-color: #f0b88c;
-	transform: translateY(-1px);
-}
-
-#debugToggle.show {
-	display: block;
-}
-
 #debugPanel {
 	display: none;
 	position: absolute;
@@ -55,6 +26,7 @@
 	padding: 10px 14px;
 	background-color: rgba(232, 168, 124, 0.1);
 	border-bottom: 1px solid rgba(232, 168, 124, 0.3);
+	cursor: pointer;
 }
 
 #debugHeader span {

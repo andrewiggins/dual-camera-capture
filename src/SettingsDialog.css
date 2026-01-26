@@ -1,0 +1,220 @@
+/* Settings button */
+#settingsBtn {
+	position: absolute;
+	bottom: max(20px, env(safe-area-inset-bottom));
+	right: 20px;
+	width: 44px;
+	height: 44px;
+	border-radius: 50%;
+	background: rgba(0, 0, 0, 0.4);
+	backdrop-filter: blur(12px);
+	-webkit-backdrop-filter: blur(12px);
+	border: 1px solid rgba(245, 240, 232, 0.2);
+	cursor: pointer;
+	z-index: 100;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	transition: all 0.2s ease;
+	color: var(--cream, #f5f0e8);
+}
+
+#settingsBtn:hover {
+	background: rgba(0, 0, 0, 0.6);
+	border-color: rgba(245, 240, 232, 0.4);
+	transform: rotate(30deg);
+}
+
+#settingsBtn:active {
+	transform: rotate(30deg) scale(0.95);
+}
+
+#settingsBtn svg {
+	width: 22px;
+	height: 22px;
+}
+
+/* Settings dialog */
+.settings-dialog {
+	position: fixed;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	margin: 0;
+	border: none;
+	border-radius: 12px;
+	padding: 0;
+	min-width: 300px;
+	max-width: 90vw;
+	background: var(--surface, #1a1816);
+	box-shadow:
+		0 16px 64px rgba(0, 0, 0, 0.7),
+		0 0 0 1px var(--film-border, #2a2520);
+}
+
+.settings-dialog::backdrop {
+	background: rgba(0, 0, 0, 0.85);
+	-webkit-backdrop-filter: blur(4px);
+	backdrop-filter: blur(4px);
+}
+
+.settings-dialog-content {
+	display: flex;
+	flex-direction: column;
+}
+
+.settings-dialog-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	padding: 16px 20px;
+	border-bottom: 1px solid var(--film-border, #2a2520);
+}
+
+.settings-dialog-header h2 {
+	margin: 0;
+	font-family: var(--font-ui, "DM Sans", sans-serif);
+	font-size: 16px;
+	font-weight: 600;
+	letter-spacing: 0.03em;
+	color: var(--cream, #f5f0e8);
+}
+
+.settings-close-btn {
+	width: 32px;
+	height: 32px;
+	border-radius: 50%;
+	border: none;
+	background: rgba(245, 240, 232, 0.1);
+	color: var(--cream-dim, #d4cfc5);
+	font-size: 20px;
+	line-height: 1;
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	transition: all 0.2s ease;
+}
+
+.settings-close-btn:hover {
+	background: rgba(245, 240, 232, 0.2);
+	color: var(--cream, #f5f0e8);
+}
+
+.settings-dialog-body {
+	padding: 20px;
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
+}
+
+/* Toggle switch */
+.settings-toggle {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	cursor: pointer;
+	user-select: none;
+}
+
+.settings-toggle span:first-child {
+	font-family: var(--font-ui, "DM Sans", sans-serif);
+	font-size: 14px;
+	color: var(--cream, #f5f0e8);
+}
+
+.settings-toggle input {
+	position: absolute;
+	opacity: 0;
+	width: 0;
+	height: 0;
+}
+
+.toggle-switch {
+	position: relative;
+	width: 48px;
+	height: 28px;
+	background: rgba(245, 240, 232, 0.2);
+	border-radius: 14px;
+	transition: all 0.2s ease;
+}
+
+.toggle-switch::after {
+	content: "";
+	position: absolute;
+	top: 3px;
+	left: 3px;
+	width: 22px;
+	height: 22px;
+	background: var(--cream, #f5f0e8);
+	border-radius: 50%;
+	transition: all 0.2s ease;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.settings-toggle input:checked + .toggle-switch {
+	background: var(--accent-warm, #e8a87c);
+}
+
+.settings-toggle input:checked + .toggle-switch::after {
+	left: calc(100% - 25px);
+}
+
+.settings-toggle input:focus-visible + .toggle-switch {
+	outline: 2px solid var(--accent-warm, #e8a87c);
+	outline-offset: 2px;
+}
+
+/* View Debug Logs button */
+.settings-view-logs-btn {
+	font-family: var(--font-ui, "DM Sans", sans-serif);
+	padding: 12px 20px;
+	font-size: 14px;
+	font-weight: 500;
+	letter-spacing: 0.03em;
+	background: transparent;
+	color: var(--accent-warm, #e8a87c);
+	border: 1px solid var(--accent-warm, #e8a87c);
+	border-radius: 8px;
+	cursor: pointer;
+	transition: all 0.2s ease;
+}
+
+.settings-view-logs-btn:hover {
+	background: rgba(232, 168, 124, 0.1);
+}
+
+.settings-view-logs-btn:active {
+	transform: scale(0.98);
+}
+
+/* Dialog open animation */
+.settings-dialog[open] {
+	animation: settingsDialogOpen 0.3s ease;
+}
+
+@keyframes settingsDialogOpen {
+	from {
+		opacity: 0;
+		transform: translate(-50%, -50%) scale(0.95);
+	}
+	to {
+		opacity: 1;
+		transform: translate(-50%, -50%) scale(1);
+	}
+}
+
+/* Mobile responsive adjustments */
+@media (max-width: 768px) {
+	.settings-dialog {
+		min-width: 280px;
+	}
+
+	.settings-dialog-header {
+		padding: 14px 16px;
+	}
+
+	.settings-dialog-body {
+		padding: 16px;
+	}
+}
