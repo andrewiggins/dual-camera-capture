@@ -1,5 +1,6 @@
 import { settings, updateSetting } from "./settings.ts";
 import { showDebugPanel, hideDebugPanel, logDebugStartup } from "./debugLog.ts";
+import { onUpdateAvailable, triggerUpdate } from "./pwa.ts";
 import "./SettingsDialog.css";
 
 /**
@@ -9,6 +10,7 @@ export class SettingsDialog extends HTMLElement {
 	private dialog: HTMLDialogElement;
 	private debugToggleInput: HTMLInputElement;
 	private viewLogsBtn: HTMLButtonElement;
+	private updateBtn: HTMLButtonElement;
 
 	constructor() {
 		super();
@@ -28,14 +30,17 @@ export class SettingsDialog extends HTMLElement {
 						<span class="toggle-switch"></span>
 					</label>
 					<button class="settings-view-logs-btn" style="display:none">View Debug Logs</button>
+					<button class="settings-update-btn" style="display:none">Reload to Update</button>
 				</div>
 			</div>
 		`;
 
 		this.debugToggleInput = this.dialog.querySelector("#debugToggleInput")!;
 		this.viewLogsBtn = this.dialog.querySelector(".settings-view-logs-btn")!;
+		this.updateBtn = this.dialog.querySelector(".settings-update-btn")!;
 
 		this.setupEventListeners();
+		this.subscribeToUpdates();
 	}
 
 	connectedCallback(): void {
@@ -71,6 +76,17 @@ export class SettingsDialog extends HTMLElement {
 		this.viewLogsBtn.addEventListener("click", () => {
 			this.close();
 			showDebugPanel();
+		});
+
+		// Update button
+		this.updateBtn.addEventListener("click", () => {
+			triggerUpdate();
+		});
+	}
+
+	private subscribeToUpdates(): void {
+		onUpdateAvailable((available) => {
+			this.updateBtn.style.display = available ? "block" : "none";
 		});
 	}
 

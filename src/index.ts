@@ -3,6 +3,7 @@ import { debugLog, initDebug } from "./debugLog.ts";
 import { registerCaptureDialog } from "./CaptureDialog.ts";
 import { registerSettingsDialog, SettingsDialog } from "./SettingsDialog.ts";
 import { DualCameraApp } from "./DualCameraApp.ts";
+import { initPWA } from "./pwa.ts";
 import "./index.css";
 
 // Load settings from localStorage first
@@ -10,6 +11,9 @@ loadSettings();
 
 // Initialize debug module
 initDebug();
+
+// Initialize PWA service worker
+initPWA();
 
 // Register custom elements
 registerCaptureDialog();

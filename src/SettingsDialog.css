@@ -188,6 +188,29 @@
 	transform: scale(0.98);
 }
 
+/* Update Available button */
+.settings-update-btn {
+	font-family: var(--font-ui, "DM Sans", sans-serif);
+	padding: 12px 20px;
+	font-size: 14px;
+	font-weight: 500;
+	letter-spacing: 0.03em;
+	background: var(--accent-warm, #e8a87c);
+	color: var(--surface, #1a1816);
+	border: none;
+	border-radius: 8px;
+	cursor: pointer;
+	transition: all 0.2s ease;
+}
+
+.settings-update-btn:hover {
+	background: #f0b88c;
+}
+
+.settings-update-btn:active {
+	transform: scale(0.98);
+}
+
 /* Dialog open animation */
 .settings-dialog[open] {
 	animation: settingsDialogOpen 0.3s ease;
