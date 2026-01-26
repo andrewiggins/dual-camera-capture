@@ -1,22 +1,26 @@
 /* Debug panel styles - Polaroid Noir theme */
 #debugPanel {
-	display: none;
-	position: absolute;
-	top: 60px;
-	right: 10px;
-	left: 10px;
+	position: fixed;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	width: calc(100% - 20px);
+	max-width: 600px;
 	max-height: 50vh;
+	margin: 0;
+	padding: 0;
 	background-color: var(--surface, #1a1816);
 	border: 1px solid var(--accent-warm, #e8a87c);
 	border-radius: 8px;
 	z-index: 99;
 	overflow: hidden;
+	display: flex;
 	flex-direction: column;
 	box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
 }
 
-#debugPanel.show {
-	display: flex;
+#debugPanel:not([open]) {
+	display: none;
 }
 
 #debugHeader {
@@ -26,7 +30,6 @@
 	padding: 10px 14px;
 	background-color: rgba(232, 168, 124, 0.1);
 	border-bottom: 1px solid rgba(232, 168, 124, 0.3);
-	cursor: pointer;
 }
 
 #debugHeader span {
@@ -35,6 +38,12 @@
 	font-weight: 500;
 	font-size: 12px;
 	letter-spacing: 0.03em;
+}
+
+#debugActions {
+	display: flex;
+	gap: 8px;
+	align-items: center;
 }
 
 #debugClear {
@@ -52,6 +61,28 @@
 
 #debugClear:hover {
 	background-color: #e07e76;
+}
+
+#debugClose {
+	width: 24px;
+	height: 24px;
+	padding: 0;
+	border: none;
+	border-radius: 50%;
+	background: rgba(245, 240, 232, 0.1);
+	color: var(--cream-dim, #d4cfc5);
+	font-size: 16px;
+	line-height: 1;
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	transition: all 0.2s ease;
+}
+
+#debugClose:hover {
+	background: rgba(245, 240, 232, 0.2);
+	color: var(--cream, #f5f0e8);
 }
 
 #debugLogs {

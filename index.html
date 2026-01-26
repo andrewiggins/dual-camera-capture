@@ -129,13 +129,18 @@
 			</button>
 
 			<!-- Debug UI (only visible in debug mode) -->
-			<div id="debugPanel">
+			<dialog id="debugPanel">
 				<div id="debugHeader">
 					<span>Debug Logs</span>
-					<button id="debugClear" type="button">Clear</button>
+					<div id="debugActions">
+						<button id="debugClear" type="button">Clear</button>
+						<button id="debugClose" type="button" aria-label="Close">
+							&times;
+						</button>
+					</div>
 				</div>
 				<div id="debugLogs"></div>
-			</div>
+			</dialog>
 		</div>
 
 		<capture-dialog id="captureDialog"></capture-dialog>

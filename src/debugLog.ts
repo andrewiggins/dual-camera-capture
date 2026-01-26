@@ -1,8 +1,6 @@
 import { settings } from "./settings.ts";
 import "./debugLog.css";
 
-let debugPanelVisible = false;
-
 function escapeHtml(text: string): string {
 	const div = document.createElement("div");
 	div.textContent = text;
@@ -48,20 +46,27 @@ export function debugLog(
 	}
 }
 
+function getDebugPanel(): HTMLDialogElement | null {
+	return document.getElementById("debugPanel") as HTMLDialogElement | null;
+}
+
 export function showDebugPanel(): void {
-	debugPanelVisible = true;
-	const panel = document.getElementById("debugPanel");
-	panel?.classList.add("show");
+	const panel = getDebugPanel();
+	if (panel && !panel.open) {
+		panel.show(); // Non-modal dialog
+	}
 }
 
 export function hideDebugPanel(): void {
-	debugPanelVisible = false;
-	const panel = document.getElementById("debugPanel");
-	panel?.classList.remove("show");
+	const panel = getDebugPanel();
+	if (panel?.open) {
+		panel.close();
+	}
 }
 
 export function toggleDebugPanel(): void {
-	if (debugPanelVisible) {
+	const panel = getDebugPanel();
+	if (panel?.open) {
 		hideDebugPanel();
 	} else {
 		showDebugPanel();
@@ -92,13 +97,10 @@ export function initDebug(): void {
 		.getElementById("debugClear")
 		?.addEventListener("click", clearDebugLogs);
 
-	// Debug panel close on header click (to hide panel)
-	document.getElementById("debugHeader")?.addEventListener("click", (e) => {
-		// Only toggle if clicking header directly, not the clear button
-		if ((e.target as HTMLElement).id === "debugHeader") {
-			hideDebugPanel();
-		}
-	});
+	// Debug panel close button event listener
+	document
+		.getElementById("debugClose")
+		?.addEventListener("click", hideDebugPanel);
 
 	// Log startup info if debug is already enabled (from localStorage)
 	if (settings.debug) {
