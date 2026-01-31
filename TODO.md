@@ -1,5 +1,7 @@
 ## General features/bugs
 
+- [ ] Debug SW and PWA install on phone
+
 - [ ] Add button to swap cameras on final save dialog
 - [ ] Add ability to retake overlay in sequential mode
 - [ ] Consider cleaning up sequential overlay animation (should buttons be over that animation?) (Maybe fade out overlay preview?)
