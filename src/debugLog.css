@@ -12,7 +12,7 @@
 	background-color: var(--surface, #1a1816);
 	border: 1px solid var(--accent-warm, #e8a87c);
 	border-radius: 8px;
-	z-index: 99;
+	z-index: var(--z-modal, 99);
 	overflow: hidden;
 	display: flex;
 	flex-direction: column;
