@@ -165,6 +165,7 @@ export class DualCameraApp {
 			// Update icon to show "sequential" (what clicking will switch TO)
 			modeToggleIcon.setAttribute("href", "#icon-sequential");
 			modeToggle.setAttribute("aria-label", "Sequential Mode");
+			showStatus("Dual camera capture mode", 2000);
 		} else {
 			// Switch to sequential mode
 			this.currentMode = new SequentialCaptureMode(

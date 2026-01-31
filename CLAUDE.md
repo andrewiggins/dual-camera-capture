@@ -34,8 +34,11 @@ This is a web application that captures photos from both front and back cameras 
 - `src/settings.ts` - `Settings` interface and localStorage persistence (`loadSettings`, `saveSettings`, `updateSetting`)
 - `src/SettingsDialog.ts` - `SettingsDialog` custom element with debug mode toggle and PWA update button
 - `src/pwa.ts` - PWA service worker registration and update management (`initPWA`, `onUpdateAvailable`, `triggerUpdate`)
+- `src/vite-env.d.ts` - Vite client types
 
 **Build Process**: Uses Vite for development server and production builds. TypeScript is used for type safety with `tsc` for type checking only (Vite handles compilation).
+
+**Dependencies**: The `afterframe` library is used for scheduling callbacks after the next animation frame paint, used in capture animations.
 
 **Camera Management**:
 
@@ -107,11 +110,19 @@ This is a web application that captures photos from both front and back cameras 
 
 ## Development
 
+**Quick Start**:
+
+```bash
+npm install
+npm run dev
+```
+
 **Running Locally**: Run `npm run dev` to start the Vite development server. HTTPS is required for camera access on non-localhost domains.
 
 **Commands**:
 
 - `npm run dev` - Start development server
+- `npm start` - Alias for `npm run dev`
 - `npm run build` - Build for production (outputs to `dist/`)
 - `npm run preview` - Preview production build locally
 - `npm run typecheck` - Run TypeScript type checker
