@@ -214,6 +214,7 @@ body {
 	grid-template-columns: 48px 72px 48px;
 	gap: 16px;
 	z-index: var(--z-controls);
+	view-transition-name: controls;
 }
 
 #controls-aux {
@@ -424,6 +425,7 @@ button {
 	white-space: nowrap;
 	z-index: var(--z-notifications);
 	display: none;
+	/* view-transition-name: instructions; */
 }
 
 #sequentialInstructions.show {
