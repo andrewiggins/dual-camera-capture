@@ -96,7 +96,7 @@
 			<!-- Sequential capture mode: Step instructions -->
 			<div id="sequentialInstructions">Step 1: Capture the overlay photo</div>
 
-			<div id="controls">
+			<div id="controls" class="controls">
 				<button id="modeToggle" type="button" aria-label="Sequential Mode">
 					<svg width="24" height="24" aria-hidden="true">
 						<use id="modeToggleIcon" href="#icon-sequential" />
@@ -121,11 +121,13 @@
 			<canvas id="captureAnimatedImage"></canvas>
 
 			<!-- Settings button -->
-			<button id="settingsBtn" type="button" aria-label="Settings">
-				<svg width="22" height="22" aria-hidden="true">
-					<use href="#icon-settings" />
-				</svg>
-			</button>
+			<div id="controls-aux" class="controls">
+				<button id="settingsBtn" type="button" aria-label="Settings">
+					<svg width="22" height="22" aria-hidden="true">
+						<use href="#icon-settings" />
+					</svg>
+				</button>
+			</div>
 
 			<!-- Debug UI (only visible in debug mode) -->
 			<dialog id="debugPanel">

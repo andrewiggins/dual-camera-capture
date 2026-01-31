@@ -1,8 +1,5 @@
 /* Settings button */
 #settingsBtn {
-	position: absolute;
-	bottom: max(20px, env(safe-area-inset-bottom));
-	right: 20px;
 	width: 44px;
 	height: 44px;
 	border-radius: 50%;

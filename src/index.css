@@ -53,6 +53,9 @@
 	--z-notifications: 20; /* Status messages, instructions */
 	--z-modal: 99; /* Debug panel, capture animation elements */
 	--z-top: 100; /* Capture flash, settings button */
+
+	/* Shared positioning variables can go here */
+	--controls-bottom: max(30px, env(safe-area-inset-bottom));
 }
 
 * {
@@ -197,16 +200,24 @@ body {
 }
 
 /* Controls container - Grid ensures capture button is always centered */
-#controls {
+.controls {
 	position: absolute;
-	bottom: max(30px, env(safe-area-inset-bottom));
+	bottom: var(--controls-bottom);
+	min-height: 72px;
+	display: grid;
+	align-items: center;
+}
+
+#controls {
 	left: 50%;
 	transform: translateX(-50%);
-	display: grid;
 	grid-template-columns: 48px 72px 48px;
-	align-items: center;
 	gap: 16px;
 	z-index: var(--z-controls);
+}
+
+#controls-aux {
+	right: 20px;
 }
 
 /* Base button styles */
@@ -442,6 +453,10 @@ button {
 
 /* Mobile responsive adjustments */
 @media (max-width: 768px) {
+	:root {
+		--controls-bottom: max(40px, calc(env(safe-area-inset-bottom) + 20px));
+	}
+
 	#sequentialInstructions {
 		font-size: 12px;
 		padding: 12px 18px;
@@ -450,8 +465,12 @@ button {
 		text-align: center;
 	}
 
+	.controls {
+		min-height: 64px;
+	}
+
 	#controls {
-		bottom: max(40px, calc(env(safe-area-inset-bottom) + 20px));
+		bottom: var(--controls-bottom);
 		grid-template-columns: 44px 64px 44px;
 		gap: 12px;
 	}
