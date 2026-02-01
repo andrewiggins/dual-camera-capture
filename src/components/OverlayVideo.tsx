@@ -4,6 +4,7 @@ import {
 	hasDualCameras,
 	currentMode,
 	overlayCorner,
+	cameraInitState,
 } from "../state/cameraSignals.ts";
 import "./OverlayPosition.css";
 import "./OverlayVideo.css";
@@ -42,7 +43,9 @@ export function OverlayVideo() {
 
 function OverlayError() {
 	const { overlayRef } = useOverlayPosition<HTMLDivElement>({});
-	const showError = !hasDualCameras.value;
+	// Only show error once cameras have loaded and we know there's no second camera
+	const showError =
+		cameraInitState.value === "ready" && !hasDualCameras.value;
 
 	return (
 		<div
