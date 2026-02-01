@@ -1,4 +1,4 @@
-import type { Corner } from "./OverlayPosition.ts";
+import type { Corner } from "./state/cameraSignals.ts";
 
 /**
  * Calculate the source crop region for object-fit: cover behavior.
@@ -148,6 +148,11 @@ export function drawOverlayOnMainCanvas(
 			overlayX = mainImage.width - overlayWidth - margin;
 			overlayY = mainImage.height - overlayHeight - bottomMargin;
 			break;
+		default: {
+			// Exhaustiveness check
+			const _exhaustive: never = corner;
+			throw new Error(`Unknown corner: ${_exhaustive}`);
+		}
 	}
 
 	const ctx = mainImage.getContext("2d")!;

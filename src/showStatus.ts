@@ -1,6 +1,4 @@
-const status = document.getElementById("status") as HTMLDivElement;
-
-let hideTimeout: number | null = null;
+import { statusMessage, statusTimeout } from "./state/uiSignals.ts";
 
 /**
  * Show a status message
@@ -11,18 +9,17 @@ export function showStatus(
 	duration: number | null = null,
 ): void {
 	// Clear any pending hide timeout to prevent flickering
-	if (hideTimeout !== null) {
-		clearTimeout(hideTimeout);
-		hideTimeout = null;
+	if (statusTimeout.value !== null) {
+		clearTimeout(statusTimeout.value);
+		statusTimeout.value = null;
 	}
 
-	status.textContent = message;
-	status.classList.add("show");
+	statusMessage.value = message;
 
 	if (duration) {
-		hideTimeout = window.setTimeout(() => {
-			status.classList.remove("show");
-			hideTimeout = null;
+		statusTimeout.value = window.setTimeout(() => {
+			statusMessage.value = null;
+			statusTimeout.value = null;
 		}, duration);
 	}
 }

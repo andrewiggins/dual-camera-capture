@@ -73,14 +73,6 @@ export function toggleDebugPanel(): void {
 	}
 }
 
-function clearDebugLogs(): void {
-	const logsContainer = document.getElementById("debugLogs");
-	if (logsContainer) {
-		logsContainer.innerHTML = "";
-	}
-	debugLog("Logs cleared");
-}
-
 export function logDebugStartup(): void {
 	console.log("=== DEBUG MODE ENABLED ===");
 	console.log("User Agent:", navigator.userAgent);
@@ -89,21 +81,4 @@ export function logDebugStartup(): void {
 	debugLog("DEBUG MODE ENABLED");
 	debugLog("User Agent: " + navigator.userAgent);
 	debugLog("URL: " + window.location.href);
-}
-
-export function initDebug(): void {
-	// Debug panel clear button event listener
-	document
-		.getElementById("debugClear")
-		?.addEventListener("click", clearDebugLogs);
-
-	// Debug panel close button event listener
-	document
-		.getElementById("debugClose")
-		?.addEventListener("click", hideDebugPanel);
-
-	// Log startup info if debug is already enabled (from localStorage)
-	if (settings.debug) {
-		logDebugStartup();
-	}
 }

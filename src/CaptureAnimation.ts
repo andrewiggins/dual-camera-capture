@@ -8,79 +8,66 @@ function afterFrameAsync(): Promise<void> {
 }
 
 /**
- * Handles capture animation effects using ViewTransitions API
+ * Animate capture with ViewTransitions API
+ * @param sourceCanvas OffscreenCanvas containing the captured image
+ * @param transitionName The view-transition-name to use (must match destination element)
+ * @param canvasElement The canvas element to use for the animation
+ * @param showDestination Callback that shows the destination element (dialog/preview)
  */
-export class CaptureAnimation {
-	private flashElement: HTMLDivElement;
-	private canvasElement: HTMLCanvasElement;
-
-	constructor() {
-		this.flashElement = document.getElementById(
-			"captureFlash",
-		) as HTMLDivElement;
-		this.canvasElement = document.getElementById(
-			"captureAnimatedImage",
-		) as HTMLCanvasElement;
+export async function playCaptureAnimation(
+	sourceCanvas: OffscreenCanvas,
+	transitionName: string,
+	canvasElement: HTMLCanvasElement | null,
+	showDestination: () => void,
+): Promise<void> {
+	// Check for ViewTransitions support or missing canvas element
+	if (!document.startViewTransition || !canvasElement) {
+		// Fallback: just show destination immediately
+		showDestination();
+		return;
 	}
 
-	/**
-	 * Animate capture with ViewTransitions API
-	 * @param sourceCanvas OffscreenCanvas containing the captured image
-	 * @param transitionName The view-transition-name to use (must match destination element)
-	 * @param showDestination Callback that shows the destination element (dialog/preview)
-	 */
-	async play(
-		sourceCanvas: OffscreenCanvas,
-		transitionName: string,
-		showDestination: () => void,
-	): Promise<void> {
-		// TODO: Determine how to best implement flash for visual feedback
-		// await this.playFlash();
+	// Set canvas dimensions to match source
+	canvasElement.width = sourceCanvas.width;
+	canvasElement.height = sourceCanvas.height;
 
-		// Check for ViewTransitions support
-		if (!document.startViewTransition) {
-			// Fallback: just show destination immediately
-			showDestination();
-			return;
-		}
+	// Draw OffscreenCanvas to visible canvas (sync operation)
+	const ctx = canvasElement.getContext("2d")!;
+	ctx.drawImage(sourceCanvas, 0, 0);
 
-		// Set canvas dimensions to match source
-		this.canvasElement.width = sourceCanvas.width;
-		this.canvasElement.height = sourceCanvas.height;
+	canvasElement.style.viewTransitionName = transitionName;
+	canvasElement.classList.add("active");
 
-		// Draw OffscreenCanvas to visible canvas (sync operation)
-		const ctx = this.canvasElement.getContext("2d")!;
-		ctx.drawImage(sourceCanvas, 0, 0);
+	// Let canvas render on screen first so ViewTransition doesn't animate it in
+	await afterFrameAsync();
 
-		this.canvasElement.style.viewTransitionName = transitionName;
-		this.canvasElement.classList.add("active");
+	// Start view transition
+	const transition = document.startViewTransition(() => {
+		// Hide source, show destination
+		canvasElement.classList.remove("active");
+		showDestination();
+	});
 
-		// Let canvas render on screen first so ViewTransition doesn't animate it in
-		await afterFrameAsync();
+	await transition.finished;
 
-		// Start view transition
-		const transition = document.startViewTransition(() => {
-			// Hide source, show destination
-			this.canvasElement.classList.remove("active");
-			showDestination();
-		});
+	// Clean up
+	canvasElement.style.viewTransitionName = "";
+	ctx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+}
 
-		await transition.finished;
+/**
+ * Play flash animation
+ * @param flashElement The flash element to animate
+ */
+export async function playFlashAnimation(
+	flashElement: HTMLDivElement | null,
+): Promise<void> {
+	if (!flashElement) return;
 
-		// Clean up
-		this.canvasElement.style.viewTransitionName = "";
-		ctx.clearRect(0, 0, this.canvasElement.width, this.canvasElement.height);
-	}
+	const animation = flashElement.animate(
+		[{ opacity: 0 }, { opacity: 0.7, offset: 0.3 }, { opacity: 0 }],
+		{ duration: 150, easing: "ease-out" },
+	);
 
-	/**
-	 * Play only the flash animation
-	 */
-	async playFlash(): Promise<Animation> {
-		const animation = this.flashElement.animate(
-			[{ opacity: 0 }, { opacity: 0.7, offset: 0.3 }, { opacity: 0 }],
-			{ duration: 150, easing: "ease-out" },
-		);
-
-		return animation.finished;
-	}
+	await animation.finished;
 }

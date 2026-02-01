@@ -1,12 +1,13 @@
 import type { UserConfig } from "vite";
 import { defineConfig } from "vite";
 import { VitePWA } from "vite-plugin-pwa";
-// import preact from "@preact/preset-vite";
+import preact from "@preact/preset-vite";
 
 // https://vitejs.dev/config/
 const viteConfig: UserConfig = defineConfig({
 	base: "/dual-camera-capture/",
 	plugins: [
+		preact(),
 		VitePWA({
 			minify: false,
 			registerType: "prompt",
