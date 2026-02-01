@@ -3,6 +3,7 @@ import {
 	hasDualCameras,
 	sequentialStep,
 } from "../state/cameraSignals.ts";
+import "./SequentialInstructions.css";
 
 export function SequentialInstructions() {
 	const isSequentialMode = currentMode.value === "sequential";

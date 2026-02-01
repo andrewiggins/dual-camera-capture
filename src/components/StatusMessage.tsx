@@ -1,4 +1,5 @@
 import { statusMessage } from "../state/uiSignals.ts";
+import "./StatusMessage.css";
 
 export function StatusMessage() {
 	const message = statusMessage.value;

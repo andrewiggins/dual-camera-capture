@@ -7,6 +7,7 @@ import {
 	hasDualCameras,
 	sequentialStep,
 } from "../state/cameraSignals.ts";
+import "./CaptureButton.css";
 
 export function CaptureButton() {
 	const cameraContext = useCameraContext();

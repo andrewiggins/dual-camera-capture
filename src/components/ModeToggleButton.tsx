@@ -7,6 +7,7 @@ import {
 	capturedOverlay,
 } from "../state/cameraSignals.ts";
 import { showStatus } from "../showStatus.ts";
+import "./ModeToggleButton.css";
 
 export function ModeToggleButton() {
 	// Only show for non-iOS with multiple cameras

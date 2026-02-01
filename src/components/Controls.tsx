@@ -1,6 +1,7 @@
 import { ModeToggleButton } from "./ModeToggleButton.tsx";
 import { CaptureButton } from "./CaptureButton.tsx";
 import { SwitchButton } from "./SwitchButton.tsx";
+import "./Controls.css";
 
 export function Controls() {
 	return (

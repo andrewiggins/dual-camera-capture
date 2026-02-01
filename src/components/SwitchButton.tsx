@@ -1,6 +1,7 @@
 import { debugLog } from "../debugLog.ts";
 import { useCameraContext } from "./CameraProvider.tsx";
 import { hasDualCameras } from "../state/cameraSignals.ts";
+import "./SwitchButton.css";
 
 export function SwitchButton() {
 	const { swapCameras } = useCameraContext();

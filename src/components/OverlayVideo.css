@@ -1,0 +1,75 @@
+/* Overlay video - Polaroid-inspired styling */
+#overlayVideo {
+	position: absolute;
+	width: var(--overlay-width);
+	aspect-ratio: var(--overlay-aspect-ratio);
+	object-fit: cover;
+	border-radius: 16px;
+	box-shadow: var(--shadow-soft);
+	cursor: pointer;
+	transition:
+		transform 0.3s ease,
+		box-shadow 0.3s ease,
+		opacity 0.3s ease,
+		top 0.25s ease-out,
+		left 0.25s ease-out,
+		right 0.25s ease-out,
+		bottom 0.25s ease-out;
+	z-index: var(--z-overlay);
+	/* Hidden until stream is ready */
+	opacity: 0;
+}
+
+#overlayVideo.stream-ready {
+	opacity: 1;
+}
+
+#overlayVideo:hover {
+	transform: scale(1.02);
+	box-shadow: var(--shadow-soft), var(--shadow-glow);
+}
+
+#overlayVideo.front-camera {
+	transform: scaleX(-1);
+}
+
+#overlayVideo.front-camera:hover {
+	transform: scaleX(-1) scale(1.02);
+}
+
+#overlayError {
+	position: absolute;
+	width: var(--overlay-width);
+	aspect-ratio: var(--overlay-aspect-ratio);
+	background-color: var(--surface);
+	border: 1px solid var(--error-warm);
+	border-radius: 16px;
+	box-shadow: var(--shadow-soft);
+	display: none;
+	align-items: center;
+	justify-content: center;
+	padding: 15px;
+	text-align: center;
+	z-index: var(--z-overlay);
+}
+
+#overlayError.show {
+	display: flex;
+}
+
+#overlayError .error-content {
+	color: var(--cream);
+}
+
+#overlayError .error-icon {
+	font-size: 28px;
+	margin-bottom: 8px;
+	opacity: 0.8;
+}
+
+#overlayError .error-message {
+	font-size: 11px;
+	line-height: 1.4;
+	color: var(--cream-dim);
+	letter-spacing: 0.02em;
+}
