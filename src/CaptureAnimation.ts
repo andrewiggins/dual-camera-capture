@@ -1,5 +1,4 @@
 import afterframe from "afterframe";
-import "./CaptureAnimation.css";
 
 function afterFrameAsync(): Promise<void> {
 	return new Promise((resolve) => {

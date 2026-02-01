@@ -3,7 +3,7 @@ import { debugLog } from "../debugLog.ts";
 import { canvasToBlob } from "../canvas.ts";
 import { captureDialogOpen, capturedImage } from "../state/uiSignals.ts";
 import { useCameraContext } from "./CameraProvider.tsx";
-import "../CaptureDialog.css";
+import "./CaptureDialog.css";
 
 export function CaptureDialog() {
 	const { playVideos } = useCameraContext();

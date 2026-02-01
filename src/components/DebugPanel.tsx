@@ -1,7 +1,7 @@
 import { useRef, useCallback, useEffect } from "preact/hooks";
 import { hideDebugPanel, logDebugStartup, debugLog } from "../debugLog.ts";
 import { settings } from "../settings.ts";
-import "../debugLog.css";
+import "./DebugPanel.css";
 
 export function DebugPanel() {
 	const dialogRef = useRef<HTMLDialogElement | null>(null);

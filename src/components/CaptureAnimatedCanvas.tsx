@@ -1,5 +1,5 @@
 import { useCameraContext } from "./CameraProvider.tsx";
-import "../CaptureAnimation.css";
+import "./CaptureAnimation.css";
 
 export function CaptureAnimatedCanvas() {
 	const { captureAnimatedCanvasRef } = useCameraContext();

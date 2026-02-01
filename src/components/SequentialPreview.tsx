@@ -6,7 +6,7 @@ import {
 	sequentialStep,
 	overlayCorner,
 } from "../state/cameraSignals.ts";
-import "../OverlayPosition.css";
+import "./OverlayPosition.css";
 
 export function SequentialPreview() {
 	const { sequentialPreviewCanvasRef, swapCameras } = useCameraContext();

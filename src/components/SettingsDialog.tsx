@@ -11,7 +11,7 @@ import {
 	updateAvailable,
 	debugMode,
 } from "../state/uiSignals.ts";
-import "../SettingsDialog.css";
+import "./SettingsDialog.css";
 
 export function SettingsDialog() {
 	const dialogRef = useRef<HTMLDialogElement | null>(null);

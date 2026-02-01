@@ -1,5 +1,4 @@
 import { settings } from "./settings.ts";
-import "./debugLog.css";
 
 function escapeHtml(text: string): string {
 	const div = document.createElement("div");

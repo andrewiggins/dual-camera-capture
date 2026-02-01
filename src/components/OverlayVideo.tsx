@@ -5,7 +5,7 @@ import {
 	currentMode,
 	overlayCorner,
 } from "../state/cameraSignals.ts";
-import "../OverlayPosition.css";
+import "./OverlayPosition.css";
 
 export function OverlayVideo() {
 	const { overlayVideoRef, swapCameras } = useCameraContext();
