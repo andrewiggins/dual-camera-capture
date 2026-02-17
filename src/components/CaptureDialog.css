@@ -45,18 +45,10 @@
 }
 
 .capture-dialog-actions {
-	display: grid;
-	grid-template-columns: 1fr auto 1fr;
+	display: flex;
+	justify-content: center;
 	gap: 12px;
 	align-items: center;
-}
-
-.capture-dialog-actions .download-btn {
-	justify-self: end;
-}
-
-.capture-dialog-actions .retake-btn {
-	justify-self: start;
 }
 
 .capture-dialog-btn {

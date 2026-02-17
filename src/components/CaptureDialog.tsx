@@ -5,6 +5,8 @@ import { captureDialogOpen, capturedImage } from "../state/uiSignals.ts";
 import { useCameraContext } from "./CameraProvider.tsx";
 import "./CaptureDialog.css";
 
+const isMobile = matchMedia("(pointer: coarse)").matches;
+
 export function CaptureDialog() {
 	const { playVideos } = useCameraContext();
 	const dialogRef = useRef<HTMLDialogElement | null>(null);
@@ -165,12 +167,14 @@ export function CaptureDialog() {
 					style={{ viewTransitionName: "dialog-image" }}
 				/>
 				<div class="capture-dialog-actions">
-					<a
-						ref={downloadLinkRef}
-						class="capture-dialog-btn download-btn disabled"
-					>
-						Download
-					</a>
+					{!isMobile && (
+						<a
+							ref={downloadLinkRef}
+							class="capture-dialog-btn download-btn disabled"
+						>
+							Download
+						</a>
+					)}
 					{"share" in navigator && (
 						<button
 							class="capture-dialog-btn share-btn"
