@@ -25,7 +25,10 @@
   },
   "homepage": "https://github.com/andrewiggins/dual-camera-capture#readme",
   "dependencies": {
-    "afterframe": "^1.0.2"
+    "@preact/preset-vite": "^2.10.3",
+    "@preact/signals": "^2.6.2",
+    "afterframe": "^1.0.2",
+    "preact": "^10.28.3"
   },
   "devDependencies": {
     "prettier": "^3.0.0",

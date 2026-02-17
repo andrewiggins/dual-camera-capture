@@ -1,0 +1,59 @@
+/* Secondary buttons - Icon-only circular buttons */
+#switchBtn {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 48px;
+	height: 48px;
+	padding: 0;
+	background: rgba(0, 0, 0, 0.4);
+	color: var(--cream);
+	border: 1px solid rgba(245, 240, 232, 0.3);
+	border-radius: 50%;
+	-webkit-backdrop-filter: blur(12px);
+	backdrop-filter: blur(12px);
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+#switchBtn svg {
+	width: 22px;
+	height: 22px;
+	flex-shrink: 0;
+}
+
+#switchBtn:hover {
+	background: rgba(0, 0, 0, 0.5);
+	border-color: rgba(245, 240, 232, 0.5);
+	box-shadow:
+		0 4px 12px rgba(0, 0, 0, 0.5),
+		var(--shadow-glow);
+}
+
+#switchBtn:active {
+	transform: scale(0.95);
+}
+
+#switchBtn:disabled {
+	opacity: 0.4;
+	cursor: not-allowed;
+}
+
+#switchBtn:disabled:hover {
+	background: rgba(0, 0, 0, 0.4);
+	border-color: rgba(245, 240, 232, 0.3);
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+	transform: none;
+}
+
+/* Mobile responsive adjustments */
+@media (max-width: 768px) {
+	#switchBtn {
+		width: 44px;
+		height: 44px;
+	}
+
+	#switchBtn svg {
+		width: 20px;
+		height: 20px;
+	}
+}

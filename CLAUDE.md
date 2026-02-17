@@ -8,68 +8,51 @@ This is a web application that captures photos from both front and back cameras 
 
 ## Architecture
 
+**Technology Stack**: Preact + @preact/signals for UI and state management, Vite for builds, TypeScript with JSX.
+
 **File Structure**:
 
-- `index.html` - HTML markup only
-- `camera-viewer.html` - Simple camera tester for debugging
-- `src/index.css` - Main application styles
-- `src/debugLog.css` - Debug panel styles
-- `src/CaptureDialog.css` - Capture preview dialog styles
-- `src/CaptureAnimation.css` - Capture animation styles
-- `src/OverlayPosition.css` - Overlay position/corner styles
-- `src/SettingsDialog.css` - Settings dialog styles
-- `src/index.ts` - Entry point (loads settings, initializes debug/PWA, registers custom elements, starts app)
-- `src/DualCameraApp.ts` - `DualCameraApp` controller class, `CaptureMode` interface, iOS detection
-- `src/elements.ts` - DOM element references
+- `index.html` - Minimal HTML with SVG sprite sheet and `<div id="app">`
+- `src/index.tsx` - Entry point, renders `<App />` component
+- `src/components/` - Preact components (App, CameraProvider, CaptureDialog, SettingsDialog, MainVideo, OverlayVideo, Controls, etc.)
+- `src/hooks/` - Custom hooks (useLiveCaptureMode, useSequentialCaptureMode, useOverlayPosition)
+- `src/state/` - Preact signals (cameraSignals.ts, uiSignals.ts)
+- `src/canvas.ts` - Canvas utilities (drawVideoToCanvas, drawOverlayOnMainCanvas, canvasToBlob)
 - `src/getCameras.ts` - `Camera` class, `FacingMode` type, `getCameras()` for camera enumeration
-- `src/canvas.ts` - Canvas utilities using OffscreenCanvas (drawVideoToCanvas, drawOverlayOnMainCanvas, canvasToBlob)
-- `src/LiveCaptureMode.ts` - `LiveCaptureMode` class (simultaneous dual camera)
-- `src/SequentialCaptureMode.ts` - `SequentialCaptureMode` class (one camera at a time)
-- `src/VideoStreamManager.ts` - `VideoStreamManager` class for centralized stream lifecycle
-- `src/CaptureDialog.ts` - `CaptureDialog` custom element for photo preview before download
-- `src/CaptureAnimation.ts` - `CaptureAnimation` class using ViewTransitions API for capture-to-dialog animations
-- `src/OverlayPosition.ts` - `OverlayPosition` class with drag-to-snap overlay positioning
-- `src/showStatus.ts` - `showStatus()` function for status messages
-- `src/debugLog.ts` - Debug utilities (exports `debugLog`, `initDebug`, `showDebugPanel`, `hideDebugPanel`, `toggleDebugPanel`, `logDebugStartup`)
-- `src/settings.ts` - `Settings` interface and localStorage persistence (`loadSettings`, `saveSettings`, `updateSetting`)
-- `src/SettingsDialog.ts` - `SettingsDialog` custom element with debug mode toggle and PWA update button
-- `src/pwa.ts` - PWA service worker registration and update management (`initPWA`, `onUpdateAvailable`, `triggerUpdate`)
-- `src/vite-env.d.ts` - Vite client types
+- `src/CaptureAnimation.ts` - `playCaptureAnimation()` function using ViewTransitions API
+- `src/showStatus.ts` - Status message utility using signals
+- `src/debugLog.ts` - Debug utilities (`debugLog`, `showDebugPanel`, `hideDebugPanel`, `logDebugStartup`)
+- `src/settings.ts` - Settings persistence to localStorage
+- `src/pwa.ts` - PWA service worker registration
+- CSS files: `index.css`, `debugLog.css`, `CaptureDialog.css`, `CaptureAnimation.css`, `OverlayPosition.css`, `SettingsDialog.css`
 
-**Build Process**: Uses Vite for development server and production builds. TypeScript is used for type safety with `tsc` for type checking only (Vite handles compilation).
+**Build Process**: Vite with @preact/preset-vite. TypeScript with `tsc` for type checking only. JSX configured with `jsxImportSource: "preact"`.
 
-**Dependencies**: The `afterframe` library is used for scheduling callbacks after the next animation frame paint, used in capture animations.
+**Dependencies**: `preact`, `@preact/signals` for UI/state, `afterframe` for paint synchronization in ViewTransitions.
+
+**Component Architecture**:
+
+- `CameraProvider` - Context provider that manages camera streams, video refs, and stream lifecycle
+- `CaptureDialog` / `SettingsDialog` - Use native `<dialog>` element (top layer, no portal needed)
+- `MainVideo` / `OverlayVideo` - Thin wrappers around video elements with refs from context
+- `useLiveCaptureMode` - Hook for simultaneous dual camera capture (non-iOS)
+- `useSequentialCaptureMode` - Hook for one-camera-at-a-time capture (iOS or optional)
+- `useOverlayPosition` - Hook for drag-to-snap overlay positioning (uses refs during drag to avoid re-renders)
+
+**State Management with Signals**:
+
+- `cameraSignals.ts` - Camera state: `mainCamera`, `overlayCamera`, `isIOS`, `currentMode`, `sequentialStep`, `capturedOverlay`, `overlayCorner`
+- `uiSignals.ts` - UI state: `captureDialogOpen`, `capturedImage`, `settingsDialogOpen`, `statusMessage`, `debugMode`, `updateAvailable`
+- Signals provide fine-grained reactivity without prop drilling
+- Use refs (not signals) for high-frequency updates like drag operations
 
 **Camera Management**:
 
-- `Camera` class wraps `MediaStream` and tracks deviceId, facingMode, and `shouldFlip` (true for front-facing cameras)
-- `getCameras()` function initializes cameras using facingMode constraints first, then falls back to deviceId enumeration
-- On iOS, cameras are stopped immediately after discovery to prevent stream collisions
-- Cameras are initialized once at app startup, then passed to capture mode classes
-- Graceful degradation: If only one camera is available, enters single-camera mode
-
-**Class Architecture**:
-
-- `DualCameraApp`: Main controller that manages capture modes and event listeners
-- `Camera`: Wrapper class for MediaStream with deviceId/facingMode/shouldFlip tracking and start/stop lifecycle
-- `VideoStreamManager`: Centralizes stream lifecycle, handles camera swapping, orientation updates, and overlay dimensions
-- `LiveCaptureMode`: Handles simultaneous dual camera streams (non-iOS)
-- `SequentialCaptureMode`: Handles one-camera-at-a-time capture (iOS or optional), supports single camera mode
-- `CaptureDialog`: Custom element for photo preview with download/share options before saving
-- `CaptureAnimation`: Animates captured image from viewport to CaptureDialog using ViewTransitions API
-- `OverlayPosition`: Manages overlay drag-to-snap positioning across four corners
-- `SettingsDialog`: Custom element for settings with debug mode toggle and PWA update button
-- Both capture mode classes implement `CaptureMode` interface: `init()`, `capture()`, `cleanup()`, `pause()`, `resume()`
-
-**Stream Architecture**:
-
-- `VideoStreamManager` manages video element to camera stream bindings
-- `mainCamera`: The primary `Camera` object (initially back/environment camera, displayed full-screen)
-- `overlayCamera`: The secondary `Camera` object (initially front/user camera, displayed as picture-in-picture)
-- Cameras are swapped when user clicks "Switch Cameras" button or taps the overlay
-- Overlay can be dragged to any corner (top-left, top-right, bottom-left, bottom-right) using `OverlayPosition` class
-- Each `Camera` manages its own `MediaStream` internally via `getStream()` and `stop()` methods
-- Overlay dimensions dynamically match viewport aspect ratio via CSS custom properties
+- `Camera` class wraps `MediaStream` with deviceId, facingMode, and `shouldFlip` tracking
+- `CameraProvider` initializes cameras on mount and manages stream lifecycle
+- iOS detection forces sequential mode (iOS can't run two camera streams simultaneously)
+- On iOS, cameras stopped immediately after discovery; only one stream active at a time
+- Graceful degradation to single-camera mode if only one camera available
 
 **Photo Capture**:
 
@@ -158,4 +141,4 @@ npm run dev
 
 This mode is **forced on iOS** because iOS Safari cannot run two camera streams simultaneously (WebKit limitation). On other devices with multiple cameras, users can optionally switch to sequential mode using the "Sequential Mode" button.
 
-iOS detection (in `DualCameraApp.ts`) uses user agent string and `maxTouchPoints` for iPad detection.
+iOS detection (in `CameraProvider.tsx`) uses user agent string and `maxTouchPoints` for iPad detection.

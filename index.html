@@ -77,76 +77,8 @@
 			</symbol>
 		</svg>
 
-		<div id="container">
-			<video id="mainVideo" autoplay playsinline></video>
-			<video id="overlayVideo" autoplay playsinline></video>
-			<div id="overlayError">
-				<div class="error-content">
-					<div class="error-icon">⚠️</div>
-					<div class="error-message">Second camera not available</div>
-				</div>
-			</div>
+		<div id="app"></div>
 
-			<!-- Sequential capture mode: Preview of captured overlay -->
-			<div id="sequentialOverlayPreview">
-				<canvas id="sequentialOverlayCanvas"></canvas>
-				<div id="sequentialOverlayPlaceholder">Overlay preview</div>
-			</div>
-
-			<!-- Sequential capture mode: Step instructions -->
-			<div id="sequentialInstructions">Step 1: Capture the overlay photo</div>
-
-			<div id="controls" class="controls">
-				<button id="modeToggle" type="button" aria-label="Sequential Mode">
-					<svg width="24" height="24" aria-hidden="true">
-						<use id="modeToggleIcon" href="#icon-sequential" />
-					</svg>
-				</button>
-				<button
-					id="captureBtn"
-					type="button"
-					aria-label="Capture Photo"
-				></button>
-				<button id="switchBtn" type="button" aria-label="Switch Cameras">
-					<svg width="24" height="24" aria-hidden="true">
-						<use href="#icon-switch" />
-					</svg>
-				</button>
-			</div>
-
-			<div id="status"></div>
-
-			<!-- Capture animation elements -->
-			<div id="captureFlash"></div>
-			<canvas id="captureAnimatedImage"></canvas>
-
-			<!-- Settings button -->
-			<div id="controls-aux" class="controls">
-				<button id="settingsBtn" type="button" aria-label="Settings">
-					<svg width="22" height="22" aria-hidden="true">
-						<use href="#icon-settings" />
-					</svg>
-				</button>
-			</div>
-
-			<!-- Debug UI (only visible in debug mode) -->
-			<dialog id="debugPanel">
-				<div id="debugHeader">
-					<span>Debug Logs</span>
-					<div id="debugActions">
-						<button id="debugClear" type="button">Clear</button>
-						<button id="debugClose" type="button" aria-label="Close">
-							&times;
-						</button>
-					</div>
-				</div>
-				<div id="debugLogs"></div>
-			</dialog>
-		</div>
-
-		<capture-dialog id="captureDialog"></capture-dialog>
-		<settings-dialog id="settingsDialog"></settings-dialog>
-
-		<script type="module" src="src/index.ts"></script>
+		<script type="module" src="src/index.tsx"></script>
 	</body>
 </html>
