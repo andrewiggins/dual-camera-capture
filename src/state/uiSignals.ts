@@ -12,3 +12,4 @@ export const statusTimeout = signal<number | null>(null);
 // Settings
 export const debugMode = signal(false);
 export const updateAvailable = signal(false);
+export const updatePromptDismissed = signal(false);

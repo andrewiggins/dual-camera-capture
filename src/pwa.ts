@@ -8,29 +8,24 @@ const listeners: UpdateListener[] = [];
 
 /**
  * Initialize PWA service worker registration.
- * Sets up periodic update checks (hourly) and notifies listeners when updates are available.
+ * Checks for updates when the tab becomes visible.
+ * When an update is found, the user is prompted to reload.
  */
 export function initPWA(): void {
 	updateSW = registerSW({
 		onNeedRefresh() {
 			updateAvailable = true;
 			notifyListeners();
-
-			// Immediately activate the new service worker so that a natural
-			// browser reload will serve the updated assets.  Passing `false`
-			// tells the helper to skip waiting without forcing a page reload.
-			if (updateSW) {
-				updateSW(false);
-			}
 		},
 		onOfflineReady() {
 			console.log("PWA: App ready for offline use");
 		},
 	});
 
-	// Check for updates periodically (every hour)
-	setInterval(
-		async () => {
+	// Check for updates when the tab becomes visible (e.g. user switches
+	// back to the app after it's been in the background).
+	document.addEventListener("visibilitychange", async () => {
+		if (document.visibilityState === "visible") {
 			try {
 				const registration = await navigator.serviceWorker.getRegistration();
 				if (registration) {
@@ -39,9 +34,8 @@ export function initPWA(): void {
 			} catch (error) {
 				console.error("PWA: Error checking for updates", error);
 			}
-		},
-		60 * 60 * 1000,
-	);
+		}
+	});
 }
 
 /**

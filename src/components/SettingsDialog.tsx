@@ -5,7 +5,7 @@ import {
 	hideDebugPanel,
 	logDebugStartup,
 } from "../debugLog.ts";
-import { onUpdateAvailable, triggerUpdate } from "../pwa.ts";
+import { triggerUpdate } from "../pwa.ts";
 import {
 	settingsDialogOpen,
 	updateAvailable,
@@ -57,14 +57,6 @@ export function SettingsDialog() {
 			dialog.showModal();
 		}
 	}, [settingsDialogOpen.value]);
-
-	// Subscribe to PWA update availability
-	useEffect(() => {
-		const unsubscribe = onUpdateAvailable((available) => {
-			updateAvailable.value = available;
-		});
-		return unsubscribe;
-	}, []);
 
 	// Initialize debug mode from settings
 	useEffect(() => {

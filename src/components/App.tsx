@@ -3,6 +3,7 @@ import { MainLayout } from "./MainLayout.tsx";
 import { CaptureDialog } from "./CaptureDialog.tsx";
 import { SettingsDialog } from "./SettingsDialog.tsx";
 import { DebugPanel } from "./DebugPanel.tsx";
+import { UpdatePrompt } from "./UpdatePrompt.tsx";
 
 export function App() {
 	return (
@@ -11,6 +12,7 @@ export function App() {
 			<CaptureDialog />
 			<SettingsDialog />
 			<DebugPanel />
+			<UpdatePrompt />
 		</CameraProvider>
 	);
 }
