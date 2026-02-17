@@ -15,6 +15,13 @@ export function initPWA(): void {
 		onNeedRefresh() {
 			updateAvailable = true;
 			notifyListeners();
+
+			// Immediately activate the new service worker so that a natural
+			// browser reload will serve the updated assets.  Passing `false`
+			// tells the helper to skip waiting without forcing a page reload.
+			if (updateSW) {
+				updateSW(false);
+			}
 		},
 		onOfflineReady() {
 			console.log("PWA: App ready for offline use");
