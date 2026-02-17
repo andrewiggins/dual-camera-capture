@@ -21,6 +21,8 @@ interface CameraContextValue {
 	overlayVideoRef: MutableRef<HTMLVideoElement | null>;
 	sequentialPreviewCanvasRef: MutableRef<HTMLCanvasElement | null>;
 	captureAnimatedCanvasRef: MutableRef<HTMLCanvasElement | null>;
+	captureDialogRef: MutableRef<HTMLDialogElement | null>;
+	captureDialogCanvasRef: MutableRef<HTMLCanvasElement | null>;
 	swapCameras: () => Promise<void>;
 	pauseVideos: () => void;
 	playVideos: () => void;
@@ -64,6 +66,8 @@ export function CameraProvider({ children }: CameraProviderProps) {
 	const overlayVideoRef = useRef<HTMLVideoElement | null>(null);
 	const sequentialPreviewCanvasRef = useRef<HTMLCanvasElement | null>(null);
 	const captureAnimatedCanvasRef = useRef<HTMLCanvasElement | null>(null);
+	const captureDialogRef = useRef<HTMLDialogElement | null>(null);
+	const captureDialogCanvasRef = useRef<HTMLCanvasElement | null>(null);
 
 	// Update video orientation classes based on camera shouldFlip
 	const updateOrientation = useCallback(() => {
@@ -339,6 +343,8 @@ export function CameraProvider({ children }: CameraProviderProps) {
 		overlayVideoRef,
 		sequentialPreviewCanvasRef,
 		captureAnimatedCanvasRef,
+		captureDialogRef,
+		captureDialogCanvasRef,
 		swapCameras,
 		pauseVideos,
 		playVideos,

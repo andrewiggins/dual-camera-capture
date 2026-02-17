@@ -8,9 +8,7 @@ import "./CaptureDialog.css";
 const isMobile = matchMedia("(pointer: coarse)").matches;
 
 export function CaptureDialog() {
-	const { playVideos } = useCameraContext();
-	const dialogRef = useRef<HTMLDialogElement | null>(null);
-	const canvasRef = useRef<HTMLCanvasElement | null>(null);
+	const { playVideos, captureDialogRef: dialogRef, captureDialogCanvasRef: canvasRef } = useCameraContext();
 	const downloadLinkRef = useRef<HTMLAnchorElement | null>(null);
 	const blobPromiseRef = useRef<Promise<Blob> | null>(null);
 	const blobUrlRef = useRef<string | null>(null);
@@ -116,18 +114,21 @@ export function CaptureDialog() {
 		const source = capturedImage.value;
 
 		if (captureDialogOpen.value && source && dialog && canvas) {
-			// Set canvas dimensions and draw the image
-			canvas.width = source.width;
-			canvas.height = source.height;
-			const ctx = canvas.getContext("2d")!;
-			ctx.drawImage(source, 0, 0);
+			// If the dialog was already opened synchronously by the
+			// view transition callback, skip re-opening it.
+			if (!dialog.open) {
+				canvas.width = source.width;
+				canvas.height = source.height;
+				const ctx = canvas.getContext("2d")!;
+				ctx.drawImage(source, 0, 0);
 
-			debugLog("CaptureDialog.show()", {
-				width: source.width,
-				height: source.height,
-			});
+				debugLog("CaptureDialog.show()", {
+					width: source.width,
+					height: source.height,
+				});
 
-			dialog.showModal();
+				dialog.showModal();
+			}
 
 			// Start blob conversion in the next major task (deferred)
 			setTimeout(() => prepareDownload(), 0);

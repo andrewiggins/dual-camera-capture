@@ -100,6 +100,15 @@ export function useSequentialCaptureMode(ctx: CameraContextType) {
 			"dialog-image",
 			ctx.captureAnimatedCanvasRef.current,
 			() => {
+				// Open dialog synchronously so view transition can snapshot it
+				const dialog = ctx.captureDialogRef.current;
+				const dialogCanvas = ctx.captureDialogCanvasRef.current;
+				if (dialog && dialogCanvas) {
+					dialogCanvas.width = canvas.width;
+					dialogCanvas.height = canvas.height;
+					dialogCanvas.getContext("2d")!.drawImage(canvas, 0, 0);
+					dialog.showModal();
+				}
 				capturedImage.value = canvas;
 				captureDialogOpen.value = true;
 			},

@@ -57,6 +57,15 @@ export function useLiveCaptureMode(ctx: CameraContextType) {
 			"dialog-image",
 			ctx.captureAnimatedCanvasRef.current,
 			() => {
+				// Open dialog synchronously so view transition can snapshot it
+				const dialog = ctx.captureDialogRef.current;
+				const canvas = ctx.captureDialogCanvasRef.current;
+				if (dialog && canvas) {
+					canvas.width = mainImage.width;
+					canvas.height = mainImage.height;
+					canvas.getContext("2d")!.drawImage(mainImage, 0, 0);
+					dialog.showModal();
+				}
 				capturedImage.value = mainImage;
 				captureDialogOpen.value = true;
 			},
