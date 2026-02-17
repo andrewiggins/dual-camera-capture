@@ -1,6 +1,7 @@
 ## General features/bugs
 
 - [ ] Debug SW and PWA install on phone
+- [ ] Remove "Download" button on mobile
 
 - [ ] Add button to swap cameras on final save dialog
 - [ ] Add ability to retake overlay in sequential mode

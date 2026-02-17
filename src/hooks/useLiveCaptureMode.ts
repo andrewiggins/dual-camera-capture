@@ -3,7 +3,7 @@ import { debugLog } from "../debugLog.ts";
 import { drawVideoToCanvas, drawOverlayOnMainCanvas } from "../canvas.ts";
 import { overlayCorner } from "../state/cameraSignals.ts";
 import { capturedImage, captureDialogOpen } from "../state/uiSignals.ts";
-import { playCaptureAnimation } from "../CaptureAnimation.ts";
+import { playCaptureAnimation } from "../animation.ts";
 import type { useCameraContext } from "../components/CameraProvider.tsx";
 
 type CameraContextType = ReturnType<typeof useCameraContext>;
