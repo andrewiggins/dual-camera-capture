@@ -97,7 +97,7 @@ export function CaptureDialog() {
 
 			await navigator.share({
 				files: [file],
-				title: "Dual Camera Photo",
+				title: "",
 			});
 		} catch (e) {
 			// User cancelled or share failed - ignore
