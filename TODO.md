@@ -1,5 +1,7 @@
 ## General features/bugs
 
+- [ ] Add recent history. Save photo immediately to recent history. Keep last n (5) photos taken. Change save dialog Share, Take Another, Delete. Add option to not save history. 
+
 - [ ] Debug SW and PWA install on phone
 
 - [ ] Add button to swap cameras on final save dialog
