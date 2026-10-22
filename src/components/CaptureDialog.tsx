@@ -8,7 +8,11 @@ import "./CaptureDialog.css";
 const isMobile = matchMedia("(pointer: coarse)").matches;
 
 export function CaptureDialog() {
-	const { playVideos, captureDialogRef: dialogRef, captureDialogCanvasRef: canvasRef } = useCameraContext();
+	const {
+		playVideos,
+		captureDialogRef: dialogRef,
+		captureDialogCanvasRef: canvasRef,
+	} = useCameraContext();
 	const downloadLinkRef = useRef<HTMLAnchorElement | null>(null);
 	const blobPromiseRef = useRef<Promise<Blob> | null>(null);
 	const blobUrlRef = useRef<string | null>(null);

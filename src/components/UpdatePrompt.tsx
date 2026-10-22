@@ -1,9 +1,6 @@
 import { useEffect, useCallback } from "preact/hooks";
 import { onUpdateAvailable, triggerUpdate } from "../pwa.ts";
-import {
-	updateAvailable,
-	updatePromptDismissed,
-} from "../state/uiSignals.ts";
+import { updateAvailable, updatePromptDismissed } from "../state/uiSignals.ts";
 import "./UpdatePrompt.css";
 
 export function UpdatePrompt() {

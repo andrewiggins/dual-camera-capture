@@ -153,19 +153,19 @@ The central context provider that manages camera streams and video element refs.
 
 **Provides via Context:**
 
-| Value                        | Type                       | Description                        |
-| ---------------------------- | -------------------------- | ---------------------------------- |
-| `mainVideoRef`               | `MutableRef<HTMLVideoElement>` | Main video element ref         |
-| `overlayVideoRef`            | `MutableRef<HTMLVideoElement>` | Overlay video element ref      |
+| Value                        | Type                            | Description                   |
+| ---------------------------- | ------------------------------- | ----------------------------- |
+| `mainVideoRef`               | `MutableRef<HTMLVideoElement>`  | Main video element ref        |
+| `overlayVideoRef`            | `MutableRef<HTMLVideoElement>`  | Overlay video element ref     |
 | `sequentialPreviewCanvasRef` | `MutableRef<HTMLCanvasElement>` | Sequential preview canvas ref |
 | `captureAnimatedCanvasRef`   | `MutableRef<HTMLCanvasElement>` | Animation canvas ref          |
-| `swapCameras()`              | `() => Promise<void>`      | Swap main/overlay cameras          |
-| `pauseVideos()`              | `() => void`               | Pause both video elements          |
-| `playVideos()`               | `() => void`               | Resume both video elements         |
-| `stopAllStreams()`           | `() => Promise<void>`      | Stop all camera tracks             |
-| `resumeAllStreams()`         | `() => Promise<void>`      | Re-request streams                 |
-| `getMainCameraVideo()`       | `() => {camera, video}`    | Get main camera and video          |
-| `getOverlayCameraVideo()`    | `() => {camera, video}`    | Get overlay camera and video       |
+| `swapCameras()`              | `() => Promise<void>`           | Swap main/overlay cameras     |
+| `pauseVideos()`              | `() => void`                    | Pause both video elements     |
+| `playVideos()`               | `() => void`                    | Resume both video elements    |
+| `stopAllStreams()`           | `() => Promise<void>`           | Stop all camera tracks        |
+| `resumeAllStreams()`         | `() => Promise<void>`           | Re-request streams            |
+| `getMainCameraVideo()`       | `() => {camera, video}`         | Get main camera and video     |
+| `getOverlayCameraVideo()`    | `() => {camera, video}`         | Get overlay camera and video  |
 
 **Responsibilities:**
 
@@ -180,14 +180,14 @@ The central context provider that manages camera streams and video element refs.
 
 ```typescript
 if (isIOSSignal.value) {
-  // iOS: stop old, start new (only one stream at a time)
-  main?.stop();
-  mainEl.srcObject = overlay ? await overlay.getStream() : null;
-  overlayEl.srcObject = null;
+	// iOS: stop old, start new (only one stream at a time)
+	main?.stop();
+	mainEl.srcObject = overlay ? await overlay.getStream() : null;
+	overlayEl.srcObject = null;
 } else {
-  // Desktop: just swap srcObject references
-  mainEl.srcObject = overlay ? await overlay.getStream() : null;
-  overlayEl.srcObject = main ? await main.getStream() : null;
+	// Desktop: just swap srcObject references
+	mainEl.srcObject = overlay ? await overlay.getStream() : null;
+	overlayEl.srcObject = main ? await main.getStream() : null;
 }
 ```
 
@@ -207,8 +207,8 @@ Photo preview dialog using native `<dialog>` element (renders in browser's top l
 **State:**
 
 ```typescript
-const blobPromiseRef = useRef<Promise<Blob> | null>(null);  // Cached conversion
-const blobUrlRef = useRef<string | null>(null);              // For download link
+const blobPromiseRef = useRef<Promise<Blob> | null>(null); // Cached conversion
+const blobUrlRef = useRef<string | null>(null); // For download link
 ```
 
 **Show Flow:**
@@ -217,7 +217,7 @@ const blobUrlRef = useRef<string | null>(null);              // For download lin
 // In useEffect when captureDialogOpen.value && capturedImage.value
 canvas.width = source.width;
 canvas.height = source.height;
-ctx.drawImage(source, 0, 0);  // Immediate preview
+ctx.drawImage(source, 0, 0); // Immediate preview
 
 dialog.showModal();
 
@@ -305,20 +305,20 @@ export const updateAvailable = signal(false);
 
 ### State Location Summary
 
-| State              | Location           | Lifetime            | Purpose                     |
-| ------------------ | ------------------ | ------------------- | --------------------------- |
-| `mainCamera`       | cameraSignals      | Session             | Primary camera reference    |
-| `overlayCamera`    | cameraSignals      | Session             | Secondary camera reference  |
-| `currentMode`      | cameraSignals      | Session             | Active capture mode         |
-| `overlayCorner`    | cameraSignals      | Session             | Overlay snap position       |
-| `sequentialStep`   | cameraSignals      | Capture cycle       | Sequential progress (1→2→1) |
-| `capturedOverlay`  | cameraSignals      | Capture cycle       | First photo in sequence     |
-| `captureDialogOpen`| uiSignals          | Dialog open         | Dialog visibility           |
-| `capturedImage`    | uiSignals          | Dialog open         | Photo to preview            |
-| `statusMessage`    | uiSignals          | Temporary           | Status toast message        |
-| `debugMode`        | uiSignals + localStorage | Persistent   | Debug mode toggle           |
-| Video refs         | CameraProvider     | Session             | DOM element references      |
-| Drag state         | useOverlayPosition | Pointer interaction | Local to hook (refs)        |
+| State               | Location                 | Lifetime            | Purpose                     |
+| ------------------- | ------------------------ | ------------------- | --------------------------- |
+| `mainCamera`        | cameraSignals            | Session             | Primary camera reference    |
+| `overlayCamera`     | cameraSignals            | Session             | Secondary camera reference  |
+| `currentMode`       | cameraSignals            | Session             | Active capture mode         |
+| `overlayCorner`     | cameraSignals            | Session             | Overlay snap position       |
+| `sequentialStep`    | cameraSignals            | Capture cycle       | Sequential progress (1→2→1) |
+| `capturedOverlay`   | cameraSignals            | Capture cycle       | First photo in sequence     |
+| `captureDialogOpen` | uiSignals                | Dialog open         | Dialog visibility           |
+| `capturedImage`     | uiSignals                | Dialog open         | Photo to preview            |
+| `statusMessage`     | uiSignals                | Temporary           | Status toast message        |
+| `debugMode`         | uiSignals + localStorage | Persistent          | Debug mode toggle           |
+| Video refs          | CameraProvider           | Session             | DOM element references      |
+| Drag state          | useOverlayPosition       | Pointer interaction | Local to hook (refs)        |
 
 ### Why Signals?
 
@@ -420,7 +420,7 @@ Manages overlay drag-to-snap functionality.
 
 ```typescript
 const isDraggingRef = useRef(false);
-const hasMovedRef = useRef(false);  // Distinguishes tap from drag
+const hasMovedRef = useRef(false); // Distinguishes tap from drag
 const dragStartXRef = useRef(0);
 const dragStartYRef = useRef(0);
 const elementStartXRef = useRef(0);
@@ -431,13 +431,13 @@ const elementStartYRef = useRef(0);
 
 ```typescript
 const findNearestCorner = (x: number, y: number): Corner => {
-  const isLeft = x < window.innerWidth / 2;
-  const isTop = y < window.innerHeight / 2;
+	const isLeft = x < window.innerWidth / 2;
+	const isTop = y < window.innerHeight / 2;
 
-  if (isTop && isLeft) return "top-left";
-  if (isTop && !isLeft) return "top-right";
-  if (!isTop && isLeft) return "bottom-left";
-  return "bottom-right";
+	if (isTop && isLeft) return "top-left";
+	if (isTop && !isLeft) return "top-right";
+	if (!isTop && isLeft) return "bottom-left";
+	return "bottom-right";
 };
 ```
 
@@ -593,24 +593,25 @@ export async function playCaptureAnimation(
 **WebKit Bug**: iOS Safari cannot run two camera streams simultaneously.
 
 References:
+
 - https://bugs.webkit.org/show_bug.cgi?id=179363
 - https://bugs.webkit.org/show_bug.cgi?id=238492
 
 **Handling Throughout Codebase:**
 
-| Location                    | iOS-Specific Behavior                    |
-| --------------------------- | ---------------------------------------- |
-| `getCameras()`              | Stop cameras immediately after discovery |
-| `CameraProvider` init       | Force sequential mode, set `isIOS` signal |
-| `CameraProvider.swapCameras`| Stop old stream before starting new      |
-| `CameraProvider.resumeAllStreams` | Don't start overlay stream        |
+| Location                          | iOS-Specific Behavior                     |
+| --------------------------------- | ----------------------------------------- |
+| `getCameras()`                    | Stop cameras immediately after discovery  |
+| `CameraProvider` init             | Force sequential mode, set `isIOS` signal |
+| `CameraProvider.swapCameras`      | Stop old stream before starting new       |
+| `CameraProvider.resumeAllStreams` | Don't start overlay stream                |
 
 **iOS Detection:**
 
 ```typescript
 const isIOS =
-  /iPad|iPhone|iPod/.test(navigator.userAgent) ||
-  (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+	/iPad|iPhone|iPod/.test(navigator.userAgent) ||
+	(navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
 ```
 
 The second condition catches iPad in "Request Desktop Website" mode.
@@ -634,7 +635,10 @@ padding-bottom: max(20px, env(safe-area-inset-bottom));
 **Meta Tag:**
 
 ```html
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta
+	name="viewport"
+	content="width=device-width, initial-scale=1, viewport-fit=cover"
+/>
 ```
 
 ---
@@ -652,13 +656,13 @@ padding-bottom: max(20px, env(safe-area-inset-bottom));
 ```typescript
 // CameraProvider.updateOrientation()
 if (main?.shouldFlip) {
-  mainEl.classList.add("front-camera");
+	mainEl.classList.add("front-camera");
 }
 
 // drawVideoToCanvas()
 if (flipHorizontal) {
-  ctx.translate(canvas.width, 0);
-  ctx.scale(-1, 1);
+	ctx.translate(canvas.width, 0);
+	ctx.scale(-1, 1);
 }
 ```
 
@@ -677,8 +681,8 @@ This section documents bugs discovered during development and their solutions.
 ```typescript
 // getCameras()
 if (isIOS) {
-  envCamera.stop();
-  userCamera.stop();
+	envCamera.stop();
+	userCamera.stop();
 }
 ```
 
@@ -711,7 +715,7 @@ el.style.touchAction = "none";
 **Solution**: Pause videos before capturing.
 
 ```typescript
-ctx.pauseVideos();  // FIRST
+ctx.pauseVideos(); // FIRST
 await doCapture();
 ```
 
@@ -737,9 +741,9 @@ document.startViewTransition(() => { ... });
 **Solution**: Draw canvas directly for preview, defer blob conversion.
 
 ```typescript
-ctx.drawImage(source, 0, 0);  // Immediate preview
+ctx.drawImage(source, 0, 0); // Immediate preview
 dialog.showModal();
-setTimeout(() => prepareDownload(), 0);  // Deferred
+setTimeout(() => prepareDownload(), 0); // Deferred
 ```
 
 ---
@@ -756,8 +760,8 @@ el.style.left = `${newX}px`;
 
 // After snap: update signal
 setTimeout(() => {
-  overlayCorner.value = newCorner;
-}, 250);  // After CSS transition
+	overlayCorner.value = newCorner;
+}, 250); // After CSS transition
 ```
 
 ---
