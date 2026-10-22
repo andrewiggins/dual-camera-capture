@@ -34,6 +34,7 @@ This is a web application that captures photos from both front and back cameras 
 
 - `CameraProvider` - Context provider that manages camera streams, video refs, and stream lifecycle
 - `CaptureDialog` / `SettingsDialog` - Use native `<dialog>` element (top layer, no portal needed)
+- `CameraFrame` - Box sized to the selected capture aspect ratio (letterboxed and centered); positioning context for the main video, overlays, and capture animation canvas
 - `MainVideo` / `OverlayVideo` - Thin wrappers around video elements with refs from context
 - `useLiveCaptureMode` - Hook for simultaneous dual camera capture (non-iOS)
 - `useSequentialCaptureMode` - Hook for one-camera-at-a-time capture (iOS or optional)
@@ -41,7 +42,7 @@ This is a web application that captures photos from both front and back cameras 
 
 **State Management with Signals**:
 
-- `cameraSignals.ts` - Camera state: `mainCamera`, `overlayCamera`, `isIOS`, `currentMode`, `sequentialStep`, `capturedOverlay`, `overlayCorner`
+- `cameraSignals.ts` - Camera state: `mainCamera`, `overlayCamera`, `isIOS`, `currentMode`, `sequentialStep`, `capturedOverlay`, `overlayCorner`, `aspectRatio`
 - `uiSignals.ts` - UI state: `captureDialogOpen`, `capturedImage`, `settingsDialogOpen`, `statusMessage`, `debugMode`, `updateAvailable`
 - Signals provide fine-grained reactivity without prop drilling
 - Use refs (not signals) for high-frequency updates like drag operations
@@ -57,7 +58,8 @@ This is a web application that captures photos from both front and back cameras 
 **Photo Capture**:
 
 - Uses OffscreenCanvas to composite video streams (no DOM canvas element needed)
-- Canvas captures viewport aspect ratio, not raw video stream dimensions
+- Canvas captures the main video's on-screen aspect ratio, not raw video stream dimensions
+- Aspect ratio setting (Settings dialog): "Screen size" fills the screen; "Wide Crop (16:9)" and "Full (4:3)" letterbox `CameraFrame` to that ratio (flipped to 9:16 / 3:4 in portrait), so preview and capture always match. Fixed ratios also request a matching camera resolution via `Camera.applyAspectRatio()` (best effort)
 - Main feed rendered at full canvas size with object-fit: cover cropping applied
 - Overlay feed rendered in user-selected corner (default top-left) with rounded corners and black border
 - If second camera unavailable, no overlay is rendered (single camera mode)
@@ -73,7 +75,7 @@ This is a web application that captures photos from both front and back cameras 
 
 **Settings System**:
 
-- `Settings` interface stores user preferences (currently just `debug` boolean)
+- `Settings` interface stores user preferences (`debug` boolean and `aspectRatio`: `"screen" | "16:9" | "4:3"`)
 - Settings persisted to localStorage via `loadSettings()` and `saveSettings()`
 - `SettingsDialog` custom element provides UI for toggling debug mode
 - Settings gear icon in top-right corner opens the dialog

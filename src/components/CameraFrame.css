@@ -1,0 +1,35 @@
+/* Camera frame - positioning context for the main video and overlays */
+#cameraFrame {
+	position: relative;
+	width: 100%;
+	height: 100%;
+}
+
+/* Fixed ratios follow the device orientation (16:9 becomes 9:16 in portrait) */
+#cameraFrame.aspect-16-9 {
+	--frame-ratio: calc(16 / 9);
+}
+
+#cameraFrame.aspect-4-3 {
+	--frame-ratio: calc(4 / 3);
+}
+
+@media (orientation: portrait) {
+	#cameraFrame.aspect-16-9 {
+		--frame-ratio: calc(9 / 16);
+	}
+
+	#cameraFrame.aspect-4-3 {
+		--frame-ratio: calc(3 / 4);
+	}
+}
+
+/* Largest box with the selected ratio that fits the screen, centered by #container */
+#cameraFrame.aspect-16-9,
+#cameraFrame.aspect-4-3 {
+	width: min(100%, calc(100vh * var(--frame-ratio)));
+	width: min(100%, calc(100dvh * var(--frame-ratio)));
+	height: auto;
+	max-height: 100%;
+	aspect-ratio: var(--frame-ratio);
+}

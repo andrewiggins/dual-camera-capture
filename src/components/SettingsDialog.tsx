@@ -1,5 +1,11 @@
 import { useRef, useEffect, useCallback } from "preact/hooks";
-import { settings, updateSetting } from "../settings.ts";
+import {
+	settings,
+	updateSetting,
+	ASPECT_RATIO_OPTIONS,
+	type AspectRatio,
+} from "../settings.ts";
+import { aspectRatio } from "../state/cameraSignals.ts";
 import {
 	showDebugPanel,
 	hideDebugPanel,
@@ -32,6 +38,11 @@ export function SettingsDialog() {
 		} else {
 			hideDebugPanel();
 		}
+	}, []);
+
+	const handleAspectRatioChange = useCallback((value: AspectRatio) => {
+		updateSetting("aspectRatio", value);
+		aspectRatio.value = value;
 	}, []);
 
 	const handleViewLogs = useCallback(() => {
@@ -97,6 +108,24 @@ export function SettingsDialog() {
 					</button>
 				</div>
 				<div class="settings-dialog-body">
+					<fieldset class="settings-segmented">
+						<legend>Aspect Ratio</legend>
+						<div class="segmented-options">
+							{ASPECT_RATIO_OPTIONS.map((option) => (
+								<label key={option.value} class="segmented-option">
+									<input
+										type="radio"
+										name="aspectRatio"
+										value={option.value}
+										checked={aspectRatio.value === option.value}
+										onChange={() => handleAspectRatioChange(option.value)}
+									/>
+									<span class="segmented-name">{option.name}</span>
+									<span class="segmented-detail">{option.detail}</span>
+								</label>
+							))}
+						</div>
+					</fieldset>
 					<label class="settings-toggle">
 						<span>Debug Mode</span>
 						<input

@@ -28,19 +28,34 @@ export function useOverlayPosition<T extends HTMLElement = HTMLElement>(
 	const dragStartYRef = useRef(0);
 	const elementStartXRef = useRef(0);
 	const elementStartYRef = useRef(0);
+	// Bounds of the positioning container (camera frame), captured on pointerdown
+	const boundsRef = useRef<DOMRect | null>(null);
 
-	const findNearestCorner = useCallback((x: number, y: number): Corner => {
-		const isLeft = x < window.innerWidth / 2;
-		const isTop = y < window.innerHeight / 2;
-
-		if (isTop && isLeft) return "top-left";
-		if (isTop && !isLeft) return "top-right";
-		if (!isTop && isLeft) return "bottom-left";
-		return "bottom-right";
+	const getBounds = useCallback((el: HTMLElement): DOMRect => {
+		const parent = el.offsetParent ?? document.documentElement;
+		return parent.getBoundingClientRect();
 	}, []);
 
+	/** x/y are relative to the positioning container */
+	const findNearestCorner = useCallback(
+		(x: number, y: number, bounds: DOMRect): Corner => {
+			const isLeft = x < bounds.width / 2;
+			const isTop = y < bounds.height / 2;
+
+			if (isTop && isLeft) return "top-left";
+			if (isTop && !isLeft) return "top-right";
+			if (!isTop && isLeft) return "bottom-left";
+			return "bottom-right";
+		},
+		[],
+	);
+
 	const calculateCornerPosition = useCallback(
-		(corner: Corner, elementRect: DOMRect): { left: number; top: number } => {
+		(
+			corner: Corner,
+			elementRect: DOMRect,
+			bounds: DOMRect,
+		): { left: number; top: number } => {
 			const margin = 20;
 			// Bottom margin matches CSS: max(100px, calc(env(safe-area-inset-bottom) + 80px))
 			const safeAreaBottom =
@@ -51,26 +66,26 @@ export function useOverlayPosition<T extends HTMLElement = HTMLElement>(
 				) || 0;
 			const bottomMargin = Math.max(100, safeAreaBottom + 80);
 
-			const viewportWidth = window.innerWidth;
-			const viewportHeight = window.innerHeight;
+			const frameWidth = bounds.width;
+			const frameHeight = bounds.height;
 
 			switch (corner) {
 				case "top-left":
 					return { left: margin, top: margin };
 				case "top-right":
 					return {
-						left: viewportWidth - elementRect.width - margin,
+						left: frameWidth - elementRect.width - margin,
 						top: margin,
 					};
 				case "bottom-left":
 					return {
 						left: margin,
-						top: viewportHeight - elementRect.height - bottomMargin,
+						top: frameHeight - elementRect.height - bottomMargin,
 					};
 				case "bottom-right":
 					return {
-						left: viewportWidth - elementRect.width - margin,
-						top: viewportHeight - elementRect.height - bottomMargin,
+						left: frameWidth - elementRect.width - margin,
+						top: frameHeight - elementRect.height - bottomMargin,
 					};
 			}
 		},
@@ -94,26 +109,31 @@ export function useOverlayPosition<T extends HTMLElement = HTMLElement>(
 		el.classList.add(`overlay-corner-${corner}`);
 	}, []);
 
-	const handlePointerDown = useCallback((e: PointerEvent) => {
-		if (e.button !== 0) return;
+	const handlePointerDown = useCallback(
+		(e: PointerEvent) => {
+			if (e.button !== 0) return;
 
-		const target = e.currentTarget as HTMLElement;
-		target.setPointerCapture(e.pointerId);
+			const target = e.currentTarget as HTMLElement;
+			target.setPointerCapture(e.pointerId);
 
-		isDraggingRef.current = true;
-		hasMovedRef.current = false;
-		dragStartXRef.current = e.clientX;
-		dragStartYRef.current = e.clientY;
+			isDraggingRef.current = true;
+			hasMovedRef.current = false;
+			dragStartXRef.current = e.clientX;
+			dragStartYRef.current = e.clientY;
 
-		const rect = target.getBoundingClientRect();
-		elementStartXRef.current = rect.left;
-		elementStartYRef.current = rect.top;
+			const bounds = getBounds(target);
+			boundsRef.current = bounds;
+			const rect = target.getBoundingClientRect();
+			elementStartXRef.current = rect.left - bounds.left;
+			elementStartYRef.current = rect.top - bounds.top;
 
-		debugLog("OverlayPosition.pointerdown", {
-			x: e.clientX,
-			y: e.clientY,
-		});
-	}, []);
+			debugLog("OverlayPosition.pointerdown", {
+				x: e.clientX,
+				y: e.clientY,
+			});
+		},
+		[getBounds],
+	);
 
 	const handlePointerMove = useCallback((e: PointerEvent) => {
 		if (!isDraggingRef.current) return;
@@ -154,14 +174,15 @@ export function useOverlayPosition<T extends HTMLElement = HTMLElement>(
 			if (!el) return;
 
 			if (hasMovedRef.current) {
+				const bounds = boundsRef.current ?? getBounds(el);
 				const rect = el.getBoundingClientRect();
-				const centerX = rect.left + rect.width / 2;
-				const centerY = rect.top + rect.height / 2;
+				const centerX = rect.left - bounds.left + rect.width / 2;
+				const centerY = rect.top - bounds.top + rect.height / 2;
 
-				const newCorner = findNearestCorner(centerX, centerY);
+				const newCorner = findNearestCorner(centerX, centerY, bounds);
 				debugLog("OverlayPosition.snap", { corner: newCorner });
 
-				const targetPos = calculateCornerPosition(newCorner, rect);
+				const targetPos = calculateCornerPosition(newCorner, rect, bounds);
 
 				// Remove dragging class to enable transitions, then animate to target
 				el.classList.remove("overlay-dragging");
@@ -189,7 +210,13 @@ export function useOverlayPosition<T extends HTMLElement = HTMLElement>(
 			isDraggingRef.current = false;
 			hasMovedRef.current = false;
 		},
-		[findNearestCorner, calculateCornerPosition, applyCornerClass, options],
+		[
+			findNearestCorner,
+			calculateCornerPosition,
+			applyCornerClass,
+			getBounds,
+			options,
+		],
 	);
 
 	const handlePointerCancel = useCallback(() => {
