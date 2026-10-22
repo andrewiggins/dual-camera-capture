@@ -116,7 +116,7 @@ pnpm run dev
 
 **Package Manager**: pnpm, pinned via the `packageManager` field in `package.json`. Supply-chain settings live in `pnpm-workspace.yaml`:
 
-- `minimumReleaseAge` only resolves versions published at least 1 day ago
+- `minimumReleaseAge` only resolves versions published at least 1 week ago
 - `trustPolicy: no-downgrade` rejects versions with weaker provenance than earlier releases (known false positives go in `trustPolicyExclude`)
 - `blockExoticSubdeps` blocks git/tarball transitive dependencies
 - `strictDepBuilds` fails install when a new dependency wants to run a lifecycle script; approve it in `onlyBuiltDependencies` or skip it in `ignoredBuiltDependencies`

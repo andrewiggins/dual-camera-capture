@@ -2,8 +2,8 @@
 # See https://pnpm.io/supply-chain-security
 
 # Only resolve package versions that have been published for at least
-# 1 day (in minutes), giving the registry time to catch compromised releases.
-minimumReleaseAge: 1440
+# 1 week (in minutes), giving the registry time to catch compromised releases.
+minimumReleaseAge: 10080
 
 # Fail installs if a package version is published with weaker provenance
 # or trust evidence than earlier versions of the same package.
