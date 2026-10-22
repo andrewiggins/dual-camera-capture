@@ -1,5 +1,6 @@
 import { createContext } from "preact";
 import { useContext, useRef, useEffect, useCallback } from "preact/hooks";
+import { useSignalEffect } from "@preact/signals";
 import type { ComponentChildren } from "preact";
 import type { MutableRef } from "preact/hooks";
 import { debugLog } from "../debugLog.ts";
@@ -13,6 +14,7 @@ import {
 	overlayCorner,
 	currentMode,
 	sequentialStep,
+	aspectRatio,
 } from "../state/cameraSignals.ts";
 import { showStatus } from "../showStatus.ts";
 
@@ -97,7 +99,7 @@ export function CameraProvider({ children }: CameraProviderProps) {
 		}
 	}, []);
 
-	// Update overlay aspect ratio to match viewport
+	// Update overlay aspect ratio to match the main video's on-screen frame
 	const updateOverlayDimensions = useCallback(() => {
 		const video = mainVideoRef.current;
 		if (!video) return;
@@ -273,18 +275,32 @@ export function CameraProvider({ children }: CameraProviderProps) {
 		initCameras();
 	}, [updateOrientation]);
 
-	// Handle video metadata loaded to update overlay dimensions
+	// Keep overlay dimensions in sync with the main video's size, which changes
+	// on window resize, orientation change, and aspect ratio change
 	useEffect(() => {
 		const mainEl = mainVideoRef.current;
 		if (!mainEl) return;
 
-		const handleLoadedMetadata = () => updateOverlayDimensions();
-		mainEl.addEventListener("loadedmetadata", handleLoadedMetadata);
+		const observer = new ResizeObserver(() => updateOverlayDimensions());
+		observer.observe(mainEl);
 
-		return () => {
-			mainEl.removeEventListener("loadedmetadata", handleLoadedMetadata);
-		};
+		return () => observer.disconnect();
 	}, [updateOverlayDimensions]);
+
+	// Ask active cameras for a stream matching the selected aspect ratio
+	useSignalEffect(() => {
+		const ratio = aspectRatio.value;
+		const cameras = [mainCamera.peek(), overlayCamera.peek()];
+		for (const camera of cameras) {
+			camera?.applyAspectRatio().catch((e: Error) => {
+				debugLog("Failed to apply aspect ratio constraints", {
+					aspectRatio: ratio,
+					name: e.name,
+					message: e.message,
+				});
+			});
+		}
+	});
 
 	// Show overlay video once stream is playing
 	useEffect(() => {
@@ -300,13 +316,6 @@ export function CameraProvider({ children }: CameraProviderProps) {
 			overlayEl.removeEventListener("playing", handlePlaying);
 		};
 	}, []);
-
-	// Handle window resize to update overlay dimensions
-	useEffect(() => {
-		const handleResize = () => updateOverlayDimensions();
-		window.addEventListener("resize", handleResize);
-		return () => window.removeEventListener("resize", handleResize);
-	}, [updateOverlayDimensions]);
 
 	// Handle visibility change
 	useEffect(() => {

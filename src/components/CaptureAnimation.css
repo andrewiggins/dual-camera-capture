@@ -11,12 +11,12 @@
 	z-index: var(--z-top, 100);
 }
 
-/* Fullscreen capture canvas - shown briefly as transition source */
+/* Capture canvas covering the camera frame - shown briefly as transition source */
 /* view-transition-name is set dynamically to match the destination */
-/* Note: Canvas stretches to fill viewport; content is already sized to match viewport aspect ratio */
+/* Note: Canvas stretches to fill the frame; content is already sized to match the frame aspect ratio */
 #captureAnimatedImage {
 	display: none;
-	position: fixed;
+	position: absolute;
 	inset: 0;
 	width: 100%;
 	height: 100%;
