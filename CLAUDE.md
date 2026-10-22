@@ -96,23 +96,31 @@ This is a web application that captures photos from both front and back cameras 
 **Quick Start**:
 
 ```bash
-npm install
-npm run dev
+pnpm install
+pnpm run dev
 ```
 
-**Running Locally**: Run `npm run dev` to start the Vite development server. HTTPS is required for camera access on non-localhost domains.
+**Running Locally**: Run `pnpm run dev` to start the Vite development server. HTTPS is required for camera access on non-localhost domains.
 
 **Commands**:
 
-- `npm run dev` - Start development server
-- `npm start` - Alias for `npm run dev`
-- `npm run build` - Build for production (outputs to `dist/`)
-- `npm run preview` - Preview production build locally
-- `npm run typecheck` - Run TypeScript type checker
-- `npm run check-format` - Check code formatting with Prettier
-- `npm run format` - Format code with Prettier
+- `pnpm run dev` - Start development server
+- `pnpm start` - Alias for `pnpm run dev`
+- `pnpm run build` - Build for production (outputs to `dist/`)
+- `pnpm run preview` - Preview production build locally
+- `pnpm run typecheck` - Run TypeScript type checker
+- `pnpm run check-format` - Check code formatting with Prettier
+- `pnpm run format` - Format code with Prettier
 
 **Node Version**: Project uses Volta to pin Node.js 24.13.0.
+
+**Package Manager**: pnpm, pinned via the `packageManager` field in `package.json`. Supply-chain settings live in `pnpm-workspace.yaml`:
+
+- `minimumReleaseAge` only resolves versions published at least 1 week ago
+- `trustPolicy: no-downgrade` rejects versions with weaker provenance than earlier releases (known false positives go in `trustPolicyExclude`)
+- `blockExoticSubdeps` blocks git/tarball transitive dependencies
+- `strictDepBuilds` fails install when a new dependency wants to run a lifecycle script; approve it in `onlyBuiltDependencies` or skip it in `ignoredBuiltDependencies`
+- Anything imported directly (e.g. `workbox-window` for the PWA virtual module) must be listed in `package.json`, since pnpm does not hoist transitive deps
 
 **Deployment**: GitHub Actions workflow (`.github/workflows/deploy.yml`) automatically builds and deploys to GitHub Pages on push to main branch.
 

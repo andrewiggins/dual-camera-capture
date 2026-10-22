@@ -44,8 +44,7 @@ export function OverlayVideo() {
 function OverlayError() {
 	const { overlayRef } = useOverlayPosition<HTMLDivElement>({});
 	// Only show error once cameras have loaded and we know there's no second camera
-	const showError =
-		cameraInitState.value === "ready" && !hasDualCameras.value;
+	const showError = cameraInitState.value === "ready" && !hasDualCameras.value;
 
 	return (
 		<div
