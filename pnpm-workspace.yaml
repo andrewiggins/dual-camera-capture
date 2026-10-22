@@ -1,0 +1,29 @@
+# Supply-chain hardening for package installs and updates.
+# See https://pnpm.io/supply-chain-security
+
+# Only resolve package versions that have been published for at least
+# 1 day (in minutes), giving the registry time to catch compromised releases.
+minimumReleaseAge: 1440
+
+# Fail installs if a package version is published with weaker provenance
+# or trust evidence than earlier versions of the same package.
+trustPolicy: no-downgrade
+
+# Transitive dependencies may only come from the registry (no git or
+# tarball URLs).
+blockExoticSubdeps: true
+
+# Dependency lifecycle scripts are blocked by default. Fail the install
+# when a new dependency wants to run one so it gets reviewed explicitly.
+strictDepBuilds: true
+onlyBuiltDependencies: []
+# These ship prebuilt platform binaries as optional dependencies, so their
+# install scripts are not needed.
+ignoredBuiltDependencies:
+  - esbuild
+  - sharp
+
+# Known false positives for trustPolicy. These are old maintenance releases
+# published after newer majors started shipping provenance.
+trustPolicyExclude:
+  - semver@6.3.1
