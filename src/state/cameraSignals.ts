@@ -1,5 +1,6 @@
 import { signal, computed } from "@preact/signals";
 import type { Camera } from "../getCameras.ts";
+import type { AspectRatio } from "../settings.ts";
 
 export type Corner = "top-left" | "top-right" | "bottom-left" | "bottom-right";
 
@@ -18,3 +19,6 @@ export const capturedOverlay = signal<OffscreenCanvas | null>(null);
 
 // Overlay position (updated only on snap, not during drag)
 export const overlayCorner = signal<Corner>("top-left");
+
+// Capture aspect ratio (initialized from settings on startup)
+export const aspectRatio = signal<AspectRatio>("screen");

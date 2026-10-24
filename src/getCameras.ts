@@ -1,4 +1,5 @@
 import { debugLog } from "./debugLog.ts";
+import { settings, type AspectRatio } from "./settings.ts";
 
 /** Camera facing mode type */
 export type FacingMode = "environment" | "user";
@@ -32,6 +33,15 @@ export class Camera {
 		return this.#stream;
 	}
 
+	/** Re-apply resolution constraints for the current aspect ratio setting */
+	async applyAspectRatio(): Promise<void> {
+		const track = this.#stream?.getVideoTracks()[0];
+		if (!track) return;
+		await track.applyConstraints(
+			getResolutionConstraints(settings.aspectRatio),
+		);
+	}
+
 	stop(): void {
 		if (this.#stream) {
 			this.#stream.getTracks().forEach((track) => track.stop());
@@ -41,12 +51,33 @@ export class Camera {
 }
 
 /**
- * Video constraints for high resolution capture
+ * Video constraints for high resolution capture. Fixed aspect ratios ask the
+ * camera for a matching stream so the on-screen crop loses as little of the
+ * sensor as possible (e.g. 4:3 uses the full sensor on most phones).
  */
-const VIDEO_CONSTRAINTS = {
-	width: { ideal: 4096 },
-	height: { ideal: 2160 },
-};
+function getResolutionConstraints(
+	aspectRatio: AspectRatio,
+): MediaTrackConstraints {
+	switch (aspectRatio) {
+		case "16:9":
+			return {
+				width: { ideal: 3840 },
+				height: { ideal: 2160 },
+				aspectRatio: { ideal: 16 / 9 },
+			};
+		case "4:3":
+			return {
+				width: { ideal: 4032 },
+				height: { ideal: 3024 },
+				aspectRatio: { ideal: 4 / 3 },
+			};
+		case "screen":
+			return {
+				width: { ideal: 4096 },
+				height: { ideal: 2160 },
+			};
+	}
+}
 
 /**
  * Detect available video input devices
@@ -77,7 +108,7 @@ async function getVideoStream({
 }): Promise<MediaStream> {
 	return navigator.mediaDevices.getUserMedia({
 		video: {
-			...VIDEO_CONSTRAINTS,
+			...getResolutionConstraints(settings.aspectRatio),
 			deviceId: deviceId ? { exact: deviceId } : undefined,
 			facingMode:
 				facingMode === "environment" ? { exact: "environment" } : "user",

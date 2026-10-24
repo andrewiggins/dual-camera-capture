@@ -1,3 +1,4 @@
+import { CameraFrame } from "./CameraFrame.tsx";
 import { MainVideo } from "./MainVideo.tsx";
 import { OverlayVideo } from "./OverlayVideo.tsx";
 import { SequentialPreview } from "./SequentialPreview.tsx";
@@ -11,12 +12,14 @@ import { SettingsButton } from "./SettingsButton.tsx";
 export function MainLayout() {
 	return (
 		<div id="container">
-			<MainVideo />
-			<OverlayVideo />
-			<SequentialPreview />
+			<CameraFrame>
+				<MainVideo />
+				<OverlayVideo />
+				<SequentialPreview />
+				<CaptureAnimatedCanvas />
+			</CameraFrame>
 			<SequentialInstructions />
 			<CaptureFlash />
-			<CaptureAnimatedCanvas />
 			<StatusMessage />
 			<Controls />
 			<SettingsButton />
