@@ -172,6 +172,13 @@ export function CaptureDialog() {
 					style={{ viewTransitionName: "dialog-image" }}
 				/>
 				<div class="capture-dialog-actions">
+					<button
+						class="capture-dialog-btn retake-btn"
+						type="button"
+						onClick={close}
+					>
+						Retake
+					</button>
 					{!isMobile && (
 						<a
 							ref={downloadLinkRef}
@@ -189,13 +196,6 @@ export function CaptureDialog() {
 							Share
 						</button>
 					)}
-					<button
-						class="capture-dialog-btn retake-btn"
-						type="button"
-						onClick={close}
-					>
-						Retake
-					</button>
 				</div>
 			</div>
 		</dialog>
